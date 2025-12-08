@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
+using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Devices;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -20,7 +21,7 @@ while (true)
     Console.WriteLine("3 - Cadastrar Coletor Android");
     Console.WriteLine("4 - Cadastrar Celular");
     Console.WriteLine("5 - Listar tudo");
-    Console.WriteLine("9 - Selecionar banco Access");
+    Console.WriteLine("9 - Selecionar banco Access (criar tabelas se necessário)");
     Console.WriteLine("0 - Sair");
     Console.Write("Opção: ");
 
@@ -234,28 +235,75 @@ static void ListarTudo(AccessInventoryStore store)
 static void SelecionarBancoAccessCli()
 {
     Console.Clear();
-    Console.WriteLine("=== Selecionar banco Access ===");
+    Console.WriteLine("=== Selecionar / preparar banco Access ===");
     Console.Write("Informe o caminho completo do arquivo .accdb: ");
     var path = Console.ReadLine()?.Trim();
 
     if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
     {
         Console.WriteLine("Caminho inválido ou arquivo inexistente.");
+        Console.WriteLine("Crie um arquivo .accdb vazio no Access e use esta opção novamente,");
+        Console.WriteLine("ou aponte para um banco já existente.");
         Pausar();
         return;
     }
 
+    // Salva o caminho como banco ativo
     AccessDatabaseManager.SetActiveDatabasePath(path);
     Console.WriteLine($"Banco definido: {path}");
 
+    // Verifica se as tabelas padrão existem
+    bool hasAllTables;
+    try
+    {
+        hasAllTables = AccessSchemaManager.HasAllRequiredTables();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro ao verificar estrutura do banco: " + ex.Message);
+        Pausar();
+        return;
+    }
+
+    if (!hasAllTables)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Este banco não possui todas as tabelas padrão do InventarioSistem.");
+        Console.Write("Deseja criá-las agora? (S/N): ");
+        var respCreate = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
+
+        if (respCreate == "S")
+        {
+            try
+            {
+                AccessSchemaManager.EnsureRequiredTables();
+                Console.WriteLine("Tabelas criadas/ajustadas com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao criar tabelas: " + ex.Message);
+                Pausar();
+                return;
+            }
+        }
+    }
+
+    Console.WriteLine();
     Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
     var resp = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
 
     if (resp == "S")
     {
-        var summary = AccessDatabaseManager.GetDatabaseSummary(path);
-        Console.WriteLine();
-        Console.WriteLine(summary);
+        try
+        {
+            var summary = AccessDatabaseManager.GetDatabaseSummary(path);
+            Console.WriteLine();
+            Console.WriteLine(summary);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Erro ao obter resumo do banco: " + ex.Message);
+        }
     }
 
     Pausar();
