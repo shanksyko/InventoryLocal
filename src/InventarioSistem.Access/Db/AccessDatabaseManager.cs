@@ -10,7 +10,6 @@ namespace InventarioSistem.Access.Db;
 public static class AccessDatabaseManager
 {
     private const string DefaultFileName = "InventarioSistem.accdb";
-    private const string TemplateFileName = "InventarioTemplate.accdb";
 
     /// <summary>
     /// Resolve o caminho do banco ativo:
@@ -52,55 +51,32 @@ public static class AccessDatabaseManager
     }
 
     /// <summary>
-    /// Cria um novo banco Access a partir de um arquivo template vazio
-    /// (InventarioTemplate.accdb) localizado na pasta do executável.
-    /// Em seguida, define este novo banco como ativo.
-    /// Não sobrescreve arquivos existentes.
+    /// Cria um novo arquivo .accdb vazio no caminho informado,
+    /// define-o como banco ativo e cria as tabelas padrão do InventarioSistem.
     /// </summary>
     /// <param name="targetPath">Caminho completo do novo arquivo .accdb.</param>
     /// <returns>Caminho final do arquivo criado.</returns>
-    /// <exception cref="FileNotFoundException">
-    /// Se o template InventarioTemplate.accdb não for encontrado.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// Se já existir um arquivo no targetPath.
-    /// </exception>
-    public static string CreateNewDatabaseFromTemplate(string targetPath)
+    public static string CreateNewDatabase(string targetPath)
     {
-        if (string.IsNullOrWhiteSpace(targetPath))
-            throw new ArgumentException("Caminho do banco não pode ser vazio.", nameof(targetPath));
+        AccessDatabaseCreator.CreateEmptyDatabase(targetPath);
 
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var templatePath = Path.Combine(baseDir, TemplateFileName);
-
-        if (!File.Exists(templatePath))
-        {
-            throw new FileNotFoundException(
-                $"Arquivo de template de banco Access não encontrado: '{templatePath}'. " +
-                "Crie um arquivo .accdb vazio e salve como 'InventarioTemplate.accdb' na pasta do executável.");
-        }
-
-        var dir = Path.GetDirectoryName(targetPath);
-        if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        if (File.Exists(targetPath))
-        {
-            throw new IOException($"Já existe um arquivo no caminho especificado: '{targetPath}'.");
-        }
-
-        File.Copy(templatePath, targetPath, overwrite: false);
-
-        // Define como banco ativo
+        // Define como ativo
         SetActiveDatabasePath(targetPath);
 
-        // Garante criação das tabelas padrão
+        // Cria as tabelas padrão
         AccessSchemaManager.EnsureRequiredTables();
 
         return targetPath;
     }
+
+    /// <summary>
+    /// Método legado que cria um novo banco. Mantido por compatibilidade,
+    /// redireciona para <see cref="CreateNewDatabase"/> sem depender de template.
+    /// </summary>
+    /// <param name="targetPath">Caminho completo do novo arquivo .accdb.</param>
+    /// <returns>Caminho final do arquivo criado.</returns>
+    [Obsolete("Use CreateNewDatabase para criação nativa sem template.")]
+    public static string CreateNewDatabaseFromTemplate(string targetPath) => CreateNewDatabase(targetPath);
 
     /// <summary>
     /// Retorna um resumo textual simples do banco:
