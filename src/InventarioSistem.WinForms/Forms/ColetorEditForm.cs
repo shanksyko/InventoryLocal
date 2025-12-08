@@ -39,16 +39,23 @@ namespace InventarioSistem.WinForms
                 Result = new ColetorAndroid
                 {
                     Id = existing.Id,
-                    Host = existing.Host,
-                    SerialNumber = existing.SerialNumber,
-                    MacAddress = existing.MacAddress,
-                    IpAddress = existing.IpAddress,
-                    Local = existing.Local
+                    Host = existing.Host ?? string.Empty,
+                    SerialNumber = existing.SerialNumber ?? string.Empty,
+                    MacAddress = existing.MacAddress ?? string.Empty,
+                    IpAddress = existing.IpAddress ?? string.Empty,
+                    Local = existing.Local ?? string.Empty
                 };
             }
             else
             {
-                Result = new ColetorAndroid();
+                Result = new ColetorAndroid
+                {
+                    Host = string.Empty,
+                    SerialNumber = string.Empty,
+                    MacAddress = string.Empty,
+                    IpAddress = string.Empty,
+                    Local = string.Empty
+                };
             }
         }
 

@@ -40,16 +40,23 @@ namespace InventarioSistem.WinForms
                 Result = new Tablet
                 {
                     Id = existing.Id,
-                    Host = existing.Host,
-                    SerialNumber = existing.SerialNumber,
-                    Local = existing.Local,
-                    Responsavel = existing.Responsavel,
+                    Host = existing.Host ?? string.Empty,
+                    SerialNumber = existing.SerialNumber ?? string.Empty,
+                    Local = existing.Local ?? string.Empty,
+                    Responsavel = existing.Responsavel ?? string.Empty,
                     Imeis = existing.Imeis?.ToList() ?? new()
                 };
             }
             else
             {
-                Result = new Tablet { Imeis = new() };
+                Result = new Tablet
+                {
+                    Host = string.Empty,
+                    SerialNumber = string.Empty,
+                    Local = string.Empty,
+                    Responsavel = string.Empty,
+                    Imeis = new()
+                };
             }
         }
 

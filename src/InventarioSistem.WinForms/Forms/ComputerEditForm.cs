@@ -39,16 +39,23 @@ namespace InventarioSistem.WinForms
                 Result = new Computer
                 {
                     Id = existing.Id,
-                    Host = existing.Host,
-                    SerialNumber = existing.SerialNumber,
-                    Proprietario = existing.Proprietario,
-                    Departamento = existing.Departamento,
-                    Matricula = existing.Matricula
+                    Host = existing.Host ?? string.Empty,
+                    SerialNumber = existing.SerialNumber ?? string.Empty,
+                    Proprietario = existing.Proprietario ?? string.Empty,
+                    Departamento = existing.Departamento ?? string.Empty,
+                    Matricula = existing.Matricula ?? string.Empty
                 };
             }
             else
             {
-                Result = new Computer();
+                Result = new Computer
+                {
+                    Host = string.Empty,
+                    SerialNumber = string.Empty,
+                    Proprietario = string.Empty,
+                    Departamento = string.Empty,
+                    Matricula = string.Empty
+                };
             }
         }
 
