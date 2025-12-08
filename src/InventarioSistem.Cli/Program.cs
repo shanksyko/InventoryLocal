@@ -1,284 +1,253 @@
+using System;
 using System.IO;
+using System.Linq;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
-using InventarioSistem.Core.Entities;
-using InventarioSistem.Core.Utilities;
+using InventarioSistem.Core.Devices;
 
-AccessConnectionFactory connectionFactory;
-AccessInventoryStore store;
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-await EnsureStoreInitializedAsync();
-
-Console.WriteLine("Inventário de Dispositivos - CLI");
-Console.WriteLine("===============================");
+var store = new AccessInventoryStore();
 
 while (true)
 {
-    Console.WriteLine();
-    Console.WriteLine("1 - Cadastrar dispositivo");
-    Console.WriteLine("2 - Listar dispositivos");
-    Console.WriteLine("3 - Buscar dispositivos");
-    Console.WriteLine("4 - Editar dispositivo");
-    Console.WriteLine("5 - Excluir dispositivo");
-    Console.WriteLine("6 - Relatórios");
-    Console.WriteLine("7 - Selecionar ou criar banco Access");
+    Console.Clear();
+    Console.WriteLine("=== Inventário Sistem (CLI) ===");
+    Console.WriteLine("1 - Cadastrar Computador");
+    Console.WriteLine("2 - Cadastrar Tablet");
+    Console.WriteLine("3 - Cadastrar Coletor Android");
+    Console.WriteLine("4 - Cadastrar Celular");
+    Console.WriteLine("5 - Listar tudo");
+    Console.WriteLine("9 - Selecionar banco Access");
     Console.WriteLine("0 - Sair");
-    Console.Write("Escolha: ");
-    var option = Console.ReadLine();
+    Console.Write("Opção: ");
 
-    switch (option)
-    {
-        case "1":
-            await CreateDeviceAsync(store);
-            break;
-        case "2":
-            await ListDevicesAsync(store);
-            break;
-        case "3":
-            await SearchDevicesAsync(store);
-            break;
-        case "4":
-            await EditDeviceAsync(store);
-            break;
-        case "5":
-            await DeleteDeviceAsync(store);
-            break;
-        case "6":
-            await ShowReportsAsync(store);
-            break;
-        case "7":
-            await GerenciarBancoAccessAsync();
-            break;
-        case "0":
-            return;
-        default:
-            Console.WriteLine("Opção inválida.");
-            break;
-    }
-}
+    var opcao = Console.ReadLine();
 
-async Task EnsureStoreInitializedAsync()
-{
     try
     {
-        var databasePath = AccessDatabaseManager.ResolveActiveDatabasePath();
-        await ReinitializeStoreAsync(databasePath, ensureSchema: true);
+        switch (opcao)
+        {
+            case "1":
+                CadastrarComputador(store);
+                break;
+            case "2":
+                CadastrarTablet(store);
+                break;
+            case "3":
+                CadastrarColetor(store);
+                break;
+            case "4":
+                CadastrarCelular(store);
+                break;
+            case "5":
+                ListarTudo(store);
+                break;
+            case "9":
+                SelecionarBancoAccessCli();
+                break;
+            case "0":
+                return;
+            default:
+                Console.WriteLine("Opção inválida.");
+                Pausar();
+                break;
+        }
+    }
+    catch (FileNotFoundException ex)
+    {
+        Console.WriteLine("Erro de banco: " + ex.Message);
+        Console.WriteLine("Dica: use a opção 9 para selecionar um arquivo .accdb.");
+        Pausar();
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Nenhum banco configurado: " + ex.Message);
-        Console.WriteLine("Use a opção 'Selecionar ou criar banco Access' para configurar.");
-        connectionFactory = new AccessConnectionFactory();
-        store = new AccessInventoryStore(connectionFactory);
+        Console.WriteLine("Erro inesperado: " + ex.Message);
+        Pausar();
     }
 }
 
-async Task ReinitializeStoreAsync(string databasePath, bool ensureSchema)
-{
-    AccessDatabaseManager.SetActiveDatabasePath(databasePath);
-    connectionFactory = new AccessConnectionFactory(databasePath);
-    store = new AccessInventoryStore(connectionFactory);
-
-    if (ensureSchema)
-    {
-        await store.EnsureSchemaAsync();
-    }
-}
-
-static async Task CreateDeviceAsync(AccessInventoryStore store)
-{
-    var device = PromptDevice();
-    await store.AddAsync(device);
-    Console.WriteLine("Cadastro concluído com sucesso!");
-}
-
-static async Task ListDevicesAsync(AccessInventoryStore store)
-{
-    var devices = await store.ListAsync();
-    foreach (var device in devices)
-    {
-        Console.WriteLine(device.ToMultilineString());
-        Console.WriteLine(new string('-', 40));
-    }
-}
-
-static async Task SearchDevicesAsync(AccessInventoryStore store)
-{
-    Console.Write("Termo de busca: ");
-    var term = Console.ReadLine() ?? string.Empty;
-    var devices = await store.SearchAsync(term);
-    foreach (var device in devices)
-    {
-        Console.WriteLine(device.ToMultilineString());
-        Console.WriteLine(new string('-', 40));
-    }
-}
-
-static async Task EditDeviceAsync(AccessInventoryStore store)
-{
-    Console.Write("ID do dispositivo: ");
-    if (!int.TryParse(Console.ReadLine(), out var id))
-    {
-        Console.WriteLine("ID inválido.");
-        return;
-    }
-
-    var device = await store.GetByIdAsync(id);
-    if (device == null)
-    {
-        Console.WriteLine("Dispositivo não encontrado.");
-        return;
-    }
-
-    Console.WriteLine("Deixe o campo vazio para manter o valor atual.");
-    Console.WriteLine();
-
-    Console.WriteLine($"Patrimônio ({device.Patrimonio}): ");
-    var patrimonio = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(patrimonio))
-    {
-        device.Patrimonio = patrimonio;
-    }
-
-    Console.WriteLine($"Marca ({device.Marca}): ");
-    var marca = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(marca))
-    {
-        device.Marca = marca;
-    }
-
-    Console.WriteLine($"Modelo ({device.Modelo}): ");
-    var modelo = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(modelo))
-    {
-        device.Modelo = modelo;
-    }
-
-    Console.WriteLine($"Número de Série ({device.NumeroSerie}): ");
-    var serie = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(serie))
-    {
-        device.NumeroSerie = serie;
-    }
-
-    Console.WriteLine($"IMEI ({device.Imei}): ");
-    var imei = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(imei))
-    {
-        if (!ImeiUtility.IsValid(imei))
-        {
-            Console.WriteLine("IMEI inválido. Alteração cancelada.");
-            return;
-        }
-
-        device.Imei = ImeiUtility.Normalize(imei);
-    }
-
-    Console.WriteLine($"Responsável ({device.Responsavel}): ");
-    var responsavel = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(responsavel))
-    {
-        device.Responsavel = responsavel;
-    }
-
-    Console.WriteLine($"Localização ({device.Localizacao}): ");
-    var localizacao = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(localizacao))
-    {
-        device.Localizacao = localizacao;
-    }
-
-    Console.WriteLine($"Observações ({device.Observacoes}): ");
-    var obs = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(obs))
-    {
-        device.Observacoes = obs;
-    }
-
-    device.AtualizadoEm = DateTime.UtcNow;
-    await store.UpdateAsync(device);
-    Console.WriteLine("Dispositivo atualizado!");
-}
-
-static async Task DeleteDeviceAsync(AccessInventoryStore store)
-{
-    Console.Write("ID do dispositivo para exclusão: ");
-    if (!int.TryParse(Console.ReadLine(), out var id))
-    {
-        Console.WriteLine("ID inválido.");
-        return;
-    }
-
-    await store.DeleteAsync(id);
-    Console.WriteLine("Registro excluído.");
-}
-
-static async Task ShowReportsAsync(AccessInventoryStore store)
-{
-    var totals = await store.CountByTypeAsync();
-    Console.WriteLine("Total por tipo:");
-    foreach (var total in totals)
-    {
-        Console.WriteLine($" - {total.Key}: {total.Value}");
-    }
-
-    Console.WriteLine();
-    Console.WriteLine("Dispositivos sem IMEI:");
-    var missingImei = await store.DevicesMissingImeiAsync();
-    foreach (var device in missingImei)
-    {
-        Console.WriteLine($" - {device}");
-    }
-
-    Console.WriteLine();
-    Console.Write("Filtrar por localização (enter para ignorar): ");
-    var location = Console.ReadLine();
-    if (!string.IsNullOrWhiteSpace(location))
-    {
-        var byLocation = await store.DevicesByLocationAsync(location);
-        Console.WriteLine($"Total no local '{location}': {byLocation.Count}");
-    }
-}
-
-async Task GerenciarBancoAccessAsync()
+static void CadastrarComputador(AccessInventoryStore store)
 {
     Console.Clear();
-    Console.WriteLine("=== Gerenciar banco Access ===");
-    Console.WriteLine("1 - Selecionar banco existente");
-    Console.WriteLine("2 - Criar novo banco a partir do modelo");
-    Console.WriteLine("0 - Voltar");
-    Console.Write("Opção: ");
+    Console.WriteLine("=== Novo Computador ===");
+    Console.Write("Host: ");
+    var host = Console.ReadLine() ?? string.Empty;
 
-    var opc = Console.ReadLine();
+    Console.Write("N/S: ");
+    var ns = Console.ReadLine() ?? string.Empty;
 
-    switch (opc)
+    Console.Write("Proprietário: ");
+    var prop = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Departamento: ");
+    var dept = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Matrícula: ");
+    var mat = Console.ReadLine() ?? string.Empty;
+
+    var comp = new Computer
     {
-        case "1":
-            await SelecionarBancoExistenteCliAsync();
-            break;
-        case "2":
-            await CriarNovoBancoCliAsync();
-            break;
-        default:
-            return;
-    }
+        Host = host,
+        SerialNumber = ns,
+        Proprietario = prop,
+        Departamento = dept,
+        Matricula = mat
+    };
+
+    store.AddComputer(comp);
+
+    Console.WriteLine("Computador cadastrado!");
+    Pausar();
 }
 
-async Task SelecionarBancoExistenteCliAsync()
+static void CadastrarTablet(AccessInventoryStore store)
 {
+    Console.Clear();
+    Console.WriteLine("=== Novo Tablet ===");
+    Console.Write("Host: ");
+    var host = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("N/S: ");
+    var ns = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Local: ");
+    var local = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Responsável: ");
+    var resp = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("IMEIs (separados por ';'): ");
+    var imeiInput = Console.ReadLine() ?? string.Empty;
+    var imeis = imeiInput
+        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .ToList();
+
+    var tablet = new Tablet
+    {
+        Host = host,
+        SerialNumber = ns,
+        Local = local,
+        Responsavel = resp,
+        Imeis = imeis
+    };
+
+    store.AddTablet(tablet);
+
+    Console.WriteLine("Tablet cadastrado!");
+    Pausar();
+}
+
+static void CadastrarColetor(AccessInventoryStore store)
+{
+    Console.Clear();
+    Console.WriteLine("=== Novo Coletor Android ===");
+    Console.Write("Host: ");
+    var host = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("NS: ");
+    var ns = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("MAC: ");
+    var mac = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("IP: ");
+    var ip = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Local: ");
+    var local = Console.ReadLine() ?? string.Empty;
+
+    var coletor = new ColetorAndroid
+    {
+        Host = host,
+        SerialNumber = ns,
+        MacAddress = mac,
+        IpAddress = ip,
+        Local = local
+    };
+
+    store.AddColetor(coletor);
+
+    Console.WriteLine("Coletor cadastrado!");
+    Pausar();
+}
+
+static void CadastrarCelular(AccessInventoryStore store)
+{
+    Console.Clear();
+    Console.WriteLine("=== Novo Celular ===");
+    Console.Write("Modelo: ");
+    var modelo = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Número: ");
+    var numero = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("Proprietário: ");
+    var prop = Console.ReadLine() ?? string.Empty;
+
+    Console.Write("IMEIs (separados por ';'): ");
+    var imeiInput = Console.ReadLine() ?? string.Empty;
+    var imeis = imeiInput
+        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .ToList();
+
+    var cel = new Celular
+    {
+        Modelo = modelo,
+        Numero = numero,
+        Proprietario = prop,
+        Imeis = imeis
+    };
+
+    store.AddCelular(cel);
+
+    Console.WriteLine("Celular cadastrado!");
+    Pausar();
+}
+
+static void ListarTudo(AccessInventoryStore store)
+{
+    Console.Clear();
+    Console.WriteLine("=== Inventário Geral ===");
+
+    Console.WriteLine("\nComputadores:");
+    foreach (var c in store.GetAllComputers())
+        Console.WriteLine(c);
+
+    Console.WriteLine("\nTablets:");
+    foreach (var t in store.GetAllTablets())
+        Console.WriteLine(t);
+
+    Console.WriteLine("\nColetores Android:");
+    foreach (var col in store.GetAllColetores())
+        Console.WriteLine(col);
+
+    Console.WriteLine("\nCelulares:");
+    foreach (var cel in store.GetAllCelulares())
+        Console.WriteLine(cel);
+
+    Pausar();
+}
+
+static void SelecionarBancoAccessCli()
+{
+    Console.Clear();
+    Console.WriteLine("=== Selecionar banco Access ===");
     Console.Write("Informe o caminho completo do arquivo .accdb: ");
     var path = Console.ReadLine()?.Trim();
 
     if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
     {
         Console.WriteLine("Caminho inválido ou arquivo inexistente.");
+        Pausar();
         return;
     }
 
-    await ReinitializeStoreAsync(path, ensureSchema: false);
+    AccessDatabaseManager.SetActiveDatabasePath(path);
+    Console.WriteLine($"Banco definido: {path}");
 
     Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
-    var resp = (Console.ReadLine() ?? string.Empty).Trim().ToUpperInvariant();
+    var resp = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
 
     if (resp == "S")
     {
@@ -287,139 +256,11 @@ async Task SelecionarBancoExistenteCliAsync()
         Console.WriteLine(summary);
     }
 
-    await store.EnsureSchemaAsync();
+    Pausar();
 }
 
-async Task CriarNovoBancoCliAsync()
+static void Pausar()
 {
-    Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
-    var path = Console.ReadLine()?.Trim();
-
-    if (string.IsNullOrWhiteSpace(path))
-    {
-        Console.WriteLine("Caminho inválido.");
-        return;
-    }
-
-    try
-    {
-        var createdPath = AccessDatabaseManager.CreateNewDatabaseFromTemplate(path);
-        await ReinitializeStoreAsync(createdPath, ensureSchema: false);
-
-        Console.WriteLine($"Novo banco criado em: {createdPath}");
-
-        Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
-        var resp = (Console.ReadLine() ?? string.Empty).Trim().ToUpperInvariant();
-
-        if (resp == "S")
-        {
-            var summary = AccessDatabaseManager.GetDatabaseSummary(createdPath);
-            Console.WriteLine();
-            Console.WriteLine(summary);
-        }
-
-        await store.EnsureSchemaAsync();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Erro ao criar banco: " + ex.Message);
-    }
-}
-
-static Device PromptDevice()
-{
-    Console.WriteLine("Tipos disponíveis: 1-Computador, 2-Tablet, 3-Coletor Android, 4-Celular");
-    Console.Write("Tipo: ");
-    var tipo = Console.ReadLine();
-    Device device = tipo switch
-    {
-        "1" => new Computer(),
-        "2" => new Tablet(),
-        "3" => new ColetorAndroid(),
-        "4" => new Celular(),
-        _ => new Computer()
-    };
-
-    Console.Write("Patrimônio: ");
-    device.Patrimonio = Console.ReadLine() ?? string.Empty;
-
-    Console.Write("Marca: ");
-    device.Marca = Console.ReadLine() ?? string.Empty;
-
-    Console.Write("Modelo: ");
-    device.Modelo = Console.ReadLine() ?? string.Empty;
-
-    Console.Write("Número de Série: ");
-    device.NumeroSerie = Console.ReadLine() ?? string.Empty;
-
-    if (device is Tablet || device is Celular || device is ColetorAndroid)
-    {
-        Console.Write("IMEI (opcional): ");
-        var imei = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(imei))
-        {
-            if (!ImeiUtility.IsValid(imei))
-            {
-                throw new InvalidOperationException("IMEI inválido");
-            }
-
-            device.Imei = ImeiUtility.Normalize(imei);
-        }
-    }
-
-    if (device is Computer computer)
-    {
-        Console.Write("Sistema operacional: ");
-        computer.SistemaOperacional = Console.ReadLine() ?? string.Empty;
-        Console.Write("Processador: ");
-        computer.Processador = Console.ReadLine() ?? string.Empty;
-        Console.Write("Memória RAM (GB): ");
-        int.TryParse(Console.ReadLine(), out var ram);
-        computer.MemoriaRamGb = ram;
-        Console.Write("Armazenamento (GB): ");
-        int.TryParse(Console.ReadLine(), out var armazenamento);
-        computer.ArmazenamentoGb = armazenamento;
-    }
-
-    if (device is Tablet tablet)
-    {
-        Console.Write("Versão do Android: ");
-        tablet.VersaoAndroid = Console.ReadLine() ?? string.Empty;
-        Console.Write("Linha telefônica: ");
-        tablet.LinhaTelefonica = Console.ReadLine() ?? string.Empty;
-        Console.Write("Possui teclado destacável? (s/n): ");
-        tablet.PossuiTeclado = Console.ReadLine()?.Trim().ToLowerInvariant() == "s";
-    }
-
-    if (device is ColetorAndroid coletor)
-    {
-        Console.Write("Versão do Android: ");
-        coletor.VersaoAndroid = Console.ReadLine() ?? string.Empty;
-        Console.Write("Fabricante/Scanner: ");
-        coletor.FabricanteScanner = Console.ReadLine() ?? string.Empty;
-        Console.Write("Possui base/carregador? (s/n): ");
-        coletor.PossuiCarregadorBase = Console.ReadLine()?.Trim().ToLowerInvariant() == "s";
-    }
-
-    if (device is Celular celular)
-    {
-        Console.Write("Linha telefônica: ");
-        celular.LinhaTelefonica = Console.ReadLine() ?? string.Empty;
-        Console.Write("Versão do Android: ");
-        celular.VersaoAndroid = Console.ReadLine() ?? string.Empty;
-        Console.Write("Linha corporativa? (s/n): ");
-        celular.Corporativo = Console.ReadLine()?.Trim().ToLowerInvariant() == "s";
-    }
-
-    Console.Write("Responsável: ");
-    device.Responsavel = Console.ReadLine() ?? string.Empty;
-
-    Console.Write("Localização: ");
-    device.Localizacao = Console.ReadLine() ?? string.Empty;
-
-    Console.Write("Observações: ");
-    device.Observacoes = Console.ReadLine();
-
-    device.AtualizadoEm = DateTime.UtcNow;
-    return device;
+    Console.WriteLine("\nPressione ENTER para continuar...");
+    Console.ReadLine();
 }
