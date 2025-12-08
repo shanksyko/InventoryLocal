@@ -38,15 +38,21 @@ namespace InventarioSistem.WinForms
                 Result = new Celular
                 {
                     Id = existing.Id,
-                    Modelo = existing.Modelo,
-                    Numero = existing.Numero,
-                    Proprietario = existing.Proprietario,
+                    Modelo = existing.Modelo ?? string.Empty,
+                    Numero = existing.Numero ?? string.Empty,
+                    Proprietario = existing.Proprietario ?? string.Empty,
                     Imeis = existing.Imeis?.ToList() ?? new()
                 };
             }
             else
             {
-                Result = new Celular { Imeis = new() };
+                Result = new Celular
+                {
+                    Modelo = string.Empty,
+                    Numero = string.Empty,
+                    Proprietario = string.Empty,
+                    Imeis = new()
+                };
             }
         }
 
