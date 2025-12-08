@@ -6,7 +6,7 @@ using InventarioSistem.Core.Utilities;
 
 namespace InventarioSistem.Access;
 
-public class AccessInventoryStore
+public partial class AccessInventoryStore
 {
     private readonly AccessConnectionFactory _factory;
 
