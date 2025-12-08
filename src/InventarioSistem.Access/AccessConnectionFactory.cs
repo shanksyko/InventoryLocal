@@ -1,16 +1,19 @@
 using System.Data.Odbc;
+using InventarioSistem.Access.Db;
 
 namespace InventarioSistem.Access;
 
 public class AccessConnectionFactory
 {
-    public AccessConnectionFactory(string databasePath, string? password = null)
+    private readonly string? _databasePathOverride;
+
+    public AccessConnectionFactory(string? databasePath = null, string? password = null)
     {
-        DatabasePath = databasePath ?? throw new ArgumentNullException(nameof(databasePath));
+        _databasePathOverride = databasePath;
         Password = password;
     }
 
-    public string DatabasePath { get; }
+    public string DatabasePath => _databasePathOverride ?? AccessDatabaseManager.ResolveActiveDatabasePath();
 
     public string? Password { get; }
 

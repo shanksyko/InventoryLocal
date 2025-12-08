@@ -1,11 +1,13 @@
+using System.IO;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Db;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Utilities;
 
-var databasePath = Path.Combine(AppContext.BaseDirectory, "inventario.accdb");
-var connectionFactory = new AccessConnectionFactory(databasePath);
-var store = new AccessInventoryStore(connectionFactory);
-await store.EnsureSchemaAsync();
+AccessConnectionFactory connectionFactory;
+AccessInventoryStore store;
+
+await EnsureStoreInitializedAsync();
 
 Console.WriteLine("Inventário de Dispositivos - CLI");
 Console.WriteLine("===============================");
@@ -19,6 +21,7 @@ while (true)
     Console.WriteLine("4 - Editar dispositivo");
     Console.WriteLine("5 - Excluir dispositivo");
     Console.WriteLine("6 - Relatórios");
+    Console.WriteLine("7 - Selecionar ou criar banco Access");
     Console.WriteLine("0 - Sair");
     Console.Write("Escolha: ");
     var option = Console.ReadLine();
@@ -43,11 +46,42 @@ while (true)
         case "6":
             await ShowReportsAsync(store);
             break;
+        case "7":
+            await GerenciarBancoAccessAsync();
+            break;
         case "0":
             return;
         default:
             Console.WriteLine("Opção inválida.");
             break;
+    }
+}
+
+async Task EnsureStoreInitializedAsync()
+{
+    try
+    {
+        var databasePath = AccessDatabaseManager.ResolveActiveDatabasePath();
+        await ReinitializeStoreAsync(databasePath, ensureSchema: true);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Nenhum banco configurado: " + ex.Message);
+        Console.WriteLine("Use a opção 'Selecionar ou criar banco Access' para configurar.");
+        connectionFactory = new AccessConnectionFactory();
+        store = new AccessInventoryStore(connectionFactory);
+    }
+}
+
+async Task ReinitializeStoreAsync(string databasePath, bool ensureSchema)
+{
+    AccessDatabaseManager.SetActiveDatabasePath(databasePath);
+    connectionFactory = new AccessConnectionFactory(databasePath);
+    store = new AccessInventoryStore(connectionFactory);
+
+    if (ensureSchema)
+    {
+        await store.EnsureSchemaAsync();
     }
 }
 
@@ -203,6 +237,92 @@ static async Task ShowReportsAsync(AccessInventoryStore store)
     {
         var byLocation = await store.DevicesByLocationAsync(location);
         Console.WriteLine($"Total no local '{location}': {byLocation.Count}");
+    }
+}
+
+async Task GerenciarBancoAccessAsync()
+{
+    Console.Clear();
+    Console.WriteLine("=== Gerenciar banco Access ===");
+    Console.WriteLine("1 - Selecionar banco existente");
+    Console.WriteLine("2 - Criar novo banco a partir do modelo");
+    Console.WriteLine("0 - Voltar");
+    Console.Write("Opção: ");
+
+    var opc = Console.ReadLine();
+
+    switch (opc)
+    {
+        case "1":
+            await SelecionarBancoExistenteCliAsync();
+            break;
+        case "2":
+            await CriarNovoBancoCliAsync();
+            break;
+        default:
+            return;
+    }
+}
+
+async Task SelecionarBancoExistenteCliAsync()
+{
+    Console.Write("Informe o caminho completo do arquivo .accdb: ");
+    var path = Console.ReadLine()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+    {
+        Console.WriteLine("Caminho inválido ou arquivo inexistente.");
+        return;
+    }
+
+    await ReinitializeStoreAsync(path, ensureSchema: false);
+
+    Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
+    var resp = (Console.ReadLine() ?? string.Empty).Trim().ToUpperInvariant();
+
+    if (resp == "S")
+    {
+        var summary = AccessDatabaseManager.GetDatabaseSummary(path);
+        Console.WriteLine();
+        Console.WriteLine(summary);
+    }
+
+    await store.EnsureSchemaAsync();
+}
+
+async Task CriarNovoBancoCliAsync()
+{
+    Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
+    var path = Console.ReadLine()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(path))
+    {
+        Console.WriteLine("Caminho inválido.");
+        return;
+    }
+
+    try
+    {
+        var createdPath = AccessDatabaseManager.CreateNewDatabaseFromTemplate(path);
+        await ReinitializeStoreAsync(createdPath, ensureSchema: false);
+
+        Console.WriteLine($"Novo banco criado em: {createdPath}");
+
+        Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
+        var resp = (Console.ReadLine() ?? string.Empty).Trim().ToUpperInvariant();
+
+        if (resp == "S")
+        {
+            var summary = AccessDatabaseManager.GetDatabaseSummary(createdPath);
+            Console.WriteLine();
+            Console.WriteLine(summary);
+        }
+
+        await store.EnsureSchemaAsync();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro ao criar banco: " + ex.Message);
     }
 }
 
