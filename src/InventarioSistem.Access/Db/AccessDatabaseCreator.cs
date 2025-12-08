@@ -1,12 +1,13 @@
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using ADOX;
+using System.Text;
 
 namespace InventarioSistem.Access.Db;
 
 /// <summary>
-/// Responsável por criar um novo arquivo .accdb vazio usando ADOX.
+/// Responsável por criar um novo arquivo .accdb vazio usando PowerShell + ADOX.
+/// Não exige COMReference no projeto .NET; apenas depende do provider ACE/Access Engine instalado no Windows.
 /// </summary>
 public static class AccessDatabaseCreator
 {
@@ -14,7 +15,6 @@ public static class AccessDatabaseCreator
     /// Cria um novo banco Access (.accdb) vazio no caminho especificado.
     /// Não sobrescreve arquivos existentes.
     /// </summary>
-    /// <param name="path">Caminho completo do arquivo .accdb a ser criado.</param>
     public static void CreateEmptyDatabase(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -29,28 +29,48 @@ public static class AccessDatabaseCreator
         if (File.Exists(path))
             throw new IOException($"Já existe um arquivo no caminho especificado: '{path}'.");
 
-        Catalog? catalog = null;
-        try
+        // PowerShell script que cria um .accdb via ADOX.Catalog
+        var psScript = $@"
+$path = '{path.Replace("'", "''")}'
+$conn = \"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=$path;Jet OLEDB:Engine Type=5;\"
+$cat  = New-Object -ComObject ADOX.Catalog
+$cat.Create($conn)
+[System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($cat) | Out-Null
+";
+
+        var psi = new ProcessStartInfo
         {
-            catalog = new Catalog();
-            // Engine Type 5 -> Access 2007+ (.accdb)
-            var connStr = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={path};Jet OLEDB:Engine Type=5;";
-            catalog.Create(connStr);
+            FileName = "powershell.exe",
+            Arguments = "-NoProfile -NonInteractive -Command -",
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+
+        using var proc = new Process { StartInfo = psi };
+        proc.Start();
+        proc.StandardInput.WriteLine(psScript);
+        proc.StandardInput.Close();
+
+        var stdout = proc.StandardOutput.ReadToEnd();
+        var stderr = proc.StandardError.ReadToEnd();
+
+        proc.WaitForExit();
+
+        if (proc.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"Falha ao criar banco Access via PowerShell. Código={proc.ExitCode}, Erro={stderr}");
         }
-        finally
+
+        if (!File.Exists(path))
         {
-            if (catalog is not null)
-            {
-                try
-                {
-                    Marshal.FinalReleaseComObject(catalog);
-                }
-                catch
-                {
-                    // ignorar erro de liberação de COM
-                }
-            }
+            throw new InvalidOperationException(
+                $"PowerShell executou sem erro, mas o arquivo não foi encontrado em '{path}'. Saída: {stdout} Erro: {stderr}");
         }
     }
 }
-

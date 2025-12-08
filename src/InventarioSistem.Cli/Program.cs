@@ -333,6 +333,7 @@ static void CriarNovoBancoAccessCli()
 {
     Console.Clear();
     Console.WriteLine("=== Criar novo banco Access ===");
+    Console.WriteLine("O arquivo pode ser criado em qualquer caminho válido, inclusive rede (ex.: \\servidor\\pasta\\inventario.accdb).");
     Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
     var path = Console.ReadLine()?.Trim();
 
