@@ -51,19 +51,24 @@ public static class AccessDatabaseManager
     }
 
     /// <summary>
-    /// Cria um novo arquivo .accdb vazio no caminho informado,
+    /// Cria um novo arquivo .accdb no caminho informado,
+    /// usando PowerShell/ADOX para gerar o arquivo vazio,
     /// define-o como banco ativo e cria as tabelas padrão do InventarioSistem.
     /// </summary>
-    /// <param name="targetPath">Caminho completo do novo arquivo .accdb.</param>
+    /// <param name="targetPath">Caminho completo do novo arquivo .accdb (pode ser local ou rede).</param>
     /// <returns>Caminho final do arquivo criado.</returns>
     public static string CreateNewDatabase(string targetPath)
     {
+        if (string.IsNullOrWhiteSpace(targetPath))
+            throw new ArgumentException("Caminho do banco não pode ser vazio.", nameof(targetPath));
+
+        // Cria o arquivo .accdb vazio via PowerShell + ADOX
         AccessDatabaseCreator.CreateEmptyDatabase(targetPath);
 
         // Define como ativo
         SetActiveDatabasePath(targetPath);
 
-        // Cria as tabelas padrão
+        // Cria as tabelas padrão (se ainda não existirem)
         AccessSchemaManager.EnsureRequiredTables();
 
         return targetPath;
