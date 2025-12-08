@@ -8,20 +8,20 @@ using InventarioSistem.Core.Devices;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-// Inicializa a factory de conexão e o repositório de inventário
+// Inicializa factory + store conforme a assinatura atual
 var factory = new AccessConnectionFactory();
 var store = new AccessInventoryStore(factory);
 
 while (true)
 {
     Console.Clear();
-    Console.WriteLine("=== Inventário Sistem (CLI) ===");
+    Console.WriteLine("=== InventarioSistem (CLI) ===");
     Console.WriteLine("1 - Cadastrar Computador");
     Console.WriteLine("2 - Cadastrar Tablet");
     Console.WriteLine("3 - Cadastrar Coletor Android");
     Console.WriteLine("4 - Cadastrar Celular");
     Console.WriteLine("5 - Listar tudo");
-    Console.WriteLine("9 - Gerenciar banco Access (selecionar/criar)");
+    Console.WriteLine("9 - Selecionar banco Access existente");
     Console.WriteLine("0 - Sair");
     Console.Write("Opção: ");
 
@@ -47,7 +47,7 @@ while (true)
                 ListarTudo(store);
                 break;
             case "9":
-                GerenciarBancoAccessCli();
+                SelecionarBancoAccessCli();
                 break;
             case "0":
                 return;
@@ -60,7 +60,7 @@ while (true)
     catch (FileNotFoundException ex)
     {
         Console.WriteLine("Erro de banco: " + ex.Message);
-        Console.WriteLine("Dica: use a opção 9 para selecionar um arquivo .accdb.");
+        Console.WriteLine("Dica: use a opção 9 para selecionar um arquivo .accdb válido.");
         Pausar();
     }
     catch (Exception ex)
@@ -232,35 +232,14 @@ static void ListarTudo(AccessInventoryStore store)
     Pausar();
 }
 
-static void GerenciarBancoAccessCli()
-{
-    Console.Clear();
-    Console.WriteLine("=== Gerenciar banco Access ===");
-    Console.WriteLine("1 - Selecionar banco existente");
-    Console.WriteLine("2 - Criar novo banco a partir do zero");
-    Console.WriteLine("0 - Voltar");
-    Console.Write("Opção: ");
-
-    var opc = Console.ReadLine();
-
-    switch (opc)
-    {
-        case "1":
-            SelecionarBancoAccessCli();
-            break;
-        case "2":
-            CriarNovoBancoAccessCli();
-            break;
-        default:
-            return;
-    }
-}
-
 static void SelecionarBancoAccessCli()
 {
     Console.Clear();
     Console.WriteLine("=== Selecionar banco Access existente ===");
+    Console.WriteLine("Crie antes um arquivo .accdb pelo Access ou use um já existente.");
+    Console.WriteLine();
     Console.Write("Informe o caminho completo do arquivo .accdb: ");
+
     var path = Console.ReadLine()?.Trim();
 
     if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
@@ -270,6 +249,7 @@ static void SelecionarBancoAccessCli()
         return;
     }
 
+    // Define o banco ativo
     AccessDatabaseManager.SetActiveDatabasePath(path);
     Console.WriteLine($"Banco definido: {path}");
 
@@ -324,44 +304,6 @@ static void SelecionarBancoAccessCli()
         {
             Console.WriteLine("Erro ao obter resumo do banco: " + ex.Message);
         }
-    }
-
-    Pausar();
-}
-
-static void CriarNovoBancoAccessCli()
-{
-    Console.Clear();
-    Console.WriteLine("=== Criar novo banco Access ===");
-    Console.WriteLine("O arquivo pode ser criado em qualquer caminho válido, inclusive rede (ex.: \\servidor\\pasta\\inventario.accdb).");
-    Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
-    var path = Console.ReadLine()?.Trim();
-
-    if (string.IsNullOrWhiteSpace(path))
-    {
-        Console.WriteLine("Caminho inválido.");
-        Pausar();
-        return;
-    }
-
-    try
-    {
-        var createdPath = AccessDatabaseManager.CreateNewDatabase(path);
-        Console.WriteLine($"Novo banco criado e definido como ativo: {createdPath}");
-
-        Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
-        var resp = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-
-        if (resp == "S")
-        {
-            var summary = AccessDatabaseManager.GetDatabaseSummary(createdPath);
-            Console.WriteLine();
-            Console.WriteLine(summary);
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Erro ao criar banco: " + ex.Message);
     }
 
     Pausar();
