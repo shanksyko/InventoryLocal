@@ -8,6 +8,32 @@ using InventarioSistem.Core.Devices;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+// Valida banco previamente salvo
+string? savedDb = null;
+
+try
+{
+    savedDb = AccessDatabaseManager.ResolveActiveDatabasePath();
+}
+catch (FileNotFoundException)
+{
+    // Ignora para permitir que o usuário selecione um banco válido na opção 9
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Aviso: erro ao resolver banco salvo: " + ex.Message);
+}
+
+if (!string.IsNullOrWhiteSpace(savedDb) && File.Exists(savedDb))
+{
+    Console.WriteLine($"Conectado automaticamente ao banco: {savedDb}");
+}
+else
+{
+    Console.WriteLine("Nenhum banco válido encontrado nas configurações.");
+    Console.WriteLine("Use a opção 9 para selecionar um arquivo .accdb.");
+}
+
 // Inicializa factory + store conforme a assinatura atual
 var factory = new AccessConnectionFactory();
 var store = new AccessInventoryStore(factory);
@@ -252,6 +278,10 @@ static void SelecionarBancoAccessCli()
     // Define o banco ativo
     AccessDatabaseManager.SetActiveDatabasePath(path);
     Console.WriteLine($"Banco definido: {path}");
+    Console.WriteLine();
+    Console.WriteLine("✔ Este banco agora está salvo nas configurações.");
+    Console.WriteLine("✔ Ao abrir o app novamente, ele já iniciará conectado neste mesmo banco.");
+    Console.WriteLine("✔ Use a opção 9 novamente somente se quiser trocar de banco.");
 
     bool hasAllTables;
     try
