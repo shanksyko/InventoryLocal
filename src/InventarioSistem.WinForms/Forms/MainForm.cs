@@ -19,15 +19,23 @@ namespace InventarioSistem.WinForms
 
         private DataGridView _gridComputadores = null!;
         private Button _btnAtualizarComputadores = null!;
+        private Button _btnNovoComputador = null!;
+        private Button _btnEditarComputador = null!;
 
         private DataGridView _gridTablets = null!;
         private Button _btnAtualizarTablets = null!;
+        private Button _btnNovoTablet = null!;
+        private Button _btnEditarTablet = null!;
 
         private DataGridView _gridColetores = null!;
         private Button _btnAtualizarColetores = null!;
+        private Button _btnNovoColetor = null!;
+        private Button _btnEditarColetor = null!;
 
         private DataGridView _gridCelulares = null!;
         private Button _btnAtualizarCelulares = null!;
+        private Button _btnNovoCelular = null!;
+        private Button _btnEditarCelular = null!;
 
         // Aba Avançado (config do banco)
         private Label _lblDbPath = null!;
@@ -113,6 +121,22 @@ namespace InventarioSistem.WinForms
             };
             _btnAtualizarComputadores.Click += (_, _) => LoadComputadores();
 
+            _btnNovoComputador = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoComputador.Click += (_, _) => NovoComputador();
+
+            _btnEditarComputador = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarComputador.Click += (_, _) => EditarComputador();
+
             _gridComputadores = new DataGridView
             {
                 Location = new Point(10, 45),
@@ -132,6 +156,8 @@ namespace InventarioSistem.WinForms
             };
 
             page.Controls.Add(_btnAtualizarComputadores);
+            page.Controls.Add(_btnNovoComputador);
+            page.Controls.Add(_btnEditarComputador);
             page.Controls.Add(_gridComputadores);
         }
 
@@ -144,6 +170,22 @@ namespace InventarioSistem.WinForms
                 Location = new Point(10, 10)
             };
             _btnAtualizarTablets.Click += (_, _) => LoadTablets();
+
+            _btnNovoTablet = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoTablet.Click += (_, _) => NovoTablet();
+
+            _btnEditarTablet = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarTablet.Click += (_, _) => EditarTablet();
 
             _gridTablets = new DataGridView
             {
@@ -164,6 +206,8 @@ namespace InventarioSistem.WinForms
             };
 
             page.Controls.Add(_btnAtualizarTablets);
+            page.Controls.Add(_btnNovoTablet);
+            page.Controls.Add(_btnEditarTablet);
             page.Controls.Add(_gridTablets);
         }
 
@@ -176,6 +220,22 @@ namespace InventarioSistem.WinForms
                 Location = new Point(10, 10)
             };
             _btnAtualizarColetores.Click += (_, _) => LoadColetores();
+
+            _btnNovoColetor = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoColetor.Click += (_, _) => NovoColetor();
+
+            _btnEditarColetor = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarColetor.Click += (_, _) => EditarColetor();
 
             _gridColetores = new DataGridView
             {
@@ -196,6 +256,8 @@ namespace InventarioSistem.WinForms
             };
 
             page.Controls.Add(_btnAtualizarColetores);
+            page.Controls.Add(_btnNovoColetor);
+            page.Controls.Add(_btnEditarColetor);
             page.Controls.Add(_gridColetores);
         }
 
@@ -208,6 +270,22 @@ namespace InventarioSistem.WinForms
                 Location = new Point(10, 10)
             };
             _btnAtualizarCelulares.Click += (_, _) => LoadCelulares();
+
+            _btnNovoCelular = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoCelular.Click += (_, _) => NovoCelular();
+
+            _btnEditarCelular = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarCelular.Click += (_, _) => EditarCelular();
 
             _gridCelulares = new DataGridView
             {
@@ -228,6 +306,8 @@ namespace InventarioSistem.WinForms
             };
 
             page.Controls.Add(_btnAtualizarCelulares);
+            page.Controls.Add(_btnNovoCelular);
+            page.Controls.Add(_btnEditarCelular);
             page.Controls.Add(_gridCelulares);
         }
 
@@ -274,9 +354,17 @@ namespace InventarioSistem.WinForms
         private void EnableDataTabs(bool enabled)
         {
             _btnAtualizarComputadores.Enabled = enabled;
+            _btnNovoComputador.Enabled = enabled;
+            _btnEditarComputador.Enabled = enabled;
             _btnAtualizarTablets.Enabled = enabled;
+            _btnNovoTablet.Enabled = enabled;
+            _btnEditarTablet.Enabled = enabled;
             _btnAtualizarColetores.Enabled = enabled;
+            _btnNovoColetor.Enabled = enabled;
+            _btnEditarColetor.Enabled = enabled;
             _btnAtualizarCelulares.Enabled = enabled;
+            _btnNovoCelular.Enabled = enabled;
+            _btnEditarCelular.Enabled = enabled;
 
             _gridComputadores.Enabled = enabled;
             _gridTablets.Enabled = enabled;
@@ -365,6 +453,154 @@ namespace InventarioSistem.WinForms
                     "Erro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+            }
+        }
+
+        private void NovoComputador()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this, "Banco não configurado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new ComputerEditForm();
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                _store.AddComputer(form.Result);
+                LoadComputadores();
+            }
+        }
+
+        private void EditarComputador()
+        {
+            if (_store == null) return;
+            if (_gridComputadores.CurrentRow?.DataBoundItem is not Computer selected)
+            {
+                MessageBox.Show(this, "Selecione um computador para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var form = new ComputerEditForm(selected);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                var updated = form.Result;
+                updated.Id = selected.Id;
+                _store.UpdateComputer(updated);
+                LoadComputadores();
+            }
+        }
+
+        private void NovoTablet()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this, "Banco não configurado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new TabletEditForm();
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                _store.AddTablet(form.Result);
+                LoadTablets();
+            }
+        }
+
+        private void EditarTablet()
+        {
+            if (_store == null) return;
+            if (_gridTablets.CurrentRow?.DataBoundItem is not Tablet selected)
+            {
+                MessageBox.Show(this, "Selecione um tablet para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var form = new TabletEditForm(selected);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                var updated = form.Result;
+                updated.Id = selected.Id;
+                _store.UpdateTablet(updated);
+                LoadTablets();
+            }
+        }
+
+        private void NovoColetor()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this, "Banco não configurado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new ColetorEditForm();
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                _store.AddColetor(form.Result);
+                LoadColetores();
+            }
+        }
+
+        private void EditarColetor()
+        {
+            if (_store == null) return;
+            if (_gridColetores.CurrentRow?.DataBoundItem is not ColetorAndroid selected)
+            {
+                MessageBox.Show(this, "Selecione um coletor para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var form = new ColetorEditForm(selected);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                var updated = form.Result;
+                updated.Id = selected.Id;
+                _store.UpdateColetor(updated);
+                LoadColetores();
+            }
+        }
+
+        private void NovoCelular()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this, "Banco não configurado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new CelularEditForm();
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                _store.AddCelular(form.Result);
+                LoadCelulares();
+            }
+        }
+
+        private void EditarCelular()
+        {
+            if (_store == null) return;
+            if (_gridCelulares.CurrentRow?.DataBoundItem is not Celular selected)
+            {
+                MessageBox.Show(this, "Selecione um celular para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var form = new CelularEditForm(selected);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                var updated = form.Result;
+                updated.Id = selected.Id;
+                _store.UpdateCelular(updated);
+                LoadCelulares();
             }
         }
 

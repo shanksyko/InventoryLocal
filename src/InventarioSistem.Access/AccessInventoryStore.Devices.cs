@@ -61,6 +61,30 @@ public partial class AccessInventoryStore
         return computers;
     }
 
+    public void UpdateComputer(Computer computer)
+    {
+        ArgumentNullException.ThrowIfNull(computer);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Computadores
+            SET Host = ?, SerialNumber = ?, Proprietario = ?, Departamento = ?, Matricula = ?
+            WHERE Id = ?
+        ";
+
+        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Host);
+        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.SerialNumber);
+        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Proprietario);
+        command.Parameters.Add("Departamento", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Departamento);
+        command.Parameters.Add("Matricula", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Matricula);
+        command.Parameters.Add("Id", OdbcType.Int).Value = computer.Id;
+
+        command.ExecuteNonQuery();
+    }
+
     //
     //  TABLETS
     //
@@ -116,6 +140,30 @@ public partial class AccessInventoryStore
         return tablets;
     }
 
+    public void UpdateTablet(Tablet tablet)
+    {
+        ArgumentNullException.ThrowIfNull(tablet);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Tablets
+            SET Host = ?, SerialNumber = ?, Local = ?, Responsavel = ?, Imeis = ?
+            WHERE Id = ?
+        ";
+
+        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Host);
+        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.SerialNumber);
+        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Local);
+        command.Parameters.Add("Responsavel", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Responsavel);
+        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(tablet.Imeis);
+        command.Parameters.Add("Id", OdbcType.Int).Value = tablet.Id;
+
+        command.ExecuteNonQuery();
+    }
+
     //
     //  COLETORES ANDROID
     //
@@ -169,6 +217,30 @@ public partial class AccessInventoryStore
         return coletores;
     }
 
+    public void UpdateColetor(ColetorAndroid coletor)
+    {
+        ArgumentNullException.ThrowIfNull(coletor);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE ColetoresAndroid
+            SET Host = ?, SerialNumber = ?, MacAddress = ?, IpAddress = ?, Local = ?
+            WHERE Id = ?
+        ";
+
+        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Host);
+        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.SerialNumber);
+        command.Parameters.Add("MacAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.MacAddress);
+        command.Parameters.Add("IpAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.IpAddress);
+        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Local);
+        command.Parameters.Add("Id", OdbcType.Int).Value = coletor.Id;
+
+        command.ExecuteNonQuery();
+    }
+
     //
     //  CELULARES
     //
@@ -220,5 +292,28 @@ public partial class AccessInventoryStore
         }
 
         return celulares;
+    }
+
+    public void UpdateCelular(Celular celular)
+    {
+        ArgumentNullException.ThrowIfNull(celular);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Celulares
+            SET Modelo = ?, Numero = ?, Proprietario = ?, Imeis = ?
+            WHERE Id = ?
+        ";
+
+        command.Parameters.Add("Modelo", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Modelo);
+        command.Parameters.Add("Numero", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Numero);
+        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Proprietario);
+        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(celular.Imeis);
+        command.Parameters.Add("Id", OdbcType.Int).Value = celular.Id;
+
+        command.ExecuteNonQuery();
     }
 }
