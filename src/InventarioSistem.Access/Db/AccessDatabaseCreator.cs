@@ -29,14 +29,18 @@ public static class AccessDatabaseCreator
         if (File.Exists(path))
             throw new IOException($"Já existe um arquivo no caminho especificado: '{path}'.");
 
-        // PowerShell script que cria um .accdb via ADOX.Catalog
-        var psScript = $@"
-$path = '{path.Replace("'", "''")}'
-$conn = \"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=$path;Jet OLEDB:Engine Type=5;\"
-$cat  = New-Object -ComObject ADOX.Catalog
-$cat.Create($conn)
-[System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($cat) | Out-Null
-";
+        // Escapa aspas simples para o PowerShell
+        var escapedPath = path.Replace("'", "''");
+
+        // Script PowerShell simples, montado via string.Format para evitar problemas de sintaxe em C#
+        var scriptTemplate = @"
+        $path = '{0}'
+        $conn = \"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=$path;Jet OLEDB:Engine Type=5;\"
+        $cat  = New-Object -ComObject ADOX.Catalog
+        $cat.Create($conn)
+        [System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($cat) | Out-Null
+        ";
+        var psScript = string.Format(scriptTemplate, escapedPath);
 
         var psi = new ProcessStartInfo
         {
@@ -53,7 +57,7 @@ $cat.Create($conn)
 
         using var proc = new Process { StartInfo = psi };
         proc.Start();
-        proc.StandardInput.WriteLine(psScript);
+        proc.StandardInput.Write(psScript);
         proc.StandardInput.Close();
 
         var stdout = proc.StandardOutput.ReadToEnd();
@@ -64,7 +68,7 @@ $cat.Create($conn)
         if (proc.ExitCode != 0)
         {
             throw new InvalidOperationException(
-                $"Falha ao criar banco Access via PowerShell. Código={proc.ExitCode}, Erro={stderr}");
+                $"Falha ao criar banco Access via PowerShell. Código={proc.ExitCode}. Erro: {stderr}");
         }
 
         if (!File.Exists(path))
