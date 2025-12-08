@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
 using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Logging;
 using InventarioSistem.Core.Utils;
 
 namespace InventarioSistem.Access;
@@ -32,6 +33,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Matricula", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Matricula);
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
     }
 
     public List<Computer> GetAllComputers()
@@ -83,6 +87,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Id", OdbcType.Int).Value = computer.Id;
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
     }
 
     //
@@ -109,6 +116,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(tablet.Imeis);
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Tablet inserido: Host='{tablet.Host}', NS='{tablet.SerialNumber}', Local='{tablet.Local}', Responsavel='{tablet.Responsavel}', IMEIs='{string.Join(";", tablet.Imeis ?? new())}'");
     }
 
     public List<Tablet> GetAllTablets()
@@ -162,6 +172,10 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Id", OdbcType.Int).Value = tablet.Id;
 
         command.ExecuteNonQuery();
+
+        var imeisText = string.Join(";", tablet.Imeis ?? new());
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Tablet atualizado (Id={tablet.Id}): Host='{tablet.Host}', NS='{tablet.SerialNumber}', Local='{tablet.Local}', Responsavel='{tablet.Responsavel}', IMEIs='{imeisText}'");
     }
 
     //
@@ -188,6 +202,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Local);
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Coletor inserido: Host='{coletor.Host}', NS='{coletor.SerialNumber}', MAC='{coletor.MacAddress}', IP='{coletor.IpAddress}', Local='{coletor.Local}'");
     }
 
     public List<ColetorAndroid> GetAllColetores()
@@ -239,6 +256,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Id", OdbcType.Int).Value = coletor.Id;
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Coletor atualizado (Id={coletor.Id}): Host='{coletor.Host}', NS='{coletor.SerialNumber}', MAC='{coletor.MacAddress}', IP='{coletor.IpAddress}', Local='{coletor.Local}'");
     }
 
     //
@@ -264,6 +284,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(celular.Imeis);
 
         command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Celular inserido: Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{string.Join(";", celular.Imeis ?? new())}'");
     }
 
     public List<Celular> GetAllCelulares()
@@ -315,5 +338,9 @@ public partial class AccessInventoryStore
         command.Parameters.Add("Id", OdbcType.Int).Value = celular.Id;
 
         command.ExecuteNonQuery();
+
+        var imeisText = string.Join(";", celular.Imeis ?? new());
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Celular atualizado (Id={celular.Id}): Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{imeisText}'");
     }
 }

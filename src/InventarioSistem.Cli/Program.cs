@@ -5,6 +5,7 @@ using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Logging;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -27,6 +28,7 @@ catch (Exception ex)
 if (!string.IsNullOrWhiteSpace(savedDb) && File.Exists(savedDb))
 {
     Console.WriteLine($"Conectado automaticamente ao banco: {savedDb}");
+    InventoryLogger.Info("CLI", $"Conectado automaticamente ao banco: {savedDb}");
 }
 else
 {
@@ -126,6 +128,9 @@ static void CadastrarComputador(AccessInventoryStore store)
 
     store.AddComputer(comp);
 
+    InventoryLogger.Info("CLI",
+        $"Computador cadastrado via CLI: Host='{host}', NS='{ns}', Proprietario='{prop}', Departamento='{dept}', Matricula='{mat}'");
+
     Console.WriteLine("Computador cadastrado!");
     Pausar();
 }
@@ -163,6 +168,9 @@ static void CadastrarTablet(AccessInventoryStore store)
 
     store.AddTablet(tablet);
 
+    InventoryLogger.Info("CLI",
+        $"Tablet cadastrado via CLI: Host='{host}', NS='{ns}', Local='{local}', Responsavel='{resp}', IMEIs='{string.Join(";", imeis)}'");
+
     Console.WriteLine("Tablet cadastrado!");
     Pausar();
 }
@@ -197,6 +205,9 @@ static void CadastrarColetor(AccessInventoryStore store)
 
     store.AddColetor(coletor);
 
+    InventoryLogger.Info("CLI",
+        $"Coletor cadastrado via CLI: Host='{host}', NS='{ns}', MAC='{mac}', IP='{ip}', Local='{local}'");
+
     Console.WriteLine("Coletor cadastrado!");
     Pausar();
 }
@@ -229,6 +240,9 @@ static void CadastrarCelular(AccessInventoryStore store)
     };
 
     store.AddCelular(cel);
+
+    InventoryLogger.Info("CLI",
+        $"Celular cadastrado via CLI: Modelo='{modelo}', Numero='{numero}', Proprietario='{prop}', IMEIs='{string.Join(";", imeis)}'");
 
     Console.WriteLine("Celular cadastrado!");
     Pausar();
@@ -278,6 +292,7 @@ static void SelecionarBancoAccessCli()
     // Define o banco ativo
     AccessDatabaseManager.SetActiveDatabasePath(path);
     Console.WriteLine($"Banco definido: {path}");
+    InventoryLogger.Info("CLI", $"Banco definido via CLI: {path}");
     Console.WriteLine();
     Console.WriteLine("✔ Este banco agora está salvo nas configurações.");
     Console.WriteLine("✔ Ao abrir o app novamente, ele já iniciará conectado neste mesmo banco.");

@@ -8,6 +8,7 @@ using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.WinForms
 {
@@ -46,6 +47,9 @@ namespace InventarioSistem.WinForms
         private Label _lblDbPath = null!;
         private Button _btnSelecionarDb = null!;
         private Button _btnResumoDb = null!;
+
+        // Aba Log
+        private TextBox _txtLog = null!;
 
         public MainForm()
         {
@@ -90,6 +94,15 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+
+            // Assina logger para exibir em tempo real
+            InventoryLogger.MessageLogged += OnLogMessage;
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            InventoryLogger.MessageLogged -= OnLogMessage;
+            base.OnFormClosed(e);
         }
 
         private void InitializeLayout()
@@ -132,18 +145,21 @@ namespace InventarioSistem.WinForms
             var tabColetores = new TabPage("Coletores Android");
             var tabCelulares = new TabPage("Celulares");
             var tabAvancado = new TabPage("Avançado");
+            var tabLog = new TabPage("Log");
 
             InitializeComputadoresTab(tabComputadores);
             InitializeTabletsTab(tabTablets);
             InitializeColetoresTab(tabColetores);
             InitializeCelularesTab(tabCelulares);
             InitializeAvancadoTab(tabAvancado);
+            InitializeLogTab(tabLog);
 
             _tabs.TabPages.Add(tabComputadores);
             _tabs.TabPages.Add(tabTablets);
             _tabs.TabPages.Add(tabColetores);
             _tabs.TabPages.Add(tabCelulares);
             _tabs.TabPages.Add(tabAvancado);
+            _tabs.TabPages.Add(tabLog);
 
             Controls.Add(_tabs);
             Controls.Add(_headerPanel);
@@ -417,6 +433,22 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(lblHint);
         }
 
+        private void InitializeLogTab(TabPage page)
+        {
+            _txtLog = new TextBox
+            {
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical,
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black,
+                ForeColor = Color.LightGreen,
+                Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point)
+            };
+
+            page.Controls.Add(_txtLog);
+        }
+
         private void EnableDataTabs(bool enabled)
         {
             _btnAtualizarComputadores.Enabled = enabled;
@@ -436,6 +468,30 @@ namespace InventarioSistem.WinForms
             _gridTablets.Enabled = enabled;
             _gridColetores.Enabled = enabled;
             _gridCelulares.Enabled = enabled;
+        }
+
+        private void OnLogMessage(string line)
+        {
+            if (IsDisposed) return;
+
+            if (InvokeRequired)
+            {
+                try
+                {
+                    BeginInvoke(new Action<string>(OnLogMessage), line);
+                }
+                catch
+                {
+                    // Ignorar se a janela já estiver fechando
+                }
+                return;
+            }
+
+            if (_txtLog == null) return;
+
+            _txtLog.AppendText(line + Environment.NewLine);
+            _txtLog.SelectionStart = _txtLog.TextLength;
+            _txtLog.ScrollToCaret();
         }
 
         private void LoadAllGrids()
@@ -536,6 +592,7 @@ namespace InventarioSistem.WinForms
             {
                 _store.AddComputer(form.Result);
                 LoadComputadores();
+                InventoryLogger.Info("WinForms", $"Computador cadastrado via UI: Host='{form.Result.Host}', NS='{form.Result.SerialNumber}'");
             }
         }
 
@@ -556,6 +613,7 @@ namespace InventarioSistem.WinForms
                 updated.Id = selected.Id;
                 _store.UpdateComputer(updated);
                 LoadComputadores();
+                InventoryLogger.Info("WinForms", $"Computador editado via UI (Id={updated.Id}): Host='{updated.Host}', NS='{updated.SerialNumber}'");
             }
         }
 
@@ -573,6 +631,7 @@ namespace InventarioSistem.WinForms
             {
                 _store.AddTablet(form.Result);
                 LoadTablets();
+                InventoryLogger.Info("WinForms", $"Tablet cadastrado via UI: Host='{form.Result.Host}', NS='{form.Result.SerialNumber}'");
             }
         }
 
@@ -593,6 +652,7 @@ namespace InventarioSistem.WinForms
                 updated.Id = selected.Id;
                 _store.UpdateTablet(updated);
                 LoadTablets();
+                InventoryLogger.Info("WinForms", $"Tablet editado via UI (Id={updated.Id}): Host='{updated.Host}', NS='{updated.SerialNumber}'");
             }
         }
 
@@ -610,6 +670,7 @@ namespace InventarioSistem.WinForms
             {
                 _store.AddColetor(form.Result);
                 LoadColetores();
+                InventoryLogger.Info("WinForms", $"Coletor cadastrado via UI: Host='{form.Result.Host}', NS='{form.Result.SerialNumber}'");
             }
         }
 
@@ -630,6 +691,7 @@ namespace InventarioSistem.WinForms
                 updated.Id = selected.Id;
                 _store.UpdateColetor(updated);
                 LoadColetores();
+                InventoryLogger.Info("WinForms", $"Coletor editado via UI (Id={updated.Id}): Host='{updated.Host}', NS='{updated.SerialNumber}'");
             }
         }
 
@@ -647,6 +709,7 @@ namespace InventarioSistem.WinForms
             {
                 _store.AddCelular(form.Result);
                 LoadCelulares();
+                InventoryLogger.Info("WinForms", $"Celular cadastrado via UI: Modelo='{form.Result.Modelo}', Numero='{form.Result.Numero}'");
             }
         }
 
@@ -667,6 +730,7 @@ namespace InventarioSistem.WinForms
                 updated.Id = selected.Id;
                 _store.UpdateCelular(updated);
                 LoadCelulares();
+                InventoryLogger.Info("WinForms", $"Celular editado via UI (Id={updated.Id}): Modelo='{updated.Modelo}', Numero='{updated.Numero}'");
             }
         }
 
@@ -692,6 +756,7 @@ namespace InventarioSistem.WinForms
             {
                 AccessDatabaseManager.SetActiveDatabasePath(path);
                 _lblDbPath.Text = $"Banco atual: {path}";
+                InventoryLogger.Info("WinForms", $"Banco definido: {path}");
 
                 // Garante estrutura mínima
                 bool hasAllTables;
@@ -724,6 +789,7 @@ namespace InventarioSistem.WinForms
                         try
                         {
                             AccessSchemaManager.EnsureRequiredTables();
+                            InventoryLogger.Info("WinForms", "Tabelas padrão criadas/ajustadas no banco selecionado.");
                             MessageBox.Show(this,
                                 "Tabelas criadas/ajustadas com sucesso.",
                                 "Banco Access",
@@ -752,6 +818,8 @@ namespace InventarioSistem.WinForms
                     "Banco Access",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+
+                InventoryLogger.Info("WinForms", "Banco configurado com sucesso e grids recarregadas.");
             }
             catch (Exception ex)
             {
