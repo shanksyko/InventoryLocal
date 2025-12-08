@@ -97,7 +97,7 @@ public class MainForm : Form
         {
             try
             {
-                var createdPath = AccessDatabaseManager.CreateNewDatabaseFromTemplate(dialog.FileName);
+                var createdPath = AccessDatabaseManager.CreateNewDatabase(dialog.FileName);
                 RefreshStore(createdPath);
 
                 var result = MessageBox.Show(

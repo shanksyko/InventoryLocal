@@ -237,7 +237,7 @@ static void GerenciarBancoAccessCli()
     Console.Clear();
     Console.WriteLine("=== Gerenciar banco Access ===");
     Console.WriteLine("1 - Selecionar banco existente");
-    Console.WriteLine("2 - Criar novo banco a partir do template");
+    Console.WriteLine("2 - Criar novo banco a partir do zero");
     Console.WriteLine("0 - Voltar");
     Console.Write("Opção: ");
 
@@ -333,7 +333,6 @@ static void CriarNovoBancoAccessCli()
 {
     Console.Clear();
     Console.WriteLine("=== Criar novo banco Access ===");
-    Console.WriteLine("Um template vazio 'InventarioTemplate.accdb' deve existir na pasta do executável.");
     Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
     var path = Console.ReadLine()?.Trim();
 
@@ -346,7 +345,7 @@ static void CriarNovoBancoAccessCli()
 
     try
     {
-        var createdPath = AccessDatabaseManager.CreateNewDatabaseFromTemplate(path);
+        var createdPath = AccessDatabaseManager.CreateNewDatabase(path);
         Console.WriteLine($"Novo banco criado e definido como ativo: {createdPath}");
 
         Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
