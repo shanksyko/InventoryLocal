@@ -15,6 +15,11 @@ namespace InventarioSistem.WinForms
     {
         private readonly AccessInventoryStore? _store;
 
+        // Cabeçalho visual
+        private Panel _headerPanel = null!;
+        private Label _lblTitle = null!;
+        private Label _lblSubtitle = null!;
+
         private TabControl _tabs = null!;
 
         private DataGridView _gridComputadores = null!;
@@ -46,8 +51,12 @@ namespace InventarioSistem.WinForms
         {
             Text = "InventarioSistem";
             StartPosition = FormStartPosition.CenterScreen;
-            Size = new Size(1000, 600);
-            MinimumSize = new Size(800, 500);
+            Size = new Size(1100, 650);
+            MinimumSize = new Size(900, 550);
+
+            // Deixar o app com uma cara um pouco mais moderna
+            Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            BackColor = Color.FromArgb(245, 247, 250);
 
             InitializeLayout();
 
@@ -85,6 +94,34 @@ namespace InventarioSistem.WinForms
 
         private void InitializeLayout()
         {
+            // Cabeçalho superior
+            _headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 70,
+                BackColor = Color.FromArgb(230, 236, 245),
+                Padding = new Padding(10, 10, 10, 10)
+            };
+
+            _lblTitle = new Label
+            {
+                AutoSize = true,
+                Text = "InventarioSistem",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold, GraphicsUnit.Point),
+                Location = new Point(10, 10)
+            };
+
+            _lblSubtitle = new Label
+            {
+                AutoSize = true,
+                Text = "Controle unificado de Computadores, Tablets, Coletores e Celulares",
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
+                Location = new Point(12, 40)
+            };
+
+            _headerPanel.Controls.Add(_lblTitle);
+            _headerPanel.Controls.Add(_lblSubtitle);
+
             _tabs = new TabControl
             {
                 Dock = DockStyle.Fill
@@ -109,6 +146,7 @@ namespace InventarioSistem.WinForms
             _tabs.TabPages.Add(tabAvancado);
 
             Controls.Add(_tabs);
+            Controls.Add(_headerPanel);
         }
 
         private void InitializeComputadoresTab(TabPage page)
@@ -146,8 +184,15 @@ namespace InventarioSistem.WinForms
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                BorderStyle = BorderStyle.FixedSingle
             };
+            _gridComputadores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            _gridComputadores.CellDoubleClick += (_, _) => EditarComputador();
             _gridComputadores.Resize += (_, _) =>
             {
                 _gridComputadores.Size = new Size(
@@ -196,8 +241,15 @@ namespace InventarioSistem.WinForms
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                BorderStyle = BorderStyle.FixedSingle
             };
+            _gridTablets.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            _gridTablets.CellDoubleClick += (_, _) => EditarTablet();
             _gridTablets.Resize += (_, _) =>
             {
                 _gridTablets.Size = new Size(
@@ -246,8 +298,15 @@ namespace InventarioSistem.WinForms
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                BorderStyle = BorderStyle.FixedSingle
             };
+            _gridColetores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            _gridColetores.CellDoubleClick += (_, _) => EditarColetor();
             _gridColetores.Resize += (_, _) =>
             {
                 _gridColetores.Size = new Size(
@@ -296,8 +355,15 @@ namespace InventarioSistem.WinForms
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                BorderStyle = BorderStyle.FixedSingle
             };
+            _gridCelulares.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            _gridCelulares.CellDoubleClick += (_, _) => EditarCelular();
             _gridCelulares.Resize += (_, _) =>
             {
                 _gridCelulares.Size = new Size(
