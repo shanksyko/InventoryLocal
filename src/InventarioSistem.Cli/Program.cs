@@ -7,7 +7,9 @@ using InventarioSistem.Core.Devices;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-var store = new AccessInventoryStore();
+// Inicializa a factory de conexão e o repositório de inventário
+var factory = new AccessConnectionFactory();
+var store = new AccessInventoryStore(factory);
 
 while (true)
 {
