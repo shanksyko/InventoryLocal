@@ -1,0 +1,131 @@
+using System.Data;
+using System.Data.Odbc;
+using System.Linq;
+
+namespace InventarioSistem.Access.Schema;
+
+/// <summary>
+/// Responsável por garantir que o banco Access selecionado
+/// contenha as tabelas padrão do InventarioSistem.
+/// </summary>
+public static class AccessSchemaManager
+{
+    private static readonly string[] RequiredTables =
+    {
+        "Computadores",
+        "Tablets",
+        "ColetoresAndroid",
+        "Celulares"
+    };
+
+    /// <summary>
+    /// Verifica se todas as tabelas obrigatórias existem no banco atual.
+    /// Usa AccessConnectionFactory.CreateConnection() para conectar ao banco ativo.
+    /// </summary>
+    public static bool HasAllRequiredTables()
+    {
+        var factory = new AccessConnectionFactory();
+        using var conn = factory.CreateConnection();
+        conn.Open();
+        var schema = conn.GetSchema("Tables");
+
+        bool HasTable(string name)
+        {
+            // Filtra apenas tabelas de usuário (TABLE) e compara por nome.
+            var rows = schema.Rows.Cast<DataRow>()
+                .Where(r =>
+                    string.Equals(r["TABLE_TYPE"]?.ToString(), "TABLE", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(r["TABLE_NAME"]?.ToString(), name, StringComparison.OrdinalIgnoreCase));
+
+            return rows.Any();
+        }
+
+        foreach (var table in RequiredTables)
+        {
+            if (!HasTable(table))
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Cria as tabelas obrigatórias que ainda não existirem.
+    /// Não apaga nem altera tabelas já existentes.
+    /// </summary>
+    public static void EnsureRequiredTables()
+    {
+        var factory = new AccessConnectionFactory();
+        using var conn = factory.CreateConnection();
+        conn.Open();
+
+        var schema = conn.GetSchema("Tables");
+
+        bool HasTable(string name)
+        {
+            var rows = schema.Rows.Cast<DataRow>()
+                .Where(r =>
+                    string.Equals(r["TABLE_TYPE"]?.ToString(), "TABLE", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(r["TABLE_NAME"]?.ToString(), name, StringComparison.OrdinalIgnoreCase));
+
+            return rows.Any();
+        }
+
+        void CreateTable(string name, string createSql)
+        {
+            if (HasTable(name))
+                return;
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = createSql;
+            cmd.ExecuteNonQuery();
+        }
+
+        // Computadores
+        CreateTable("Computadores", @"
+            CREATE TABLE Computadores (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Host TEXT(100),
+                SerialNumber TEXT(100),
+                Proprietario TEXT(100),
+                Departamento TEXT(100),
+                Matricula TEXT(50)
+            )
+        ");
+
+        // Tablets
+        CreateTable("Tablets", @"
+            CREATE TABLE Tablets (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Host TEXT(100),
+                SerialNumber TEXT(100),
+                Local TEXT(100),
+                Responsavel TEXT(100),
+                Imeis TEXT(255)
+            )
+        ");
+
+        // ColetoresAndroid
+        CreateTable("ColetoresAndroid", @"
+            CREATE TABLE ColetoresAndroid (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Host TEXT(100),
+                SerialNumber TEXT(100),
+                MacAddress TEXT(50),
+                IpAddress TEXT(50),
+                Local TEXT(100)
+            )
+        ");
+
+        // Celulares
+        CreateTable("Celulares", @"
+            CREATE TABLE Celulares (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Modelo TEXT(100),
+                Numero TEXT(50),
+                Proprietario TEXT(100),
+                Imeis TEXT(255)
+            )
+        ");
+    }
+}
