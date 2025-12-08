@@ -21,7 +21,7 @@ while (true)
     Console.WriteLine("3 - Cadastrar Coletor Android");
     Console.WriteLine("4 - Cadastrar Celular");
     Console.WriteLine("5 - Listar tudo");
-    Console.WriteLine("9 - Selecionar banco Access (criar tabelas se necessário)");
+    Console.WriteLine("9 - Gerenciar banco Access (selecionar/criar)");
     Console.WriteLine("0 - Sair");
     Console.Write("Opção: ");
 
@@ -47,7 +47,7 @@ while (true)
                 ListarTudo(store);
                 break;
             case "9":
-                SelecionarBancoAccessCli();
+                GerenciarBancoAccessCli();
                 break;
             case "0":
                 return;
@@ -232,27 +232,47 @@ static void ListarTudo(AccessInventoryStore store)
     Pausar();
 }
 
+static void GerenciarBancoAccessCli()
+{
+    Console.Clear();
+    Console.WriteLine("=== Gerenciar banco Access ===");
+    Console.WriteLine("1 - Selecionar banco existente");
+    Console.WriteLine("2 - Criar novo banco a partir do template");
+    Console.WriteLine("0 - Voltar");
+    Console.Write("Opção: ");
+
+    var opc = Console.ReadLine();
+
+    switch (opc)
+    {
+        case "1":
+            SelecionarBancoAccessCli();
+            break;
+        case "2":
+            CriarNovoBancoAccessCli();
+            break;
+        default:
+            return;
+    }
+}
+
 static void SelecionarBancoAccessCli()
 {
     Console.Clear();
-    Console.WriteLine("=== Selecionar / preparar banco Access ===");
+    Console.WriteLine("=== Selecionar banco Access existente ===");
     Console.Write("Informe o caminho completo do arquivo .accdb: ");
     var path = Console.ReadLine()?.Trim();
 
     if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
     {
         Console.WriteLine("Caminho inválido ou arquivo inexistente.");
-        Console.WriteLine("Crie um arquivo .accdb vazio no Access e use esta opção novamente,");
-        Console.WriteLine("ou aponte para um banco já existente.");
         Pausar();
         return;
     }
 
-    // Salva o caminho como banco ativo
     AccessDatabaseManager.SetActiveDatabasePath(path);
     Console.WriteLine($"Banco definido: {path}");
 
-    // Verifica se as tabelas padrão existem
     bool hasAllTables;
     try
     {
@@ -304,6 +324,44 @@ static void SelecionarBancoAccessCli()
         {
             Console.WriteLine("Erro ao obter resumo do banco: " + ex.Message);
         }
+    }
+
+    Pausar();
+}
+
+static void CriarNovoBancoAccessCli()
+{
+    Console.Clear();
+    Console.WriteLine("=== Criar novo banco Access ===");
+    Console.WriteLine("Um template vazio 'InventarioTemplate.accdb' deve existir na pasta do executável.");
+    Console.Write("Informe o caminho completo para o novo arquivo .accdb: ");
+    var path = Console.ReadLine()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(path))
+    {
+        Console.WriteLine("Caminho inválido.");
+        Pausar();
+        return;
+    }
+
+    try
+    {
+        var createdPath = AccessDatabaseManager.CreateNewDatabaseFromTemplate(path);
+        Console.WriteLine($"Novo banco criado e definido como ativo: {createdPath}");
+
+        Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
+        var resp = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
+
+        if (resp == "S")
+        {
+            var summary = AccessDatabaseManager.GetDatabaseSummary(createdPath);
+            Console.WriteLine();
+            Console.WriteLine(summary);
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro ao criar banco: " + ex.Message);
     }
 
     Pausar();

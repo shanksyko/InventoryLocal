@@ -3,12 +3,14 @@ using System.Data.Odbc;
 using System.IO;
 using System.Text;
 using InventarioSistem.Access.Config;
+using InventarioSistem.Access.Schema;
 
 namespace InventarioSistem.Access.Db;
 
 public static class AccessDatabaseManager
 {
     private const string DefaultFileName = "InventarioSistem.accdb";
+    private const string TemplateFileName = "InventarioTemplate.accdb";
 
     /// <summary>
     /// Resolve o caminho do banco ativo:
@@ -50,29 +52,52 @@ public static class AccessDatabaseManager
     }
 
     /// <summary>
-    /// Cria um novo banco copiando o modelo InventarioSistem.accdb
-    /// para o caminho informado. Se o arquivo de modelo não existir, lança erro.
-    /// Retorna o caminho final criado.
+    /// Cria um novo banco Access a partir de um arquivo template vazio
+    /// (InventarioTemplate.accdb) localizado na pasta do executável.
+    /// Em seguida, define este novo banco como ativo.
+    /// Não sobrescreve arquivos existentes.
     /// </summary>
+    /// <param name="targetPath">Caminho completo do novo arquivo .accdb.</param>
+    /// <returns>Caminho final do arquivo criado.</returns>
+    /// <exception cref="FileNotFoundException">
+    /// Se o template InventarioTemplate.accdb não for encontrado.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Se já existir um arquivo no targetPath.
+    /// </exception>
     public static string CreateNewDatabaseFromTemplate(string targetPath)
     {
+        if (string.IsNullOrWhiteSpace(targetPath))
+            throw new ArgumentException("Caminho do banco não pode ser vazio.", nameof(targetPath));
+
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var templatePath = Path.Combine(baseDir, DefaultFileName);
+        var templatePath = Path.Combine(baseDir, TemplateFileName);
 
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException(
-                $"Arquivo de modelo de banco Access não encontrado: '{templatePath}'. " +
-                "Certifique-se de que InventarioSistem.accdb (modelo) foi copiado para a pasta de saída.");
+                $"Arquivo de template de banco Access não encontrado: '{templatePath}'. " +
+                "Crie um arquivo .accdb vazio e salve como 'InventarioTemplate.accdb' na pasta do executável.");
         }
 
-        var targetDir = Path.GetDirectoryName(targetPath);
-        if (!string.IsNullOrWhiteSpace(targetDir) && !Directory.Exists(targetDir))
+        var dir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
         {
-            Directory.CreateDirectory(targetDir);
+            Directory.CreateDirectory(dir);
+        }
+
+        if (File.Exists(targetPath))
+        {
+            throw new IOException($"Já existe um arquivo no caminho especificado: '{targetPath}'.");
         }
 
         File.Copy(templatePath, targetPath, overwrite: false);
+
+        // Define como banco ativo
+        SetActiveDatabasePath(targetPath);
+
+        // Garante criação das tabelas padrão
+        AccessSchemaManager.EnsureRequiredTables();
 
         return targetPath;
     }
