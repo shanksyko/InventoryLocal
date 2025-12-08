@@ -3,78 +3,81 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace InventarioSistem.Access.Db;
-
-/// <summary>
-/// Responsável por criar um novo arquivo .accdb vazio usando PowerShell + ADOX.
-/// Não exige COMReference no projeto .NET; apenas depende do provider ACE/Access Engine instalado no Windows.
-/// </summary>
-public static class AccessDatabaseCreator
+namespace InventarioSistem.Access.Db
 {
     /// <summary>
-    /// Cria um novo banco Access (.accdb) vazio no caminho especificado.
-    /// Não sobrescreve arquivos existentes.
+    /// Responsável por criar um novo arquivo .accdb vazio usando PowerShell + ADOX.
+    /// Não exige COMReference no projeto .NET; apenas depende do provider ACE/Access Engine instalado no Windows.
     /// </summary>
-    public static void CreateEmptyDatabase(string path)
+    public static class AccessDatabaseCreator
     {
-        if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("Caminho do banco não pode ser vazio.", nameof(path));
-
-        var dir = Path.GetDirectoryName(path);
-        if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+        /// <summary>
+        /// Cria um novo banco Access (.accdb) vazio no caminho especificado.
+        /// Não sobrescreve arquivos existentes.
+        /// </summary>
+        public static void CreateEmptyDatabase(string path)
         {
-            Directory.CreateDirectory(dir);
-        }
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Caminho do banco não pode ser vazio.", nameof(path));
 
-        if (File.Exists(path))
-            throw new IOException($"Já existe um arquivo no caminho especificado: '{path}'.");
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
 
-        // Escapa aspas simples para o PowerShell
-        var escapedPath = path.Replace("'", "''");
+            if (File.Exists(path))
+                throw new IOException($"Já existe um arquivo no caminho especificado: '{path}'.");
 
-        // Script PowerShell simples, montado via string.Format para evitar problemas de sintaxe em C#
-        var scriptTemplate = @"
-        $path = '{0}'
-        $conn = \"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=$path;Jet OLEDB:Engine Type=5;\"
-        $cat  = New-Object -ComObject ADOX.Catalog
-        $cat.Create($conn)
-        [System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($cat) | Out-Null
-        ";
-        var psScript = string.Format(scriptTemplate, escapedPath);
+            // Escapa aspas simples para uso no PowerShell
+            var escapedPath = path.Replace("'", "''");
 
-        var psi = new ProcessStartInfo
-        {
-            FileName = "powershell.exe",
-            Arguments = "-NoProfile -NonInteractive -Command -",
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8
-        };
+            // Script PowerShell montado por concatenação simples
+            var sb = new StringBuilder();
+            sb.AppendLine("$path = '" + escapedPath + "'");
+            sb.AppendLine("$conn = \"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=$path;Jet OLEDB:Engine Type=5;\"");
+            sb.AppendLine("$cat  = New-Object -ComObject ADOX.Catalog");
+            sb.AppendLine("$cat.Create($conn)");
+            sb.AppendLine("[System.Runtime.Interopservices.Marshal]::FinalReleaseComObject($cat) | Out-Null");
 
-        using var proc = new Process { StartInfo = psi };
-        proc.Start();
-        proc.StandardInput.Write(psScript);
-        proc.StandardInput.Close();
+            var psScript = sb.ToString();
 
-        var stdout = proc.StandardOutput.ReadToEnd();
-        var stderr = proc.StandardError.ReadToEnd();
+            var psi = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = "-NoProfile -NonInteractive -Command -",
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
 
-        proc.WaitForExit();
+            using (var proc = new Process { StartInfo = psi })
+            {
+                proc.Start();
+                proc.StandardInput.Write(psScript);
+                proc.StandardInput.Close();
 
-        if (proc.ExitCode != 0)
-        {
-            throw new InvalidOperationException(
-                $"Falha ao criar banco Access via PowerShell. Código={proc.ExitCode}. Erro: {stderr}");
-        }
+                var stdout = proc.StandardOutput.ReadToEnd();
+                var stderr = proc.StandardError.ReadToEnd();
 
-        if (!File.Exists(path))
-        {
-            throw new InvalidOperationException(
-                $"PowerShell executou sem erro, mas o arquivo não foi encontrado em '{path}'. Saída: {stdout} Erro: {stderr}");
+                proc.WaitForExit();
+
+                if (proc.ExitCode != 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Falha ao criar banco Access via PowerShell. Código={proc.ExitCode}. Erro: {stderr}");
+                }
+
+                if (!File.Exists(path))
+                {
+                    throw new InvalidOperationException(
+                        $"PowerShell executou sem erro, mas o arquivo não foi encontrado em '{path}'. Saída: {stdout} Erro: {stderr}");
+                }
+            }
         }
     }
 }
