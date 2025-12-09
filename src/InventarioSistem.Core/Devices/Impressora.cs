@@ -15,6 +15,31 @@ public class Impressora
     public string LocalizacaoAnterior { get; set; } = string.Empty;
     public string FormatoPapel { get; set; } = string.Empty;
 
+    // ==== ALIAS LEGADOS – usados por AccessInventoryStore.Devices.cs ====
+    // Hostname -> NomeImpressora
+    public string Hostname
+    {
+        get => NomeImpressora;
+        set => NomeImpressora = value;
+    }
+
+    // Modelo -> TipoModelo
+    public string Modelo
+    {
+        get => TipoModelo;
+        set => TipoModelo = value;
+    }
+
+    // Local -> LocalizacaoAtual
+    public string Local
+    {
+        get => LocalizacaoAtual;
+        set => LocalizacaoAtual = value;
+    }
+
+    // Não existia de fato no schema de Impressora, usamos como campo solto
+    public string Responsavel { get; set; } = string.Empty;
+
     public override string ToString()
         => $"[Impressora] Id={Id}, Servidor={ServidorImpressao}, Nome={NomeImpressora}, Identificador={IdentificadorFisico}, Switch={LocalizacaoSwitch}, Modelo={TipoModelo}, NS={NumeroSerie}, Tipo={TipoDispositivo}, LocalAtual={LocalizacaoAtual}, LocalAnterior={LocalizacaoAnterior}, FormatoPapel={FormatoPapel}";
 }
