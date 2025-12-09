@@ -6,6 +6,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>InventorySystem</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\InventarioSistem.Core\InventarioSistem.Core.csproj" />
