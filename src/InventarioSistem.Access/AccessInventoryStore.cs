@@ -17,6 +17,9 @@ public partial class AccessInventoryStore
 
     public async Task EnsureSchemaAsync(CancellationToken cancellationToken = default)
     {
+        // Garante que a tabela Devices exista no banco atualmente configurado.
+        // Essa tabela é usada para os tipos mais novos (Impressora, Dect, Telefone Cisco, Televisor etc).
+
         await using var connection = _factory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
@@ -52,7 +55,7 @@ public partial class AccessInventoryStore
         }
         catch (OdbcException)
         {
-            // Table already exists, ignore
+            // Se a tabela já existir, ignoramos o erro.
         }
     }
 
