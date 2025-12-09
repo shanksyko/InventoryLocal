@@ -32,6 +32,64 @@ public static class AccessSchemaManager
         "Nobreaks"
     };
 
+    // Lista completa de colunas suportadas no Devices
+    private static readonly Dictionary<string, string> DeviceColumns = new()
+    {
+        { "Id", "COUNTER PRIMARY KEY" },
+        { "Tipo", "TEXT(50)" },
+        { "Patrimonio", "TEXT(100)" },
+        { "Marca", "TEXT(100)" },
+        { "Hostname", "TEXT(255)" },
+        { "Modelo", "TEXT(255)" },
+        { "NumeroSerie", "TEXT(100)" },
+        { "Imei", "TEXT(30)" },
+        { "SerialNumber", "TEXT(255)" },
+        { "Local", "TEXT(255)" },
+        { "Localizacao", "TEXT(255)" },
+        { "Responsavel", "TEXT(255)" },
+
+        { "SistemaOperacional", "TEXT(100)" },
+        { "Processador", "TEXT(100)" },
+        { "MemoriaRamGb", "INTEGER" },
+        { "ArmazenamentoGb", "INTEGER" },
+        { "VersaoAndroid", "TEXT(50)" },
+        { "LinhaTelefonica", "TEXT(50)" },
+
+        { "Observacoes", "MEMO" },
+        { "AtualizadoEm", "DATETIME" },
+
+        { "TipoModelo", "TEXT(255)" },
+        { "LocalizacaoAtual", "TEXT(255)" },
+        { "LocalizacaoAnterior", "TEXT(255)" },
+
+        { "Numero", "TEXT(255)" },
+        { "IPEI", "TEXT(255)" },
+        { "MacAddress", "TEXT(255)" },
+        { "IP", "TEXT(255)" },
+
+        { "IMEI1", "TEXT(255)" },
+        { "IMEI2", "TEXT(255)" },
+        { "Roaming", "YESNO" },
+        { "Usuario", "TEXT(255)" },
+        { "Matricula", "TEXT(255)" },
+        { "Cargo", "TEXT(255)" },
+        { "Setor", "TEXT(255)" },
+        { "Email", "TEXT(255)" },
+        { "Senha", "TEXT(255)" },
+
+        { "ComputadorVinculado", "TEXT(255)" },
+        { "Status", "TEXT(255)" },
+
+        { "FabricanteScanner", "TEXT(100)" },
+        { "PossuiCarregadorBase", "YESNO" },
+        { "PossuiTeclado", "YESNO" },
+        { "Corporativo", "YESNO" },
+
+        { "DataBateria", "DATETIME" },
+        { "DataNobreak", "DATETIME" },
+        { "ProximaVerificacao", "DATETIME" }
+    };
+
     /// <summary>
     /// Verifica se todas as tabelas obrigatórias existem no banco atual.
     /// Usa AccessConnectionFactory.CreateConnection() para conectar ao banco ativo.
@@ -140,55 +198,47 @@ public static class AccessSchemaManager
 
         void EnsureDevicesTable()
         {
-            CreateTable("Devices", @"
-                CREATE TABLE Devices (
-                    Id AUTOINCREMENT PRIMARY KEY,
-                    Tipo TEXT(50),
-                    Patrimonio TEXT(100),
-                    Marca TEXT(100),
-                    Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
-                    Imei TEXT(30),
-                    SistemaOperacional TEXT(100),
-                    Processador TEXT(100),
-                    MemoriaRamGb INTEGER,
-                    ArmazenamentoGb INTEGER,
-                    VersaoAndroid TEXT(50),
-                    LinhaTelefonica TEXT(50),
-                    Responsavel TEXT(100),
-                    Localizacao TEXT(100),
-                    Observacoes MEMO,
-                    AtualizadoEm DATETIME,
-                    FabricanteScanner TEXT(100),
-                    PossuiCarregadorBase YESNO,
-                    PossuiTeclado YESNO,
-                    Corporativo YESNO
-                )
-            ");
-
-            EnsureColumns("Devices", new (string, string)[]
+            // 1 – Criar tabela Devices se não existir
+            using (var cmd = conn.CreateCommand())
             {
-                ("Tipo", "Tipo TEXT(50)"),
-                ("Patrimonio", "Patrimonio TEXT(100)"),
-                ("Marca", "Marca TEXT(100)"),
-                ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Imei", "Imei TEXT(30)"),
-                ("SistemaOperacional", "SistemaOperacional TEXT(100)"),
-                ("Processador", "Processador TEXT(100)"),
-                ("MemoriaRamGb", "MemoriaRamGb INTEGER"),
-                ("ArmazenamentoGb", "ArmazenamentoGb INTEGER"),
-                ("VersaoAndroid", "VersaoAndroid TEXT(50)"),
-                ("LinhaTelefonica", "LinhaTelefonica TEXT(50)"),
-                ("Responsavel", "Responsavel TEXT(100)"),
-                ("Localizacao", "Localizacao TEXT(100)"),
-                ("Observacoes", "Observacoes MEMO"),
-                ("AtualizadoEm", "AtualizadoEm DATETIME"),
-                ("FabricanteScanner", "FabricanteScanner TEXT(100)"),
-                ("PossuiCarregadorBase", "PossuiCarregadorBase YESNO"),
-                ("PossuiTeclado", "PossuiTeclado YESNO"),
-                ("Corporativo", "Corporativo YESNO")
-            });
+                cmd.CommandText = "SELECT * FROM Devices WHERE 1=0";
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch
+                {
+                    using var create = conn.CreateCommand();
+                    create.CommandText = "CREATE TABLE Devices (Id COUNTER PRIMARY KEY, Tipo TEXT(50))";
+                    create.ExecuteNonQuery();
+                }
+            }
+
+            // 2 – Adicionar colunas faltantes automaticamente
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            using (var schemaCmd = conn.CreateCommand())
+            {
+                schemaCmd.CommandText = "SELECT * FROM Devices";
+                using var reader = schemaCmd.ExecuteReader(CommandBehavior.SchemaOnly);
+                var table = reader.GetSchemaTable();
+                foreach (DataRow row in table.Rows)
+                {
+                    existing.Add(row["ColumnName"].ToString()!);
+                }
+            }
+
+            foreach (var col in DeviceColumns)
+            {
+                if (existing.Contains(col.Key))
+                {
+                    continue;
+                }
+
+                using var alter = conn.CreateCommand();
+                alter.CommandText = $"ALTER TABLE Devices ADD COLUMN {col.Key} {col.Value}";
+                alter.ExecuteNonQuery();
+            }
         }
 
         void EnsureRelogiosPontoTable()
