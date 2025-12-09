@@ -23,8 +23,9 @@ namespace InventarioSistem.Core.Logging
         {
             get
             {
-                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                var dir = Path.Combine(appData, "InventarioSistem", "logs");
+                var appData = Environment.GetEnvironmentVariable("APPDATA")
+                    ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var dir = Path.Combine(appData, "InventorySystem", "logs");
                 return dir;
             }
         }
