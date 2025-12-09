@@ -217,7 +217,7 @@ static void CadastrarCelular(AccessInventoryStore store)
     Console.Clear();
     Console.WriteLine("=== Novo Celular ===");
     Console.Write("Hostname: ");
-    var hostname = Console.ReadLine() ?? string.Empty;
+    var host = Console.ReadLine() ?? string.Empty;
 
     Console.Write("Modelo: ");
     var modelo = Console.ReadLine() ?? string.Empty;
@@ -228,15 +228,15 @@ static void CadastrarCelular(AccessInventoryStore store)
     Console.Write("Proprietário: ");
     var prop = Console.ReadLine() ?? string.Empty;
 
-    Console.Write("IMEI 1: ");
+    Console.Write("IMEI1: ");
     var imei1 = Console.ReadLine() ?? string.Empty;
 
-    Console.Write("IMEI 2: ");
+    Console.Write("IMEI2: ");
     var imei2 = Console.ReadLine() ?? string.Empty;
 
     var cel = new Celular
     {
-        Hostname = hostname,
+        Hostname = host,
         Modelo = modelo,
         Numero = numero,
         Proprietario = prop,
@@ -247,7 +247,7 @@ static void CadastrarCelular(AccessInventoryStore store)
     store.AddCelular(cel);
 
     InventoryLogger.Info("CLI",
-        $"Celular cadastrado via CLI: Hostname='{hostname}', Modelo='{modelo}', Numero='{numero}', Proprietario='{prop}', IMEIs='{imei1};{imei2}'");
+        $"Celular cadastrado via CLI: Host='{host}', Modelo='{modelo}', Numero='{numero}', Proprietario='{prop}', IMEI1='{imei1}', IMEI2='{imei2}'");
 
     Console.WriteLine("Celular cadastrado!");
     Pausar();

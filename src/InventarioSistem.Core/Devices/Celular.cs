@@ -9,10 +9,8 @@ public class Celular
     public string Numero { get; set; } = string.Empty;
     public string Proprietario { get; set; } = string.Empty;
 
-    public string? Imei1 { get; set; }
-    public string? Imei2 { get; set; }
-
-    public List<string> Imeis { get; set; } = new();
+    public string Imei1 { get; set; } = string.Empty;
+    public string Imei2 { get; set; } = string.Empty;
 
     public override string ToString()
         => $"[Celular] Id={Id}, Host={Hostname}, Modelo={Modelo}, Numero={Numero}, Prop={Proprietario}, IMEI1={Imei1}, IMEI2={Imei2}";

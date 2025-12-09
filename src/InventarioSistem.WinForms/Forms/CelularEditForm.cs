@@ -22,7 +22,7 @@ namespace InventarioSistem.WinForms
         {
             Text = existing == null ? "Novo Celular" : "Editar Celular";
             StartPosition = FormStartPosition.CenterParent;
-            Size = new Size(420, 260);
+            Size = new Size(430, 300);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -66,25 +66,25 @@ namespace InventarioSistem.WinForms
         private void InitializeLayout()
         {
             var lblHostname = new Label { Text = "Hostname:", AutoSize = true, Location = new Point(10, 15) };
-            _txtHostname = new TextBox { Location = new Point(130, 12), Width = 250 };
+            _txtHostname = new TextBox { Location = new Point(130, 12), Width = 260 };
 
             var lblModelo = new Label { Text = "Modelo:", AutoSize = true, Location = new Point(10, 45) };
-            _txtModelo = new TextBox { Location = new Point(130, 42), Width = 250 };
+            _txtModelo = new TextBox { Location = new Point(130, 42), Width = 260 };
 
             var lblNumero = new Label { Text = "Número:", AutoSize = true, Location = new Point(10, 75) };
-            _txtNumero = new TextBox { Location = new Point(130, 72), Width = 250 };
+            _txtNumero = new TextBox { Location = new Point(130, 72), Width = 260 };
 
             var lblProprietario = new Label { Text = "Proprietário:", AutoSize = true, Location = new Point(10, 105) };
-            _txtProprietario = new TextBox { Location = new Point(130, 102), Width = 250 };
+            _txtProprietario = new TextBox { Location = new Point(130, 102), Width = 260 };
 
             var lblImei1 = new Label { Text = "IMEI 1:", AutoSize = true, Location = new Point(10, 135) };
-            _txtImei1 = new TextBox { Location = new Point(130, 132), Width = 250 };
+            _txtImei1 = new TextBox { Location = new Point(130, 132), Width = 260 };
 
             var lblImei2 = new Label { Text = "IMEI 2:", AutoSize = true, Location = new Point(10, 165) };
-            _txtImei2 = new TextBox { Location = new Point(130, 162), Width = 250 };
+            _txtImei2 = new TextBox { Location = new Point(130, 162), Width = 260 };
 
-            _btnOk = new Button { Text = "OK", Location = new Point(220, 210), DialogResult = DialogResult.OK };
-            _btnCancelar = new Button { Text = "Cancelar", Location = new Point(305, 210), DialogResult = DialogResult.Cancel };
+            _btnOk = new Button { Text = "OK", Location = new Point(230, 210), DialogResult = DialogResult.OK };
+            _btnCancelar = new Button { Text = "Cancelar", Location = new Point(315, 210), DialogResult = DialogResult.Cancel };
 
             _btnOk.Click += (_, _) =>
             {

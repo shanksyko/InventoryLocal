@@ -135,53 +135,5 @@ public static class AccessSchemaManager
                 Imei2 TEXT(50)
             )
         ");
-
-        // Impressoras
-        CreateTable("Impressoras", @"
-            CREATE TABLE Impressoras (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                Modelo TEXT(100),
-                SerialNumber TEXT(100),
-                Local TEXT(100),
-                Responsavel TEXT(100)
-            )
-        ");
-
-        // Dects
-        CreateTable("Dects", @"
-            CREATE TABLE Dects (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Numero TEXT(50),
-                SerialNumber TEXT(100),
-                Proprietario TEXT(100),
-                Departamento TEXT(100)
-            )
-        ");
-
-        // TelefonesCisco
-        CreateTable("TelefonesCisco", @"
-            CREATE TABLE TelefonesCisco (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                MacAddress TEXT(50),
-                IpAddress TEXT(50),
-                Local TEXT(100),
-                Responsavel TEXT(100)
-            )
-        ");
-
-        // Televisores
-        CreateTable("Televisores", @"
-            CREATE TABLE Televisores (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                Marca TEXT(100),
-                Modelo TEXT(100),
-                SerialNumber TEXT(100),
-                Local TEXT(100),
-                Responsavel TEXT(100)
-            )
-        ");
     }
 }
