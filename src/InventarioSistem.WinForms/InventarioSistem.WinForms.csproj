@@ -11,4 +11,9 @@
     <ProjectReference Include="..\InventarioSistem.Core\InventarioSistem.Core.csproj" />
     <ProjectReference Include="..\InventarioSistem.Access\InventarioSistem.Access.csproj" />
   </ItemGroup>
+
+  <!-- Necessário para Chart (DashboardForm) -->
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+  </ItemGroup>
 </Project>
