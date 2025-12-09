@@ -14,7 +14,7 @@ using LegacyDevices = InventarioSistem.Core.Devices;
 
 namespace InventarioSistem.WinForms
 {
-    public class MainForm : Form
+    public partial class MainForm : Form
     {
         private readonly AccessInventoryStore? _store;
 
@@ -27,8 +27,6 @@ namespace InventarioSistem.WinForms
         private TabControl _tabs = null!;
 
         private DataGridView _gridComputadores = null!;
-        private List<LegacyDevices.Computer> _computersCache = new();
-        private TextBox _txtComputersFilter = null!;
         private Button _btnAtualizarComputadores = null!;
         private Button _btnNovoComputador = null!;
         private Button _btnEditarComputador = null!;
@@ -395,35 +393,39 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTablet.Click += (_, _) => ExcluirTablet();
 
-            _gridTablets = new DataGridView
+            var lblFiltroTablets = new Label
             {
-                Location = new Point(10, 45),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
-                RowHeadersVisible = false,
-                BorderStyle = BorderStyle.FixedSingle
+                Text = "Filtro (Host/Serial/Local/Responsável/IMEI):",
+                AutoSize = true,
+                Location = new Point(10, 50)
             };
+
+            _txtTabletsFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtTabletsFilter.TextChanged += (_, _) => ApplyTabletsFilter();
+
+            var btnClearFilterTablets = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtTabletsFilter.Right + 10, 68)
+            };
+            btnClearFilterTablets.Click += (_, _) => _txtTabletsFilter.Text = string.Empty;
+
+            _gridTablets = CreateGenericGrid(page, 105);
             _gridTablets.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridTablets.CellDoubleClick += (_, _) => EditarTablet();
-            _gridTablets.Resize += (_, _) =>
-            {
-                _gridTablets.Size = new Size(
-                    page.ClientSize.Width - 20,
-                    page.ClientSize.Height - 55);
-            };
 
             page.Controls.Add(_btnAtualizarTablets);
             page.Controls.Add(_btnNovoTablet);
             page.Controls.Add(_btnEditarTablet);
             page.Controls.Add(_btnExcluirTablet);
+            page.Controls.Add(lblFiltroTablets);
+            page.Controls.Add(_txtTabletsFilter);
+            page.Controls.Add(btnClearFilterTablets);
             page.Controls.Add(_gridTablets);
         }
 
@@ -461,35 +463,39 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirColetor.Click += (_, _) => ExcluirColetor();
 
-            _gridColetores = new DataGridView
+            var lblFiltroColetores = new Label
             {
-                Location = new Point(10, 45),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
-                RowHeadersVisible = false,
-                BorderStyle = BorderStyle.FixedSingle
+                Text = "Filtro (Host/Serial/MAC/IP/Local):",
+                AutoSize = true,
+                Location = new Point(10, 50)
             };
+
+            _txtColetoresFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtColetoresFilter.TextChanged += (_, _) => ApplyColetoresFilter();
+
+            var btnClearFilterColetores = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtColetoresFilter.Right + 10, 68)
+            };
+            btnClearFilterColetores.Click += (_, _) => _txtColetoresFilter.Text = string.Empty;
+
+            _gridColetores = CreateGenericGrid(page, 105);
             _gridColetores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridColetores.CellDoubleClick += (_, _) => EditarColetor();
-            _gridColetores.Resize += (_, _) =>
-            {
-                _gridColetores.Size = new Size(
-                    page.ClientSize.Width - 20,
-                    page.ClientSize.Height - 55);
-            };
 
             page.Controls.Add(_btnAtualizarColetores);
             page.Controls.Add(_btnNovoColetor);
             page.Controls.Add(_btnEditarColetor);
             page.Controls.Add(_btnExcluirColetor);
+            page.Controls.Add(lblFiltroColetores);
+            page.Controls.Add(_txtColetoresFilter);
+            page.Controls.Add(btnClearFilterColetores);
             page.Controls.Add(_gridColetores);
         }
 
@@ -527,35 +533,53 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirCelular.Click += (_, _) => ExcluirCelular();
 
-            _gridCelulares = new DataGridView
+            var lblFiltroCelulares = new Label
             {
-                Location = new Point(10, 45),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                AutoGenerateColumns = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                BackgroundColor = Color.White,
-                RowHeadersVisible = false,
-                BorderStyle = BorderStyle.FixedSingle
+                Text = "Filtro (CellName / IMEI / Modelo / Número / Usuário / Setor):",
+                AutoSize = true,
+                Location = new Point(10, 50)
             };
+
+            _txtCelularesFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 320
+            };
+            _txtCelularesFilter.TextChanged += (_, _) => ApplyCelularesFilter();
+
+            var btnClearFilterCelulares = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtCelularesFilter.Right + 10, 68)
+            };
+            btnClearFilterCelulares.Click += (_, _) => _txtCelularesFilter.Text = string.Empty;
+
+            _gridCelulares = CreateGenericGrid(page, 105);
+            _gridCelulares.AutoGenerateColumns = false;
+            _gridCelulares.Columns.Clear();
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "CellName", DataPropertyName = nameof(LegacyDevices.Celular.CellName), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IMEI1", DataPropertyName = nameof(LegacyDevices.Celular.Imei1), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IMEI2", DataPropertyName = nameof(LegacyDevices.Celular.Imei2), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = nameof(LegacyDevices.Celular.Modelo), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = nameof(LegacyDevices.Celular.Numero), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Roaming", DataPropertyName = nameof(LegacyDevices.Celular.Roaming), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Usuário", DataPropertyName = nameof(LegacyDevices.Celular.Usuario), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Matrícula", DataPropertyName = nameof(LegacyDevices.Celular.Matricula), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cargo", DataPropertyName = nameof(LegacyDevices.Celular.Cargo), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Setor", DataPropertyName = nameof(LegacyDevices.Celular.Setor), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "E-mail", DataPropertyName = nameof(LegacyDevices.Celular.Email), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Senha", DataPropertyName = nameof(LegacyDevices.Celular.Senha), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridCelulares.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridCelulares.CellDoubleClick += (_, _) => EditarCelular();
-            _gridCelulares.Resize += (_, _) =>
-            {
-                _gridCelulares.Size = new Size(
-                    page.ClientSize.Width - 20,
-                    page.ClientSize.Height - 55);
-            };
 
             page.Controls.Add(_btnAtualizarCelulares);
             page.Controls.Add(_btnNovoCelular);
             page.Controls.Add(_btnEditarCelular);
             page.Controls.Add(_btnExcluirCelular);
+            page.Controls.Add(lblFiltroCelulares);
+            page.Controls.Add(_txtCelularesFilter);
+            page.Controls.Add(btnClearFilterCelulares);
             page.Controls.Add(_gridCelulares);
         }
 
@@ -593,7 +617,29 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirImpressora.Click += (_, _) => ExcluirImpressora();
 
-            _gridImpressoras = CreateGenericGrid(page);
+            var lblFiltroImpressoras = new Label
+            {
+                Text = "Filtro (Nome/Modelo/Serial/Local/Responsável):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtImpressorasFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtImpressorasFilter.TextChanged += (_, _) => ApplyImpressorasFilter();
+
+            var btnClearFilterImpressoras = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtImpressorasFilter.Right + 10, 68)
+            };
+            btnClearFilterImpressoras.Click += (_, _) => _txtImpressorasFilter.Text = string.Empty;
+
+            _gridImpressoras = CreateGenericGrid(page, 105);
             _gridImpressoras.AutoGenerateColumns = false;
             _gridImpressoras.Columns.Clear();
             _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
@@ -632,6 +678,9 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovaImpressora);
             page.Controls.Add(_btnEditarImpressora);
             page.Controls.Add(_btnExcluirImpressora);
+            page.Controls.Add(lblFiltroImpressoras);
+            page.Controls.Add(_txtImpressorasFilter);
+            page.Controls.Add(btnClearFilterImpressoras);
             page.Controls.Add(_gridImpressoras);
         }
 
@@ -669,7 +718,29 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirDect.Click += (_, _) => ExcluirDect();
 
-            _gridDects = CreateGenericGrid(page);
+            var lblFiltroDects = new Label
+            {
+                Text = "Filtro (Responsável/IPEI/MAC/Número/Local/Modelo):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtDectsFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtDectsFilter.TextChanged += (_, _) => ApplyDectsFilter();
+
+            var btnClearFilterDects = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtDectsFilter.Right + 10, 68)
+            };
+            btnClearFilterDects.Click += (_, _) => _txtDectsFilter.Text = string.Empty;
+
+            _gridDects = CreateGenericGrid(page, 105);
             _gridDects.AutoGenerateColumns = false;
             _gridDects.Columns.Clear();
             _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = "Responsavel", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
@@ -683,6 +754,9 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoDect);
             page.Controls.Add(_btnEditarDect);
             page.Controls.Add(_btnExcluirDect);
+            page.Controls.Add(lblFiltroDects);
+            page.Controls.Add(_txtDectsFilter);
+            page.Controls.Add(btnClearFilterDects);
             page.Controls.Add(_gridDects);
         }
 
@@ -720,7 +794,29 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTelefoneCisco.Click += (_, _) => ExcluirTelefoneCisco();
 
-            _gridTelefonesCisco = CreateGenericGrid(page);
+            var lblFiltroCisco = new Label
+            {
+                Text = "Filtro (Responsável/MAC/Número/Local/IP/Serial):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtCiscoFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtCiscoFilter.TextChanged += (_, _) => ApplyCiscoFilter();
+
+            var btnClearFilterCisco = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtCiscoFilter.Right + 10, 68)
+            };
+            btnClearFilterCisco.Click += (_, _) => _txtCiscoFilter.Text = string.Empty;
+
+            _gridTelefonesCisco = CreateGenericGrid(page, 105);
             _gridTelefonesCisco.AutoGenerateColumns = false;
             _gridTelefonesCisco.Columns.Clear();
             _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = "Responsavel", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
@@ -733,6 +829,9 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoTelefoneCisco);
             page.Controls.Add(_btnEditarTelefoneCisco);
             page.Controls.Add(_btnExcluirTelefoneCisco);
+            page.Controls.Add(lblFiltroCisco);
+            page.Controls.Add(_txtCiscoFilter);
+            page.Controls.Add(btnClearFilterCisco);
             page.Controls.Add(_gridTelefonesCisco);
         }
 
@@ -770,7 +869,29 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTelevisor.Click += (_, _) => ExcluirTelevisor();
 
-            _gridTelevisores = CreateGenericGrid(page);
+            var lblFiltroTvs = new Label
+            {
+                Text = "Filtro (Modelo/Serial/Local):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtTvsFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtTvsFilter.TextChanged += (_, _) => ApplyTvsFilter();
+
+            var btnClearFilterTvs = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtTvsFilter.Right + 10, 68)
+            };
+            btnClearFilterTvs.Click += (_, _) => _txtTvsFilter.Text = string.Empty;
+
+            _gridTelevisores = CreateGenericGrid(page, 105);
             _gridTelevisores.AutoGenerateColumns = false;
             _gridTelevisores.Columns.Clear();
             _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
@@ -782,6 +903,9 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoTelevisor);
             page.Controls.Add(_btnEditarTelevisor);
             page.Controls.Add(_btnExcluirTelevisor);
+            page.Controls.Add(lblFiltroTvs);
+            page.Controls.Add(_txtTvsFilter);
+            page.Controls.Add(btnClearFilterTvs);
             page.Controls.Add(_gridTelevisores);
         }
 
@@ -819,7 +943,29 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirRelogioPonto.Click += (_, _) => ExcluirRelogioPonto();
 
-            _gridRelogiosPonto = CreateGenericGrid(page);
+            var lblFiltroRelogios = new Label
+            {
+                Text = "Filtro (Modelo/Serial/Local/IP):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtRelogiosFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtRelogiosFilter.TextChanged += (_, _) => ApplyRelogiosFilter();
+
+            var btnClearFilterRelogios = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtRelogiosFilter.Right + 10, 68)
+            };
+            btnClearFilterRelogios.Click += (_, _) => _txtRelogiosFilter.Text = string.Empty;
+
+            _gridRelogiosPonto = CreateGenericGrid(page, 105);
             _gridRelogiosPonto.AutoGenerateColumns = false;
             _gridRelogiosPonto.Columns.Clear();
             _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
@@ -835,16 +981,19 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoRelogioPonto);
             page.Controls.Add(_btnEditarRelogioPonto);
             page.Controls.Add(_btnExcluirRelogioPonto);
+            page.Controls.Add(lblFiltroRelogios);
+            page.Controls.Add(_txtRelogiosFilter);
+            page.Controls.Add(btnClearFilterRelogios);
             page.Controls.Add(_gridRelogiosPonto);
         }
 
-        private DataGridView CreateGenericGrid(TabPage page)
+        private DataGridView CreateGenericGrid(TabPage page, int topMargin = 45)
         {
             var grid = new DataGridView
             {
-                Location = new Point(10, 45),
+                Location = new Point(10, topMargin),
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
+                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - (topMargin + 10)),
                 ReadOnly = true,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
@@ -860,7 +1009,7 @@ namespace InventarioSistem.WinForms
             grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             grid.Resize += (_, _) =>
             {
-                grid.Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55);
+                grid.Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - (topMargin + 10));
             };
 
             return grid;
@@ -970,6 +1119,16 @@ namespace InventarioSistem.WinForms
             _gridTelefonesCisco.Enabled = enabled;
             _gridTelevisores.Enabled = enabled;
             _gridRelogiosPonto.Enabled = enabled;
+
+            _txtComputersFilter.Enabled = enabled;
+            _txtTabletsFilter.Enabled = enabled;
+            _txtColetoresFilter.Enabled = enabled;
+            _txtCelularesFilter.Enabled = enabled;
+            _txtImpressorasFilter.Enabled = enabled;
+            _txtDectsFilter.Enabled = enabled;
+            _txtCiscoFilter.Enabled = enabled;
+            _txtTvsFilter.Enabled = enabled;
+            _txtRelogiosFilter.Enabled = enabled;
         }
 
         private void OnLogMessage(string line)
@@ -1037,31 +1196,6 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private void ApplyComputersFilter()
-        {
-            if (_gridComputadores == null)
-                return;
-
-            var view = _computersCache ?? new List<LegacyDevices.Computer>();
-            var term = _txtComputersFilter?.Text?.Trim();
-
-            if (!string.IsNullOrWhiteSpace(term))
-            {
-                var normalized = term.ToLowerInvariant();
-                view = view
-                    .Where(c =>
-                        (!string.IsNullOrEmpty(c.Host) && c.Host.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.SerialNumber) && c.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Proprietario) && c.Proprietario.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Departamento) && c.Departamento.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Matricula) && c.Matricula.ToLowerInvariant().Contains(normalized)))
-                    .ToList();
-            }
-
-            _gridComputadores.DataSource = new BindingList<LegacyDevices.Computer>(ToList(view));
-            HideIdColumn(_gridComputadores);
-        }
-
         private void LoadTablets()
         {
             if (_store == null) return;
@@ -1069,8 +1203,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllTablets();
-                _gridTablets.DataSource = new BindingList<LegacyDevices.Tablet>(ToList(list));
-                HideIdColumn(_gridTablets);
+                _tabletsCache = ToList(list);
+                ApplyTabletsFilter();
             }
             catch (Exception ex)
             {
@@ -1089,8 +1223,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllColetores();
-                _gridColetores.DataSource = new BindingList<LegacyDevices.ColetorAndroid>(ToList(list));
-                HideIdColumn(_gridColetores);
+                _coletoresCache = ToList(list);
+                ApplyColetoresFilter();
             }
             catch (Exception ex)
             {
@@ -1109,8 +1243,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllCelulares();
-                _gridCelulares.DataSource = new BindingList<LegacyDevices.Celular>(ToList(list));
-                HideIdColumn(_gridCelulares);
+                _celularesCache = ToList(list);
+                ApplyCelularesFilter();
             }
             catch (Exception ex)
             {
@@ -1463,7 +1597,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllImpressoras();
-                _gridImpressoras.DataSource = new BindingList<LegacyDevices.Impressora>(list.ToList());
+                _impressorasCache = list.ToList();
+                ApplyImpressorasFilter();
             }
             catch (Exception ex)
             {
@@ -1557,7 +1692,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllDects();
-                _gridDects.DataSource = new BindingList<LegacyDevices.DectPhone>(list.ToList());
+                _dectsCache = list.ToList();
+                ApplyDectsFilter();
             }
             catch (Exception ex)
             {
@@ -1651,7 +1787,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllTelefonesCisco();
-                _gridTelefonesCisco.DataSource = new BindingList<LegacyDevices.CiscoPhone>(list.ToList());
+                _ciscoCache = list.ToList();
+                ApplyCiscoFilter();
             }
             catch (Exception ex)
             {
@@ -1743,7 +1880,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllTelevisores();
-                _gridTelevisores.DataSource = new BindingList<LegacyDevices.Televisor>(list.ToList());
+                _tvsCache = list.ToList();
+                ApplyTvsFilter();
             }
             catch (Exception ex)
             {
@@ -1833,7 +1971,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllRelogiosPonto();
-                _gridRelogiosPonto.DataSource = new BindingList<LegacyDevices.RelogioPonto>(list.ToList());
+                _relogiosCache = list.ToList();
+                ApplyRelogiosFilter();
             }
             catch (Exception ex)
             {
