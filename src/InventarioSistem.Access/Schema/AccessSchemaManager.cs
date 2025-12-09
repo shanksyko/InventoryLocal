@@ -27,7 +27,9 @@ public static class AccessSchemaManager
         "Dects",
         "TelefonesCisco",
         "Televisores",
-        "RelogiosPonto"
+        "RelogiosPonto",
+        "Monitores",
+        "Nobreaks"
     };
 
     /// <summary>
@@ -216,6 +218,54 @@ public static class AccessSchemaManager
             });
         }
 
+        void EnsureMonitoresTable()
+        {
+            CreateTable("Monitores", @"
+                CREATE TABLE Monitores (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Modelo TEXT(100),
+                    SerialNumber TEXT(100),
+                    Local TEXT(100),
+                    Responsavel TEXT(100),
+                    ComputadorVinculado TEXT(100)
+                )
+            ");
+
+            EnsureColumns("Monitores", new (string, string)[]
+            {
+                ("Modelo", "Modelo TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("Local", "Local TEXT(100)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("ComputadorVinculado", "ComputadorVinculado TEXT(100)")
+            });
+        }
+
+        void EnsureNobreaksTable()
+        {
+            CreateTable("Nobreaks", @"
+                CREATE TABLE Nobreaks (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Hostname TEXT(100),
+                    Local TEXT(100),
+                    IpAddress TEXT(50),
+                    Modelo TEXT(100),
+                    Status TEXT(50),
+                    SerialNumber TEXT(100)
+                )
+            ");
+
+            EnsureColumns("Nobreaks", new (string, string)[]
+            {
+                ("Hostname", "Hostname TEXT(100)"),
+                ("Local", "Local TEXT(100)"),
+                ("IpAddress", "IpAddress TEXT(50)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("Status", "Status TEXT(50)"),
+                ("SerialNumber", "SerialNumber TEXT(100)")
+            });
+        }
+
         EnsureSafe("Devices", EnsureDevicesTable);
 
         EnsureSafe("Computadores", () =>
@@ -227,8 +277,7 @@ public static class AccessSchemaManager
                     SerialNumber TEXT(100),
                     Proprietario TEXT(100),
                     Departamento TEXT(100),
-                    Matricula TEXT(50),
-                    Monitores TEXT(255)
+                    Matricula TEXT(50)
                 )
             ");
 
@@ -238,8 +287,7 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Proprietario", "Proprietario TEXT(100)"),
                 ("Departamento", "Departamento TEXT(100)"),
-                ("Matricula", "Matricula TEXT(50)"),
-                ("Monitores", "Monitores TEXT(255)")
+                ("Matricula", "Matricula TEXT(50)")
             });
         });
 
@@ -413,6 +461,8 @@ public static class AccessSchemaManager
         });
 
         EnsureSafe("RelogiosPonto", EnsureRelogiosPontoTable);
+        EnsureSafe("Monitores", EnsureMonitoresTable);
+        EnsureSafe("Nobreaks", EnsureNobreaksTable);
 
         if (errors.Count > 0)
         {

@@ -80,6 +80,18 @@ namespace InventarioSistem.WinForms
         private Button _btnEditarRelogioPonto = null!;
         private Button _btnExcluirRelogioPonto = null!;
 
+        private DataGridView _gridMonitores = null!;
+        private Button _btnAtualizarMonitores = null!;
+        private Button _btnNovoMonitor = null!;
+        private Button _btnEditarMonitor = null!;
+        private Button _btnExcluirMonitor = null!;
+
+        private DataGridView _gridNobreaks = null!;
+        private Button _btnAtualizarNobreaks = null!;
+        private Button _btnNovoNobreak = null!;
+        private Button _btnEditarNobreak = null!;
+        private Button _btnExcluirNobreak = null!;
+
         // Aba Avançado (config do banco)
         private Label _lblDbPath = null!;
         private Button _btnSelecionarDb = null!;
@@ -197,6 +209,8 @@ namespace InventarioSistem.WinForms
             var tabTelefonesCisco = new TabPage("Telefones Cisco");
             var tabTelevisores = new TabPage("Televisores");
             var tabRelogiosPonto = new TabPage("Relógios Ponto");
+            var tabMonitores = new TabPage("Monitores");
+            var tabNobreaks = new TabPage("Nobreaks");
             var tabAvancado = new TabPage("Avançado");
             var tabLog = new TabPage("Log");
 
@@ -209,6 +223,8 @@ namespace InventarioSistem.WinForms
             InitializeTelefonesCiscoTab(tabTelefonesCisco);
             InitializeTelevisoresTab(tabTelevisores);
             InitializeRelogiosPontoTab(tabRelogiosPonto);
+            InitializeMonitoresTab(tabMonitores);
+            InitializeNobreaksTab(tabNobreaks);
             InitializeAvancadoTab(tabAvancado);
             InitializeLogTab(tabLog);
 
@@ -221,6 +237,8 @@ namespace InventarioSistem.WinForms
             _tabs.TabPages.Add(tabTelefonesCisco);
             _tabs.TabPages.Add(tabTelevisores);
             _tabs.TabPages.Add(tabRelogiosPonto);
+            _tabs.TabPages.Add(tabMonitores);
+            _tabs.TabPages.Add(tabNobreaks);
             _tabs.TabPages.Add(tabAvancado);
             _tabs.TabPages.Add(tabLog);
 
@@ -332,12 +350,6 @@ namespace InventarioSistem.WinForms
                     HeaderText = "Matrícula",
                     DataPropertyName = nameof(LegacyDevices.Computer.Matricula),
                     AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
-                },
-                new DataGridViewTextBoxColumn
-                {
-                    HeaderText = "Monitores",
-                    DataPropertyName = nameof(LegacyDevices.Computer.Monitores),
-                    AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
                 }
             });
             _gridComputadores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
@@ -1166,6 +1178,8 @@ namespace InventarioSistem.WinForms
             LoadTelefonesCisco();
             LoadTelevisores();
             LoadRelogiosPonto();
+            LoadMonitores();
+            LoadNobreaks();
         }
 
         private static void HideIdColumn(DataGridView grid)
