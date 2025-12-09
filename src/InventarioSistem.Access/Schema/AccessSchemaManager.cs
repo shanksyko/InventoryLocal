@@ -227,7 +227,8 @@ public static class AccessSchemaManager
                     SerialNumber TEXT(100),
                     Proprietario TEXT(100),
                     Departamento TEXT(100),
-                    Matricula TEXT(50)
+                    Matricula TEXT(50),
+                    Monitores TEXT(255)
                 )
             ");
 
@@ -237,7 +238,8 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Proprietario", "Proprietario TEXT(100)"),
                 ("Departamento", "Departamento TEXT(100)"),
-                ("Matricula", "Matricula TEXT(50)")
+                ("Matricula", "Matricula TEXT(50)"),
+                ("Monitores", "Monitores TEXT(255)")
             });
         });
 

@@ -27,6 +27,8 @@ namespace InventarioSistem.WinForms
         private TabControl _tabs = null!;
 
         private DataGridView _gridComputadores = null!;
+        private List<LegacyDevices.Computer> _computersCache = new();
+        private TextBox _txtComputersFilter = null!;
         private Button _btnAtualizarComputadores = null!;
         private Button _btnNovoComputador = null!;
         private Button _btnEditarComputador = null!;
@@ -262,15 +264,37 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirComputador.Click += (_, _) => ExcluirComputador();
 
+            var lblFiltro = new Label
+            {
+                Text = "Filtro (Host/N/S/Proprietário/Departamento/Matrícula):",
+                AutoSize = true,
+                Location = new Point(10, 50)
+            };
+
+            _txtComputersFilter = new TextBox
+            {
+                Location = new Point(10, 70),
+                Width = 260
+            };
+            _txtComputersFilter.TextChanged += (_, _) => ApplyComputersFilter();
+
+            var btnClearFilter = new Button
+            {
+                Text = "Limpar filtro",
+                AutoSize = true,
+                Location = new Point(_txtComputersFilter.Right + 10, 68)
+            };
+            btnClearFilter.Click += (_, _) => _txtComputersFilter.Text = string.Empty;
+
             _gridComputadores = new DataGridView
             {
-                Location = new Point(10, 45),
+                Location = new Point(10, 105),
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
+                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 115),
                 ReadOnly = true,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                AutoGenerateColumns = true,
+                AutoGenerateColumns = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
@@ -278,19 +302,62 @@ namespace InventarioSistem.WinForms
                 RowHeadersVisible = false,
                 BorderStyle = BorderStyle.FixedSingle
             };
+
+            _gridComputadores.Columns.AddRange(new DataGridViewColumn[]
+            {
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Host",
+                    DataPropertyName = nameof(LegacyDevices.Computer.Host),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "SerialNumber",
+                    DataPropertyName = nameof(LegacyDevices.Computer.SerialNumber),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Proprietário",
+                    DataPropertyName = nameof(LegacyDevices.Computer.Proprietario),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Departamento",
+                    DataPropertyName = nameof(LegacyDevices.Computer.Departamento),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Matrícula",
+                    DataPropertyName = nameof(LegacyDevices.Computer.Matricula),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Monitores",
+                    DataPropertyName = nameof(LegacyDevices.Computer.Monitores),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+                }
+            });
             _gridComputadores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridComputadores.CellDoubleClick += (_, _) => EditarComputador();
             _gridComputadores.Resize += (_, _) =>
             {
                 _gridComputadores.Size = new Size(
                     page.ClientSize.Width - 20,
-                    page.ClientSize.Height - 55);
+                    page.ClientSize.Height - _gridComputadores.Top - 10);
             };
 
             page.Controls.Add(_btnAtualizarComputadores);
             page.Controls.Add(_btnNovoComputador);
             page.Controls.Add(_btnEditarComputador);
             page.Controls.Add(_btnExcluirComputador);
+            page.Controls.Add(lblFiltro);
+            page.Controls.Add(_txtComputersFilter);
+            page.Controls.Add(btnClearFilter);
             page.Controls.Add(_gridComputadores);
         }
 
@@ -957,8 +1024,8 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllComputers();
-                _gridComputadores.DataSource = new BindingList<LegacyDevices.Computer>(ToList(list));
-                HideIdColumn(_gridComputadores);
+                _computersCache = ToList(list);
+                ApplyComputersFilter();
             }
             catch (Exception ex)
             {
@@ -968,6 +1035,31 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void ApplyComputersFilter()
+        {
+            if (_gridComputadores == null)
+                return;
+
+            var view = _computersCache ?? new List<LegacyDevices.Computer>();
+            var term = _txtComputersFilter?.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                var normalized = term.ToLowerInvariant();
+                view = view
+                    .Where(c =>
+                        (!string.IsNullOrEmpty(c.Host) && c.Host.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(c.SerialNumber) && c.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(c.Proprietario) && c.Proprietario.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(c.Departamento) && c.Departamento.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(c.Matricula) && c.Matricula.ToLowerInvariant().Contains(normalized)))
+                    .ToList();
+            }
+
+            _gridComputadores.DataSource = new BindingList<LegacyDevices.Computer>(ToList(view));
+            HideIdColumn(_gridComputadores);
         }
 
         private void LoadTablets()

@@ -12,6 +12,7 @@ namespace InventarioSistem.WinForms
         private TextBox _txtProprietario = null!;
         private TextBox _txtDepartamento = null!;
         private TextBox _txtMatricula = null!;
+        private TextBox _txtMonitores = null!;
         private Button _btnOk = null!;
         private Button _btnCancelar = null!;
 
@@ -21,7 +22,7 @@ namespace InventarioSistem.WinForms
         {
             Text = existing == null ? "Novo Computador" : "Editar Computador";
             StartPosition = FormStartPosition.CenterParent;
-            Size = new Size(400, 280);
+            Size = new Size(400, 330);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -35,6 +36,7 @@ namespace InventarioSistem.WinForms
                 _txtProprietario.Text = existing.Proprietario ?? string.Empty;
                 _txtDepartamento.Text = existing.Departamento ?? string.Empty;
                 _txtMatricula.Text = existing.Matricula ?? string.Empty;
+                _txtMonitores.Text = existing.Monitores ?? string.Empty;
 
                 Result = new Computer
                 {
@@ -43,7 +45,8 @@ namespace InventarioSistem.WinForms
                     SerialNumber = existing.SerialNumber ?? string.Empty,
                     Proprietario = existing.Proprietario ?? string.Empty,
                     Departamento = existing.Departamento ?? string.Empty,
-                    Matricula = existing.Matricula ?? string.Empty
+                    Matricula = existing.Matricula ?? string.Empty,
+                    Monitores = existing.Monitores ?? string.Empty
                 };
             }
             else
@@ -54,7 +57,8 @@ namespace InventarioSistem.WinForms
                     SerialNumber = string.Empty,
                     Proprietario = string.Empty,
                     Departamento = string.Empty,
-                    Matricula = string.Empty
+                    Matricula = string.Empty,
+                    Monitores = string.Empty
                 };
             }
         }
@@ -76,8 +80,11 @@ namespace InventarioSistem.WinForms
             var lblMatricula = new Label { Text = "Matrícula:", AutoSize = true, Location = new Point(10, 135) };
             _txtMatricula = new TextBox { Location = new Point(120, 132), Width = 240 };
 
-            _btnOk = new Button { Text = "OK", Location = new Point(200, 180), DialogResult = DialogResult.OK };
-            _btnCancelar = new Button { Text = "Cancelar", Location = new Point(285, 180), DialogResult = DialogResult.Cancel };
+            var lblMonitores = new Label { Text = "Monitores:", AutoSize = true, Location = new Point(10, 165) };
+            _txtMonitores = new TextBox { Location = new Point(120, 162), Width = 240 };
+
+            _btnOk = new Button { Text = "OK", Location = new Point(200, 225), DialogResult = DialogResult.OK };
+            _btnCancelar = new Button { Text = "Cancelar", Location = new Point(285, 225), DialogResult = DialogResult.Cancel };
 
             _btnOk.Click += (_, _) =>
             {
@@ -86,6 +93,7 @@ namespace InventarioSistem.WinForms
                 Result.Proprietario = _txtProprietario.Text.Trim();
                 Result.Departamento = _txtDepartamento.Text.Trim();
                 Result.Matricula = _txtMatricula.Text.Trim();
+                Result.Monitores = _txtMonitores.Text.Trim();
                 DialogResult = DialogResult.OK;
                 Close();
             };
@@ -103,6 +111,7 @@ namespace InventarioSistem.WinForms
                 lblProprietario, _txtProprietario,
                 lblDepartamento, _txtDepartamento,
                 lblMatricula, _txtMatricula,
+                lblMonitores, _txtMonitores,
                 _btnOk, _btnCancelar
             });
         }
