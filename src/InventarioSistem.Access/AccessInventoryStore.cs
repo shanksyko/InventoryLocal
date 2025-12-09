@@ -278,6 +278,10 @@ public partial class AccessInventoryStore
                 Corporativo = reader["Corporativo"] is bool corporativo && corporativo,
                 VersaoAndroid = reader["VersaoAndroid"] as string ?? string.Empty
             },
+            DeviceType.Impressora => new Impressora(),
+            DeviceType.Dect => new Dect(),
+            DeviceType.TelefoneCisco => new TelefoneCisco(),
+            DeviceType.Televisor => new Televisor(),
             _ => null!
         };
 
