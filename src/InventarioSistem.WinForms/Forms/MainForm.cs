@@ -527,6 +527,38 @@ namespace InventarioSistem.WinForms
             _btnExcluirImpressora.Click += (_, _) => ExcluirImpressora();
 
             _gridImpressoras = CreateGenericGrid(page);
+            _gridImpressoras.AutoGenerateColumns = false;
+            _gridImpressoras.Columns.Clear();
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Nome",
+                DataPropertyName = "Nome",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Tipo/Modelo",
+                DataPropertyName = "TipoModelo",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "SerialNumber",
+                DataPropertyName = "SerialNumber",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+            });
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Local Atual",
+                DataPropertyName = "LocalAtual",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Local Anterior",
+                DataPropertyName = "LocalAnterior",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            });
             _gridImpressoras.CellDoubleClick += (_, _) => EditarImpressora();
 
             page.Controls.Add(_btnAtualizarImpressoras);
@@ -571,6 +603,13 @@ namespace InventarioSistem.WinForms
             _btnExcluirDect.Click += (_, _) => ExcluirDect();
 
             _gridDects = CreateGenericGrid(page);
+            _gridDects.AutoGenerateColumns = false;
+            _gridDects.Columns.Clear();
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = "Responsavel", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IPEI", DataPropertyName = "Ipei", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = "MacAddress", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = "Numero", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridDects.CellDoubleClick += (_, _) => EditarDect();
 
             page.Controls.Add(_btnAtualizarDects);
@@ -615,6 +654,12 @@ namespace InventarioSistem.WinForms
             _btnExcluirTelefoneCisco.Click += (_, _) => ExcluirTelefoneCisco();
 
             _gridTelefonesCisco = CreateGenericGrid(page);
+            _gridTelefonesCisco.AutoGenerateColumns = false;
+            _gridTelefonesCisco.Columns.Clear();
+            _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = "Responsavel", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = "MacAddress", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = "Numero", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridTelefonesCisco.CellDoubleClick += (_, _) => EditarTelefoneCisco();
 
             page.Controls.Add(_btnAtualizarTelefonesCisco);
@@ -659,6 +704,11 @@ namespace InventarioSistem.WinForms
             _btnExcluirTelevisor.Click += (_, _) => ExcluirTelevisor();
 
             _gridTelevisores = CreateGenericGrid(page);
+            _gridTelevisores.AutoGenerateColumns = false;
+            _gridTelevisores.Columns.Clear();
+            _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = "SerialNumber", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridTelevisores.CellDoubleClick += (_, _) => EditarTelevisor();
 
             page.Controls.Add(_btnAtualizarTelevisores);
@@ -703,6 +753,15 @@ namespace InventarioSistem.WinForms
             _btnExcluirRelogioPonto.Click += (_, _) => ExcluirRelogioPonto();
 
             _gridRelogiosPonto = CreateGenericGrid(page);
+            _gridRelogiosPonto.AutoGenerateColumns = false;
+            _gridRelogiosPonto.Columns.Clear();
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = "SerialNumber", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IP", DataPropertyName = "Ip", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Data Bateria", DataPropertyName = "DataBateria", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Data Nobreak", DataPropertyName = "DataNobreak", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Próximas Verificações", DataPropertyName = "ProximasVerificacoes", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
             _gridRelogiosPonto.CellDoubleClick += (_, _) => EditarRelogioPonto();
 
             page.Controls.Add(_btnAtualizarRelogiosPonto);
@@ -1302,51 +1361,455 @@ namespace InventarioSistem.WinForms
             InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
         }
 
-        private void LoadImpressoras() => LoadDevices(DeviceType.Impressora, _gridImpressoras);
+        private static string GetResult(Dictionary<string, string> result, string key)
+            => result.TryGetValue(key, out var value) ? value?.Trim() ?? string.Empty : string.Empty;
 
-        private void NovoImpressora() => NovoDevice(new Impressora(), "Impressora", LoadImpressoras);
+        private void LoadImpressoras()
+        {
+            if (_store == null) return;
 
-        private void EditarImpressora() => EditarDevice(_gridImpressoras, "Selecione uma impressora para editar.", LoadImpressoras);
+            try
+            {
+                var list = _store.GetAllImpressoras();
+                _gridImpressoras.DataSource = new BindingList<LegacyDevices.Impressora>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao carregar impressoras:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
 
-        private void ExcluirImpressora() => ExcluirDevice(_gridImpressoras, "Selecione uma impressora para excluir.", LoadImpressoras);
+        private bool EditarImpressoraModel(LegacyDevices.Impressora model)
+        {
+            var fields = new Dictionary<string, string>
+            {
+                ["Nome"] = model.Nome,
+                ["Tipo/Modelo"] = model.TipoModelo,
+                ["SerialNumber"] = model.SerialNumber,
+                ["Local Atual"] = model.LocalAtual,
+                ["Local Anterior"] = model.LocalAnterior
+            };
 
-        private void LoadDects() => LoadDevices(DeviceType.Dect, _gridDects);
+            using var form = new DeviceEditForm("Impressora", fields);
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return false;
 
-        private void NovoDect() => NovoDevice(new Dect(), "DECT", LoadDects);
+            model.Nome = GetResult(form.Result, "Nome");
+            model.TipoModelo = GetResult(form.Result, "Tipo/Modelo");
+            model.SerialNumber = GetResult(form.Result, "SerialNumber");
+            model.LocalAtual = GetResult(form.Result, "Local Atual");
+            model.LocalAnterior = GetResult(form.Result, "Local Anterior");
+            return true;
+        }
 
-        private void EditarDect() => EditarDevice(_gridDects, "Selecione um DECT para editar.", LoadDects);
+        private void NovoImpressora()
+        {
+            if (_store == null) return;
 
-        private void ExcluirDect() => ExcluirDevice(_gridDects, "Selecione um DECT para excluir.", LoadDects);
+            var model = new LegacyDevices.Impressora();
+            if (!EditarImpressoraModel(model))
+                return;
 
-        private void LoadTelefonesCisco() => LoadDevices(DeviceType.TelefoneCisco, _gridTelefonesCisco);
+            _store.AddImpressora(model);
+            LoadImpressoras();
+            InventoryLogger.Info("WinForms", $"Impressora cadastrada via UI: {model}");
+        }
 
-        private void NovoTelefoneCisco() => NovoDevice(new TelefoneCisco(), "Telefone Cisco", LoadTelefonesCisco);
+        private void EditarImpressora()
+        {
+            if (_store == null) return;
+            if (_gridImpressoras.CurrentRow?.DataBoundItem is not LegacyDevices.Impressora selected)
+            {
+                MessageBox.Show(this, "Selecione uma impressora para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-        private void EditarTelefoneCisco() => EditarDevice(_gridTelefonesCisco, "Selecione um telefone Cisco para editar.", LoadTelefonesCisco);
+            if (!EditarImpressoraModel(selected))
+                return;
 
-        private void ExcluirTelefoneCisco() => ExcluirDevice(_gridTelefonesCisco, "Selecione um telefone Cisco para excluir.", LoadTelefonesCisco);
+            _store.UpdateImpressora(selected);
+            LoadImpressoras();
+            InventoryLogger.Info("WinForms", $"Impressora atualizada via UI (Id={selected.Id}).");
+        }
 
-        private void LoadTelevisores() => LoadDevices(DeviceType.Televisor, _gridTelevisores);
+        private void ExcluirImpressora()
+        {
+            if (_store == null) return;
+            if (_gridImpressoras.CurrentRow?.DataBoundItem is not LegacyDevices.Impressora selected)
+            {
+                MessageBox.Show(this, "Selecione uma impressora para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-        private void NovoTelevisor() => NovoDevice(new Televisor(), "Televisor", LoadTelevisores);
+            if (MessageBox.Show(this, "Deseja realmente excluir a impressora selecionada?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
 
-        private void EditarTelevisor() => EditarDevice(_gridTelevisores, "Selecione um televisor para editar.", LoadTelevisores);
+            _store.DeleteImpressora(selected.Id);
+            LoadImpressoras();
+            InventoryLogger.Info("WinForms", $"Impressora excluída via UI (Id={selected.Id}).");
+        }
 
-        private void ExcluirTelevisor() => ExcluirDevice(_gridTelevisores, "Selecione um televisor para excluir.", LoadTelevisores);
+        private void LoadDects()
+        {
+            if (_store == null) return;
 
-        private void LoadRelogiosPonto() => LoadDevices(DeviceType.RelogioPonto, _gridRelogiosPonto);
+            try
+            {
+                var list = _store.GetAllDects();
+                _gridDects.DataSource = new BindingList<LegacyDevices.DectPhone>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao carregar DECTs:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
 
-        private void NovoRelogioPonto() => NovoDevice(new RelogioPonto(), "Relógio Ponto", LoadRelogiosPonto);
+        private bool EditarDectModel(LegacyDevices.DectPhone model)
+        {
+            var fields = new Dictionary<string, string>
+            {
+                ["Responsável"] = model.Responsavel,
+                ["IPEI"] = model.Ipei,
+                ["MAC Address"] = model.MacAddress,
+                ["Número"] = model.Numero,
+                ["Local"] = model.Local
+            };
 
-        private void EditarRelogioPonto() => EditarDevice(
-            _gridRelogiosPonto,
-            "Selecione um relógio ponto para editar.",
-            LoadRelogiosPonto);
+            using var form = new DeviceEditForm("DECT", fields);
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return false;
 
-        private void ExcluirRelogioPonto() => ExcluirDevice(
-            _gridRelogiosPonto,
-            "Selecione um relógio ponto para excluir.",
-            LoadRelogiosPonto);
+            model.Responsavel = GetResult(form.Result, "Responsável");
+            model.Ipei = GetResult(form.Result, "IPEI");
+            model.MacAddress = GetResult(form.Result, "MAC Address");
+            model.Numero = GetResult(form.Result, "Número");
+            model.Local = GetResult(form.Result, "Local");
+            return true;
+        }
+
+        private void NovoDect()
+        {
+            if (_store == null) return;
+
+            var model = new LegacyDevices.DectPhone();
+            if (!EditarDectModel(model))
+                return;
+
+            _store.AddDect(model);
+            LoadDects();
+            InventoryLogger.Info("WinForms", $"DECT cadastrado via UI: {model}");
+        }
+
+        private void EditarDect()
+        {
+            if (_store == null) return;
+            if (_gridDects.CurrentRow?.DataBoundItem is not LegacyDevices.DectPhone selected)
+            {
+                MessageBox.Show(this, "Selecione um DECT para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!EditarDectModel(selected))
+                return;
+
+            _store.UpdateDect(selected);
+            LoadDects();
+            InventoryLogger.Info("WinForms", $"DECT atualizado via UI (Id={selected.Id}).");
+        }
+
+        private void ExcluirDect()
+        {
+            if (_store == null) return;
+            if (_gridDects.CurrentRow?.DataBoundItem is not LegacyDevices.DectPhone selected)
+            {
+                MessageBox.Show(this, "Selecione um DECT para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show(this, "Deseja realmente excluir o DECT selecionado?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _store.DeleteDect(selected.Id);
+            LoadDects();
+            InventoryLogger.Info("WinForms", $"DECT excluído via UI (Id={selected.Id}).");
+        }
+
+        private void LoadTelefonesCisco()
+        {
+            if (_store == null) return;
+
+            try
+            {
+                var list = _store.GetAllTelefonesCisco();
+                _gridTelefonesCisco.DataSource = new BindingList<LegacyDevices.CiscoPhone>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao carregar telefones Cisco:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private bool EditarTelefoneCiscoModel(LegacyDevices.CiscoPhone model)
+        {
+            var fields = new Dictionary<string, string>
+            {
+                ["Responsável"] = model.Responsavel,
+                ["MAC Address"] = model.MacAddress,
+                ["Número"] = model.Numero,
+                ["Local"] = model.Local
+            };
+
+            using var form = new DeviceEditForm("Telefone Cisco", fields);
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return false;
+
+            model.Responsavel = GetResult(form.Result, "Responsável");
+            model.MacAddress = GetResult(form.Result, "MAC Address");
+            model.Numero = GetResult(form.Result, "Número");
+            model.Local = GetResult(form.Result, "Local");
+            return true;
+        }
+
+        private void NovoTelefoneCisco()
+        {
+            if (_store == null) return;
+
+            var model = new LegacyDevices.CiscoPhone();
+            if (!EditarTelefoneCiscoModel(model))
+                return;
+
+            _store.AddTelefoneCisco(model);
+            LoadTelefonesCisco();
+            InventoryLogger.Info("WinForms", $"Telefone Cisco cadastrado via UI: {model}");
+        }
+
+        private void EditarTelefoneCisco()
+        {
+            if (_store == null) return;
+            if (_gridTelefonesCisco.CurrentRow?.DataBoundItem is not LegacyDevices.CiscoPhone selected)
+            {
+                MessageBox.Show(this, "Selecione um telefone Cisco para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!EditarTelefoneCiscoModel(selected))
+                return;
+
+            _store.UpdateTelefoneCisco(selected);
+            LoadTelefonesCisco();
+            InventoryLogger.Info("WinForms", $"Telefone Cisco atualizado via UI (Id={selected.Id}).");
+        }
+
+        private void ExcluirTelefoneCisco()
+        {
+            if (_store == null) return;
+            if (_gridTelefonesCisco.CurrentRow?.DataBoundItem is not LegacyDevices.CiscoPhone selected)
+            {
+                MessageBox.Show(this, "Selecione um telefone Cisco para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show(this, "Deseja realmente excluir o telefone Cisco selecionado?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _store.DeleteTelefoneCisco(selected.Id);
+            LoadTelefonesCisco();
+            InventoryLogger.Info("WinForms", $"Telefone Cisco excluído via UI (Id={selected.Id}).");
+        }
+
+        private void LoadTelevisores()
+        {
+            if (_store == null) return;
+
+            try
+            {
+                var list = _store.GetAllTelevisores();
+                _gridTelevisores.DataSource = new BindingList<LegacyDevices.Televisor>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao carregar televisores:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private bool EditarTelevisorModel(LegacyDevices.Televisor model)
+        {
+            var fields = new Dictionary<string, string>
+            {
+                ["Modelo"] = model.Modelo,
+                ["SerialNumber"] = model.SerialNumber,
+                ["Local"] = model.Local
+            };
+
+            using var form = new DeviceEditForm("Televisor", fields);
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return false;
+
+            model.Modelo = GetResult(form.Result, "Modelo");
+            model.SerialNumber = GetResult(form.Result, "SerialNumber");
+            model.Local = GetResult(form.Result, "Local");
+            return true;
+        }
+
+        private void NovoTelevisor()
+        {
+            if (_store == null) return;
+
+            var model = new LegacyDevices.Televisor();
+            if (!EditarTelevisorModel(model))
+                return;
+
+            _store.AddTelevisor(model);
+            LoadTelevisores();
+            InventoryLogger.Info("WinForms", $"Televisor cadastrado via UI: {model}");
+        }
+
+        private void EditarTelevisor()
+        {
+            if (_store == null) return;
+            if (_gridTelevisores.CurrentRow?.DataBoundItem is not LegacyDevices.Televisor selected)
+            {
+                MessageBox.Show(this, "Selecione um televisor para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!EditarTelevisorModel(selected))
+                return;
+
+            _store.UpdateTelevisor(selected);
+            LoadTelevisores();
+            InventoryLogger.Info("WinForms", $"Televisor atualizado via UI (Id={selected.Id}).");
+        }
+
+        private void ExcluirTelevisor()
+        {
+            if (_store == null) return;
+            if (_gridTelevisores.CurrentRow?.DataBoundItem is not LegacyDevices.Televisor selected)
+            {
+                MessageBox.Show(this, "Selecione um televisor para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show(this, "Deseja realmente excluir o televisor selecionado?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _store.DeleteTelevisor(selected.Id);
+            LoadTelevisores();
+            InventoryLogger.Info("WinForms", $"Televisor excluído via UI (Id={selected.Id}).");
+        }
+
+        private void LoadRelogiosPonto()
+        {
+            if (_store == null) return;
+
+            try
+            {
+                var list = _store.GetAllRelogiosPonto();
+                _gridRelogiosPonto.DataSource = new BindingList<LegacyDevices.RelogioPonto>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao carregar relógios de ponto:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void NovoRelogioPonto()
+        {
+            if (_store == null) return;
+
+            var model = new LegacyDevices.RelogioPonto();
+            if (!EditarRelogioPontoModel(model))
+                return;
+
+            _store.AddRelogioPonto(model);
+            LoadRelogiosPonto();
+            InventoryLogger.Info("WinForms", $"Relógio de ponto cadastrado via UI: {model}");
+        }
+
+        private void EditarRelogioPonto()
+        {
+            if (_store == null) return;
+            if (_gridRelogiosPonto.CurrentRow?.DataBoundItem is not LegacyDevices.RelogioPonto selected)
+            {
+                MessageBox.Show(this, "Selecione um relógio ponto para editar.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!EditarRelogioPontoModel(selected))
+                return;
+
+            _store.UpdateRelogioPonto(selected);
+            LoadRelogiosPonto();
+            InventoryLogger.Info("WinForms", $"Relógio de ponto atualizado via UI (Id={selected.Id}).");
+        }
+
+        private void ExcluirRelogioPonto()
+        {
+            if (_store == null) return;
+            if (_gridRelogiosPonto.CurrentRow?.DataBoundItem is not LegacyDevices.RelogioPonto selected)
+            {
+                MessageBox.Show(this, "Selecione um relógio ponto para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (MessageBox.Show(this, "Deseja realmente excluir o relógio de ponto selecionado?", "Confirmação",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            _store.DeleteRelogioPonto(selected.Id);
+            LoadRelogiosPonto();
+            InventoryLogger.Info("WinForms", $"Relógio de ponto excluído via UI (Id={selected.Id}).");
+        }
+
+        private bool EditarRelogioPontoModel(LegacyDevices.RelogioPonto model)
+        {
+            using var form = new RelogioPontoEditForm(model);
+            return form.ShowDialog(this) == DialogResult.OK;
+        }
 
         private static List<T> ToList<T>(IEnumerable<T> source)
         {
