@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
-using InventarioSistem.Core.Entities;
+using DeviceEntity = InventarioSistem.Core.Entities.Device;
+using DeviceType = InventarioSistem.Core.Models.DeviceType;
 
 namespace InventarioSistem.WinForms.Forms;
 
@@ -9,6 +13,10 @@ public class DeviceListForm : Form
     private readonly AccessInventoryStore _store;
     private readonly BindingSource _binding = new();
     private readonly DataGridView _grid = new() { Dock = DockStyle.Fill, AutoGenerateColumns = true, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
+    private readonly ComboBox _typeFilter = new() { Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly TextBox _searchBox = new() { Width = 220, PlaceholderText = "Buscar em qualquer coluna" };
+
+    private List<DeviceEntity> _allDevices = new();
 
     public DeviceListForm(AccessInventoryStore store)
     {
@@ -43,6 +51,14 @@ public class DeviceListForm : Form
         buttons.Controls.Add(deleteButton);
         buttons.Controls.Add(refreshButton);
 
+        buttons.Controls.Add(new Label { Text = "Tipo:", AutoSize = true, Padding = new Padding(10, 12, 0, 0) });
+        buttons.Controls.Add(_typeFilter);
+
+        buttons.Controls.Add(new Label { Text = "Buscar:", AutoSize = true, Padding = new Padding(10, 12, 0, 0) });
+        buttons.Controls.Add(_searchBox);
+
+        ConfigureFilters();
+
         Controls.Add(_grid);
         Controls.Add(buttons);
 
@@ -51,11 +67,11 @@ public class DeviceListForm : Form
 
     private async Task LoadAsync()
     {
-        var data = await _store.ListAsync();
-        _binding.DataSource = data.ToList();
+        _allDevices = (await _store.ListAsync()).ToList();
+        ApplyFilters();
     }
 
-    private Device? SelectedDevice => _binding.Current as Device;
+    private DeviceEntity? SelectedDevice => _binding.Current as DeviceEntity;
 
     private async Task AddAsync()
     {
@@ -98,5 +114,75 @@ public class DeviceListForm : Form
 
         await _store.DeleteAsync(selected.Id);
         await LoadAsync();
+    }
+
+    private void ConfigureFilters()
+    {
+        _typeFilter.Items.Clear();
+        _typeFilter.Items.Add("Todos");
+        _typeFilter.Items.AddRange(new object[]
+        {
+            DeviceType.Computador,
+            DeviceType.Tablet,
+            DeviceType.Coletor,
+            DeviceType.Celular,
+            DeviceType.Impressora,
+            DeviceType.Dect,
+            DeviceType.Cisco,
+            DeviceType.Televisor,
+            DeviceType.RelogioPonto,
+            DeviceType.Monitor,
+            DeviceType.Nobreak
+        });
+
+        _typeFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
+        _searchBox.TextChanged += (_, _) => ApplyFilters();
+
+        _typeFilter.SelectedIndex = 0;
+    }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<DeviceEntity> query = _allDevices;
+
+        if (_typeFilter.SelectedItem is string selectedType && selectedType != "Todos")
+        {
+            query = query.Where(d => string.Equals(d.Tipo, selectedType, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var term = _searchBox.Text?.Trim();
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            var normalized = term.ToLowerInvariant();
+            query = query.Where(d =>
+                Contains(d.Hostname, normalized) ||
+                Contains(d.Modelo, normalized) ||
+                Contains(d.SerialNumber, normalized) ||
+                Contains(d.Local, normalized) ||
+                Contains(d.Responsavel, normalized) ||
+                Contains(d.TipoModelo, normalized) ||
+                Contains(d.LocalizacaoAtual, normalized) ||
+                Contains(d.LocalizacaoAnterior, normalized) ||
+                Contains(d.Numero, normalized) ||
+                Contains(d.MacAddress, normalized) ||
+                Contains(d.IPEI, normalized) ||
+                Contains(d.IP, normalized) ||
+                Contains(d.IMEI1, normalized) ||
+                Contains(d.IMEI2, normalized) ||
+                Contains(d.Usuario, normalized) ||
+                Contains(d.Matricula, normalized) ||
+                Contains(d.Cargo, normalized) ||
+                Contains(d.Setor, normalized) ||
+                Contains(d.Email, normalized) ||
+                Contains(d.ComputadorVinculado, normalized) ||
+                Contains(d.Status, normalized));
+        }
+
+        _binding.DataSource = query.ToList();
+    }
+
+    private static bool Contains(string? value, string term)
+    {
+        return !string.IsNullOrWhiteSpace(value) && value!.ToLowerInvariant().Contains(term);
     }
 }
