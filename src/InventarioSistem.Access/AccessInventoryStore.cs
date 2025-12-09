@@ -285,6 +285,7 @@ public partial class AccessInventoryStore
             DeviceType.Dect => new Dect(),
             DeviceType.TelefoneCisco => new TelefoneCisco(),
             DeviceType.Televisor => new Televisor(),
+            DeviceType.RelogioPonto => new RelogioPonto(),
             _ => null!
         };
 

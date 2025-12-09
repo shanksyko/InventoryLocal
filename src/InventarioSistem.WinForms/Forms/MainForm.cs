@@ -70,6 +70,11 @@ namespace InventarioSistem.WinForms
         private Button _btnEditarTelevisor = null!;
         private Button _btnExcluirTelevisor = null!;
 
+        private DataGridView _gridRelogiosPonto = null!;
+        private Button _btnAtualizarRelogiosPonto = null!;
+        private Button _btnNovoRelogioPonto = null!;
+        private Button _btnEditarRelogioPonto = null!;
+
         // Aba Avançado (config do banco)
         private Label _lblDbPath = null!;
         private Button _btnSelecionarDb = null!;
@@ -186,6 +191,7 @@ namespace InventarioSistem.WinForms
             var tabDects = new TabPage("DECTs");
             var tabTelefonesCisco = new TabPage("Telefones Cisco");
             var tabTelevisores = new TabPage("Televisores");
+            var tabRelogiosPonto = new TabPage("Relógios Ponto");
             var tabAvancado = new TabPage("Avançado");
             var tabLog = new TabPage("Log");
 
@@ -197,6 +203,7 @@ namespace InventarioSistem.WinForms
             InitializeDectsTab(tabDects);
             InitializeTelefonesCiscoTab(tabTelefonesCisco);
             InitializeTelevisoresTab(tabTelevisores);
+            InitializeRelogiosPontoTab(tabRelogiosPonto);
             InitializeAvancadoTab(tabAvancado);
             InitializeLogTab(tabLog);
 
@@ -208,6 +215,7 @@ namespace InventarioSistem.WinForms
             _tabs.TabPages.Add(tabDects);
             _tabs.TabPages.Add(tabTelefonesCisco);
             _tabs.TabPages.Add(tabTelevisores);
+            _tabs.TabPages.Add(tabRelogiosPonto);
             _tabs.TabPages.Add(tabAvancado);
             _tabs.TabPages.Add(tabLog);
 
@@ -619,6 +627,41 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_gridTelevisores);
         }
 
+        private void InitializeRelogiosPontoTab(TabPage page)
+        {
+            _btnAtualizarRelogiosPonto = new Button
+            {
+                Text = "Atualizar",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            _btnAtualizarRelogiosPonto.Click += (_, _) => LoadRelogiosPonto();
+
+            _btnNovoRelogioPonto = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoRelogioPonto.Click += (_, _) => NovoRelogioPonto();
+
+            _btnEditarRelogioPonto = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarRelogioPonto.Click += (_, _) => EditarRelogioPonto();
+
+            _gridRelogiosPonto = CreateGenericGrid(page);
+            _gridRelogiosPonto.CellDoubleClick += (_, _) => EditarRelogioPonto();
+
+            page.Controls.Add(_btnAtualizarRelogiosPonto);
+            page.Controls.Add(_btnNovoRelogioPonto);
+            page.Controls.Add(_btnEditarRelogioPonto);
+            page.Controls.Add(_gridRelogiosPonto);
+        }
+
         private DataGridView CreateGenericGrid(TabPage page)
         {
             var grid = new DataGridView
@@ -733,6 +776,9 @@ namespace InventarioSistem.WinForms
             _btnNovoTelevisor.Enabled = enabled;
             _btnEditarTelevisor.Enabled = enabled;
             _btnExcluirTelevisor.Enabled = enabled;
+            _btnAtualizarRelogiosPonto.Enabled = enabled;
+            _btnNovoRelogioPonto.Enabled = enabled;
+            _btnEditarRelogioPonto.Enabled = enabled;
 
             _gridComputadores.Enabled = enabled;
             _gridTablets.Enabled = enabled;
@@ -742,6 +788,7 @@ namespace InventarioSistem.WinForms
             _gridDects.Enabled = enabled;
             _gridTelefonesCisco.Enabled = enabled;
             _gridTelevisores.Enabled = enabled;
+            _gridRelogiosPonto.Enabled = enabled;
         }
 
         private void OnLogMessage(string line)
@@ -778,6 +825,15 @@ namespace InventarioSistem.WinForms
             LoadDects();
             LoadTelefonesCisco();
             LoadTelevisores();
+            LoadRelogiosPonto();
+        }
+
+        private static void HideIdColumn(DataGridView grid)
+        {
+            if (grid.Columns.Contains("Id"))
+            {
+                grid.Columns["Id"].Visible = false;
+            }
         }
 
         private void LoadComputadores()
@@ -788,6 +844,7 @@ namespace InventarioSistem.WinForms
             {
                 var list = _store.GetAllComputers();
                 _gridComputadores.DataSource = new BindingList<LegacyDevices.Computer>(ToList(list));
+                HideIdColumn(_gridComputadores);
             }
             catch (Exception ex)
             {
@@ -807,6 +864,7 @@ namespace InventarioSistem.WinForms
             {
                 var list = _store.GetAllTablets();
                 _gridTablets.DataSource = new BindingList<LegacyDevices.Tablet>(ToList(list));
+                HideIdColumn(_gridTablets);
             }
             catch (Exception ex)
             {
@@ -826,6 +884,7 @@ namespace InventarioSistem.WinForms
             {
                 var list = _store.GetAllColetores();
                 _gridColetores.DataSource = new BindingList<LegacyDevices.ColetorAndroid>(ToList(list));
+                HideIdColumn(_gridColetores);
             }
             catch (Exception ex)
             {
@@ -845,6 +904,7 @@ namespace InventarioSistem.WinForms
             {
                 var list = _store.GetAllCelulares();
                 _gridCelulares.DataSource = new BindingList<LegacyDevices.Celular>(ToList(list));
+                HideIdColumn(_gridCelulares);
             }
             catch (Exception ex)
             {
@@ -1020,6 +1080,7 @@ namespace InventarioSistem.WinForms
             {
                 var list = _store.ListAsync(type).GetAwaiter().GetResult();
                 grid.DataSource = new BindingList<Device>(list.ToList());
+                HideIdColumn(grid);
             }
             catch (Exception ex)
             {
@@ -1121,6 +1182,15 @@ namespace InventarioSistem.WinForms
         private void EditarTelevisor() => EditarDevice(_gridTelevisores, "Selecione um televisor para editar.", LoadTelevisores);
 
         private void ExcluirTelevisor() => ExcluirDevice(_gridTelevisores, "Selecione um televisor para excluir.", LoadTelevisores);
+
+        private void LoadRelogiosPonto() => LoadDevices(DeviceType.RelogioPonto, _gridRelogiosPonto);
+
+        private void NovoRelogioPonto() => NovoDevice(new RelogioPonto(), "Relógio Ponto", LoadRelogiosPonto);
+
+        private void EditarRelogioPonto() => EditarDevice(
+            _gridRelogiosPonto,
+            "Selecione um relógio ponto para editar.",
+            LoadRelogiosPonto);
 
         private static List<T> ToList<T>(IEnumerable<T> source)
         {
