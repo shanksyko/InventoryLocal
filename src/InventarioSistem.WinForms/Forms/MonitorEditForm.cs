@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using InventarioSistem.Core.Devices;
+using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
 
 namespace InventarioSistem.WinForms
 {
@@ -15,9 +15,9 @@ namespace InventarioSistem.WinForms
         private Button _btnOk = null!;
         private Button _btnCancelar = null!;
 
-        public Monitor Monitor { get; private set; }
+        public MonitorDevice Monitor { get; private set; }
 
-        public MonitorEditForm(Monitor? existing = null)
+        public MonitorEditForm(MonitorDevice? existing = null)
         {
             Text = existing == null ? "Novo Monitor" : "Editar Monitor";
             StartPosition = FormStartPosition.CenterParent;
@@ -27,8 +27,8 @@ namespace InventarioSistem.WinForms
             MinimizeBox = false;
 
             Monitor = existing == null
-                ? new Monitor()
-                : new Monitor
+                ? new MonitorDevice()
+                : new MonitorDevice
                 {
                     Id = existing.Id,
                     Modelo = existing.Modelo,
