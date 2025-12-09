@@ -320,21 +320,27 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Celulares
-            (Hostname, Modelo, Numero, Proprietario, Imei1, Imei2)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
-        AddTextParameter(command, "Hostname", celular.Hostname);
-        AddTextParameter(command, "Modelo", celular.Modelo);
-        AddTextParameter(command, "Numero", celular.Numero);
-        AddTextParameter(command, "Proprietario", celular.Proprietario);
+        AddTextParameter(command, "CellName", celular.CellName);
         AddTextParameter(command, "Imei1", celular.Imei1);
         AddTextParameter(command, "Imei2", celular.Imei2);
+        AddTextParameter(command, "Modelo", celular.Modelo);
+        AddTextParameter(command, "Numero", celular.Numero);
+        AddTextParameter(command, "Roaming", celular.Roaming);
+        AddTextParameter(command, "Usuario", celular.Usuario);
+        AddTextParameter(command, "Matricula", celular.Matricula);
+        AddTextParameter(command, "Cargo", celular.Cargo);
+        AddTextParameter(command, "Setor", celular.Setor);
+        AddTextParameter(command, "Email", celular.Email);
+        AddTextParameter(command, "Senha", celular.Senha);
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Celular inserido: Host='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
+            $"Celular inserido: CellName='{celular.CellName}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Usuario='{celular.Usuario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
     }
 
     public List<Celular> GetAllCelulares()
@@ -345,7 +351,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Hostname, Modelo, Numero, Proprietario, Imei1, Imei2 FROM Celulares";
+        command.CommandText = @"SELECT Id, CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha FROM Celulares";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -353,12 +359,18 @@ public partial class AccessInventoryStore
             celulares.Add(new Celular
             {
                 Id = reader.GetInt32(0),
-                Hostname = GetStringSafe(reader, 1),
-                Modelo = GetStringSafe(reader, 2),
-                Numero = GetStringSafe(reader, 3),
-                Proprietario = GetStringSafe(reader, 4),
-                Imei1 = GetStringSafe(reader, 5),
-                Imei2 = GetStringSafe(reader, 6)
+                CellName = GetStringSafe(reader, 1),
+                Imei1 = GetStringSafe(reader, 2),
+                Imei2 = GetStringSafe(reader, 3),
+                Modelo = GetStringSafe(reader, 4),
+                Numero = GetStringSafe(reader, 5),
+                Roaming = reader.FieldCount > 6 ? GetStringSafe(reader, 6) : string.Empty,
+                Usuario = reader.FieldCount > 7 ? GetStringSafe(reader, 7) : string.Empty,
+                Matricula = reader.FieldCount > 8 ? GetStringSafe(reader, 8) : string.Empty,
+                Cargo = reader.FieldCount > 9 ? GetStringSafe(reader, 9) : string.Empty,
+                Setor = reader.FieldCount > 10 ? GetStringSafe(reader, 10) : string.Empty,
+                Email = reader.FieldCount > 11 ? GetStringSafe(reader, 11) : string.Empty,
+                Senha = reader.FieldCount > 12 ? GetStringSafe(reader, 12) : string.Empty
             });
         }
 
@@ -375,22 +387,28 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             UPDATE Celulares
-            SET Hostname = ?, Modelo = ?, Numero = ?, Proprietario = ?, Imei1 = ?, Imei2 = ?
+            SET CellName = ?, Imei1 = ?, Imei2 = ?, Modelo = ?, Numero = ?, Roaming = ?, Usuario = ?, Matricula = ?, Cargo = ?, Setor = ?, Email = ?, Senha = ?
             WHERE Id = ?
         ";
 
-        AddTextParameter(command, "Hostname", celular.Hostname);
-        AddTextParameter(command, "Modelo", celular.Modelo);
-        AddTextParameter(command, "Numero", celular.Numero);
-        AddTextParameter(command, "Proprietario", celular.Proprietario);
+        AddTextParameter(command, "CellName", celular.CellName);
         AddTextParameter(command, "Imei1", celular.Imei1);
         AddTextParameter(command, "Imei2", celular.Imei2);
+        AddTextParameter(command, "Modelo", celular.Modelo);
+        AddTextParameter(command, "Numero", celular.Numero);
+        AddTextParameter(command, "Roaming", celular.Roaming);
+        AddTextParameter(command, "Usuario", celular.Usuario);
+        AddTextParameter(command, "Matricula", celular.Matricula);
+        AddTextParameter(command, "Cargo", celular.Cargo);
+        AddTextParameter(command, "Setor", celular.Setor);
+        AddTextParameter(command, "Email", celular.Email);
+        AddTextParameter(command, "Senha", celular.Senha);
         command.Parameters.Add("Id", OdbcType.Int).Value = celular.Id;
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Celular atualizado (Id={celular.Id}): Host='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
+            $"Celular atualizado (Id={celular.Id}): CellName='{celular.CellName}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Usuario='{celular.Usuario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
     }
 
     public void DeleteCelular(int id)

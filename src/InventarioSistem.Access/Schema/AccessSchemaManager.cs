@@ -294,23 +294,35 @@ public static class AccessSchemaManager
             CreateTable("Celulares", @"
                 CREATE TABLE Celulares (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Hostname TEXT(100),
+                    CellName TEXT(100),
+                    Imei1 TEXT(50),
+                    Imei2 TEXT(50),
                     Modelo TEXT(100),
                     Numero TEXT(50),
-                    Proprietario TEXT(100),
-                    Imei1 TEXT(50),
-                    Imei2 TEXT(50)
+                    Roaming TEXT(50),
+                    Usuario TEXT(100),
+                    Matricula TEXT(50),
+                    Cargo TEXT(100),
+                    Setor TEXT(100),
+                    Email TEXT(150),
+                    Senha TEXT(150)
                 )
             ");
 
             EnsureColumns("Celulares", new (string, string)[]
             {
-                ("Hostname", "Hostname TEXT(100)"),
+                ("CellName", "CellName TEXT(100)"),
+                ("Imei1", "Imei1 TEXT(50)"),
+                ("Imei2", "Imei2 TEXT(50)"),
                 ("Modelo", "Modelo TEXT(100)"),
                 ("Numero", "Numero TEXT(50)"),
-                ("Proprietario", "Proprietario TEXT(100)"),
-                ("Imei1", "Imei1 TEXT(50)"),
-                ("Imei2", "Imei2 TEXT(50)")
+                ("Roaming", "Roaming TEXT(50)"),
+                ("Usuario", "Usuario TEXT(100)"),
+                ("Matricula", "Matricula TEXT(50)"),
+                ("Cargo", "Cargo TEXT(100)"),
+                ("Setor", "Setor TEXT(100)"),
+                ("Email", "Email TEXT(150)"),
+                ("Senha", "Senha TEXT(150)")
             });
         });
 
