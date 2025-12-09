@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
 using System.Linq;
@@ -87,6 +88,27 @@ public static class AccessSchemaManager
             cmd.ExecuteNonQuery();
         }
 
+        void EnsureColumns(string tableName, IEnumerable<(string ColumnName, string Definition)> columns)
+        {
+            bool ColumnExists(string columnName)
+            {
+                var restrictions = new[] { null, null, tableName, null };
+                var columnSchema = conn.GetSchema("Columns", restrictions);
+                return columnSchema.Rows.Cast<DataRow>()
+                    .Any(r => string.Equals(r["COLUMN_NAME"]?.ToString(), columnName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            foreach (var (columnName, definition) in columns)
+            {
+                if (ColumnExists(columnName))
+                    continue;
+
+                using var alter = conn.CreateCommand();
+                alter.CommandText = $"ALTER TABLE [{tableName}] ADD COLUMN {definition}";
+                alter.ExecuteNonQuery();
+            }
+        }
+
         // Computadores
         CreateTable("Computadores", @"
             CREATE TABLE Computadores (
@@ -98,6 +120,15 @@ public static class AccessSchemaManager
                 Matricula TEXT(50)
             )
         ");
+
+        EnsureColumns("Computadores", new (string, string)[]
+        {
+            ("Host", "Host TEXT(100)"),
+            ("SerialNumber", "SerialNumber TEXT(100)"),
+            ("Proprietario", "Proprietario TEXT(100)"),
+            ("Departamento", "Departamento TEXT(100)"),
+            ("Matricula", "Matricula TEXT(50)")
+        });
 
         // Tablets
         CreateTable("Tablets", @"
@@ -111,6 +142,15 @@ public static class AccessSchemaManager
             )
         ");
 
+        EnsureColumns("Tablets", new (string, string)[]
+        {
+            ("Host", "Host TEXT(100)"),
+            ("SerialNumber", "SerialNumber TEXT(100)"),
+            ("Local", "Local TEXT(100)"),
+            ("Responsavel", "Responsavel TEXT(100)"),
+            ("Imeis", "Imeis TEXT(255)")
+        });
+
         // ColetoresAndroid
         CreateTable("ColetoresAndroid", @"
             CREATE TABLE ColetoresAndroid (
@@ -122,6 +162,15 @@ public static class AccessSchemaManager
                 Local TEXT(100)
             )
         ");
+
+        EnsureColumns("ColetoresAndroid", new (string, string)[]
+        {
+            ("Host", "Host TEXT(100)"),
+            ("SerialNumber", "SerialNumber TEXT(100)"),
+            ("MacAddress", "MacAddress TEXT(50)"),
+            ("IpAddress", "IpAddress TEXT(50)"),
+            ("Local", "Local TEXT(100)")
+        });
 
         // Celulares
         CreateTable("Celulares", @"
@@ -136,6 +185,16 @@ public static class AccessSchemaManager
             )
         ");
 
+        EnsureColumns("Celulares", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
+            ("Numero", "Numero TEXT(50)"),
+            ("Proprietario", "Proprietario TEXT(100)"),
+            ("Imei1", "Imei1 TEXT(50)"),
+            ("Imei2", "Imei2 TEXT(50)")
+        });
+
         // Impressoras
         CreateTable("Impressoras", @"
             CREATE TABLE Impressoras (
@@ -148,6 +207,15 @@ public static class AccessSchemaManager
             )
         ");
 
+        EnsureColumns("Impressoras", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
+            ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("Local", "Local TEXT(100)"),
+            ("Responsavel", "Responsavel TEXT(100)")
+        });
+
         // Dects
         CreateTable("Dects", @"
             CREATE TABLE Dects (
@@ -158,6 +226,14 @@ public static class AccessSchemaManager
                 Responsavel TEXT(100)
             )
         ");
+
+        EnsureColumns("Dects", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("Ramal", "Ramal TEXT(50)"),
+            ("Responsavel", "Responsavel TEXT(100)")
+        });
 
         // TelefonesCisco
         CreateTable("TelefonesCisco", @"
@@ -171,6 +247,15 @@ public static class AccessSchemaManager
             )
         ");
 
+        EnsureColumns("TelefonesCisco", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("MacAddress", "MacAddress TEXT(50)"),
+            ("IpAddress", "IpAddress TEXT(50)"),
+            ("Ramal", "Ramal TEXT(50)"),
+            ("Responsavel", "Responsavel TEXT(100)")
+        });
+
         // Televisores
         CreateTable("Televisores", @"
             CREATE TABLE Televisores (
@@ -182,5 +267,14 @@ public static class AccessSchemaManager
                 Responsavel TEXT(100)
             )
         ");
+
+        EnsureColumns("Televisores", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
+            ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("Local", "Local TEXT(100)"),
+            ("Responsavel", "Responsavel TEXT(100)")
+        });
     }
 }
