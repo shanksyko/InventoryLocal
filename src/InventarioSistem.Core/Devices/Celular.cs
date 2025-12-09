@@ -11,7 +11,7 @@ public class Celular
     public string Imei2 { get; set; } = string.Empty;
     public string Modelo { get; set; } = string.Empty;
     public string Numero { get; set; } = string.Empty;
-    public string Roaming { get; set; } = string.Empty;
+    public bool Roaming { get; set; }
     public string Usuario { get; set; } = string.Empty;
     public string Matricula { get; set; } = string.Empty;
     public string Cargo { get; set; } = string.Empty;
