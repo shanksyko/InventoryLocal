@@ -12,8 +12,8 @@
     <ProjectReference Include="..\InventarioSistem.Access\InventarioSistem.Access.csproj" />
   </ItemGroup>
 
-  <!-- Necessário para Chart (DashboardForm) -->
+  <!-- Pacote NuGet com o Chart portado para .NET 6+ / 7 / 8 -->
   <ItemGroup>
-    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <PackageReference Include="WinForms.DataVisualization" Version="1.10.0" />
   </ItemGroup>
 </Project>
