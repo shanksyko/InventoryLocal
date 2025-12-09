@@ -21,7 +21,8 @@ public static class AccessSchemaManager
         "Impressoras",
         "Dects",
         "TelefonesCisco",
-        "Televisores"
+        "Televisores",
+        "RelogiosPonto"
     };
 
     /// <summary>
@@ -273,6 +274,29 @@ public static class AccessSchemaManager
             ("Hostname", "Hostname TEXT(100)"),
             ("Modelo", "Modelo TEXT(100)"),
             ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("Local", "Local TEXT(100)"),
+            ("Responsavel", "Responsavel TEXT(100)")
+        });
+
+        // RelogiosPonto
+        CreateTable("RelogiosPonto", @"
+            CREATE TABLE RelogiosPonto (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
+                Modelo TEXT(100),
+                NumeroSerie TEXT(100),
+                IpAddress TEXT(50),
+                Local TEXT(100),
+                Responsavel TEXT(100)
+            )
+        ");
+
+        EnsureColumns("RelogiosPonto", new (string, string)[]
+        {
+            ("Hostname", "Hostname TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
+            ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("IpAddress", "IpAddress TEXT(50)"),
             ("Local", "Local TEXT(100)"),
             ("Responsavel", "Responsavel TEXT(100)")
         });

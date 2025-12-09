@@ -17,46 +17,8 @@ public partial class AccessInventoryStore
 
     public async Task EnsureSchemaAsync(CancellationToken cancellationToken = default)
     {
-        // Garante que a tabela Devices exista no banco atualmente configurado.
-        // Essa tabela é usada para os tipos mais novos (Impressora, Dect, Telefone Cisco, Televisor etc).
-
-        await using var connection = _factory.CreateConnection();
-        await connection.OpenAsync(cancellationToken);
-
-        const string createTable = @"CREATE TABLE Devices (
-            Id COUNTER PRIMARY KEY,
-            Tipo TEXT(50) NOT NULL,
-            Patrimonio TEXT(100),
-            Marca TEXT(100),
-            Modelo TEXT(100),
-            NumeroSerie TEXT(100),
-            Imei TEXT(30),
-            SistemaOperacional TEXT(100),
-            Processador TEXT(100),
-            MemoriaRamGb INTEGER,
-            ArmazenamentoGb INTEGER,
-            VersaoAndroid TEXT(50),
-            LinhaTelefonica TEXT(50),
-            Responsavel TEXT(100),
-            Localizacao TEXT(100),
-            Observacoes MEMO,
-            AtualizadoEm DATETIME,
-            FabricanteScanner TEXT(100),
-            PossuiCarregadorBase YESNO,
-            PossuiTeclado YESNO,
-            Corporativo YESNO
-        )";
-
-        await using var command = connection.CreateCommand();
-        command.CommandText = createTable;
-        try
-        {
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
-        catch (OdbcException)
-        {
-            // Se a tabela já existir, ignoramos o erro.
-        }
+        // Usa o gerenciador de esquema centralizado para garantir todas as tabelas obrigatórias.
+        await Task.Run(() => Schema.AccessSchemaManager.EnsureRequiredTables(_factory), cancellationToken);
     }
 
     public async Task<int> AddAsync(Device device, CancellationToken cancellationToken = default)
