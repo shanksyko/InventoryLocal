@@ -563,7 +563,7 @@ namespace InventarioSistem.WinForms
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IMEI2", DataPropertyName = nameof(LegacyDevices.Celular.Imei2), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = nameof(LegacyDevices.Celular.Modelo), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = nameof(LegacyDevices.Celular.Numero), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
-            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Roaming", DataPropertyName = nameof(LegacyDevices.Celular.Roaming), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewCheckBoxColumn { HeaderText = "Roaming", DataPropertyName = nameof(LegacyDevices.Celular.Roaming), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Usuário", DataPropertyName = nameof(LegacyDevices.Celular.Usuario), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Matrícula", DataPropertyName = nameof(LegacyDevices.Celular.Matricula), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cargo", DataPropertyName = nameof(LegacyDevices.Celular.Cargo), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });

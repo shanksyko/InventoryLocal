@@ -329,7 +329,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Imei2", celular.Imei2);
         AddTextParameter(command, "Modelo", celular.Modelo);
         AddTextParameter(command, "Numero", celular.Numero);
-        AddTextParameter(command, "Roaming", celular.Roaming);
+        AddBoolParameter(command, "Roaming", celular.Roaming);
         AddTextParameter(command, "Usuario", celular.Usuario);
         AddTextParameter(command, "Matricula", celular.Matricula);
         AddTextParameter(command, "Cargo", celular.Cargo);
@@ -364,7 +364,7 @@ public partial class AccessInventoryStore
                 Imei2 = GetStringSafe(reader, 3),
                 Modelo = GetStringSafe(reader, 4),
                 Numero = GetStringSafe(reader, 5),
-                Roaming = reader.FieldCount > 6 ? GetStringSafe(reader, 6) : string.Empty,
+                Roaming = reader.FieldCount > 6 && !reader.IsDBNull(6) && reader.GetBoolean(6),
                 Usuario = reader.FieldCount > 7 ? GetStringSafe(reader, 7) : string.Empty,
                 Matricula = reader.FieldCount > 8 ? GetStringSafe(reader, 8) : string.Empty,
                 Cargo = reader.FieldCount > 9 ? GetStringSafe(reader, 9) : string.Empty,
@@ -396,7 +396,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Imei2", celular.Imei2);
         AddTextParameter(command, "Modelo", celular.Modelo);
         AddTextParameter(command, "Numero", celular.Numero);
-        AddTextParameter(command, "Roaming", celular.Roaming);
+        AddBoolParameter(command, "Roaming", celular.Roaming);
         AddTextParameter(command, "Usuario", celular.Usuario);
         AddTextParameter(command, "Matricula", celular.Matricula);
         AddTextParameter(command, "Cargo", celular.Cargo);
@@ -910,6 +910,12 @@ public partial class AccessInventoryStore
     {
         var parameter = command.Parameters.Add(name, OdbcType.VarChar);
         parameter.Value = NormalizeToDbValue(value);
+    }
+
+    private static void AddBoolParameter(OdbcCommand command, string name, bool value)
+    {
+        var parameter = command.Parameters.Add(name, OdbcType.Bit);
+        parameter.Value = value;
     }
 
     private static void AddDateParameter(OdbcCommand command, string name, DateTime? value)

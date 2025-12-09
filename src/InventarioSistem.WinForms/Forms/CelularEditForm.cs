@@ -12,7 +12,7 @@ namespace InventarioSistem.WinForms
         private TextBox _txtImei2 = null!;
         private TextBox _txtModelo = null!;
         private TextBox _txtNumero = null!;
-        private TextBox _txtRoaming = null!;
+        private CheckBox _chkRoaming = null!;
         private TextBox _txtUsuario = null!;
         private TextBox _txtMatricula = null!;
         private TextBox _txtCargo = null!;
@@ -46,7 +46,7 @@ namespace InventarioSistem.WinForms
                     Imei2 = existing.Imei2 ?? string.Empty,
                     Modelo = existing.Modelo ?? string.Empty,
                     Numero = existing.Numero ?? string.Empty,
-                    Roaming = existing.Roaming ?? string.Empty,
+                    Roaming = existing.Roaming,
                     Usuario = existing.Usuario ?? string.Empty,
                     Matricula = existing.Matricula ?? string.Empty,
                     Cargo = existing.Cargo ?? string.Empty,
@@ -80,7 +80,7 @@ namespace InventarioSistem.WinForms
             _txtImei2 = AddLabeledTextBox(layout, "IMEI 2:", 2);
             _txtModelo = AddLabeledTextBox(layout, "Modelo:", 3);
             _txtNumero = AddLabeledTextBox(layout, "Número:", 4);
-            _txtRoaming = AddLabeledTextBox(layout, "Roaming:", 5);
+            _chkRoaming = AddLabeledCheckBox(layout, "Roaming:", 5);
             _txtUsuario = AddLabeledTextBox(layout, "Usuário:", 6);
             _txtMatricula = AddLabeledTextBox(layout, "Matrícula:", 7);
             _txtCargo = AddLabeledTextBox(layout, "Cargo:", 8);
@@ -133,6 +133,17 @@ namespace InventarioSistem.WinForms
             return textBox;
         }
 
+        private CheckBox AddLabeledCheckBox(TableLayoutPanel panel, string labelText, int rowIndex)
+        {
+            var label = new Label { Text = labelText, AutoSize = true, Anchor = AnchorStyles.Left, Margin = new Padding(3, 8, 3, 3) };
+            var checkBox = new CheckBox { Anchor = AnchorStyles.Left, AutoSize = true };
+
+            panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            panel.Controls.Add(label, 0, rowIndex);
+            panel.Controls.Add(checkBox, 1, rowIndex);
+            return checkBox;
+        }
+
         private void BindFromModel(Celular celular)
         {
             _txtCellName.Text = celular.CellName;
@@ -140,7 +151,7 @@ namespace InventarioSistem.WinForms
             _txtImei2.Text = celular.Imei2;
             _txtModelo.Text = celular.Modelo;
             _txtNumero.Text = celular.Numero;
-            _txtRoaming.Text = celular.Roaming;
+            _chkRoaming.Checked = celular.Roaming;
             _txtUsuario.Text = celular.Usuario;
             _txtMatricula.Text = celular.Matricula;
             _txtCargo.Text = celular.Cargo;
@@ -156,7 +167,7 @@ namespace InventarioSistem.WinForms
             celular.Imei2 = _txtImei2.Text.Trim();
             celular.Modelo = _txtModelo.Text.Trim();
             celular.Numero = _txtNumero.Text.Trim();
-            celular.Roaming = _txtRoaming.Text.Trim();
+            celular.Roaming = _chkRoaming.Checked;
             celular.Usuario = _txtUsuario.Text.Trim();
             celular.Matricula = _txtMatricula.Text.Trim();
             celular.Cargo = _txtCargo.Text.Trim();
