@@ -9,5 +9,6 @@ public enum DeviceType
     Impressora,
     Dect,
     TelefoneCisco,
-    Televisor
+    Televisor,
+    RelogioPonto
 }
