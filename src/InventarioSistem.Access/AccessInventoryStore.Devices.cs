@@ -274,19 +274,21 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Celulares
-            (Modelo, Numero, Proprietario, Imeis)
-            VALUES (?, ?, ?, ?)
+            (Hostname, Modelo, Numero, Proprietario, Imei1, Imei2)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
+        command.Parameters.Add("Hostname", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Hostname);
         command.Parameters.Add("Modelo", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Modelo);
         command.Parameters.Add("Numero", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Numero);
         command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Proprietario);
-        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(celular.Imeis);
+        command.Parameters.Add("Imei1", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei1);
+        command.Parameters.Add("Imei2", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei2);
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Celular inserido: Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{string.Join(";", celular.Imeis ?? new())}'");
+            $"Celular inserido: Hostname='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{celular.Imei1};{celular.Imei2}'");
     }
 
     public List<Celular> GetAllCelulares()
@@ -297,20 +299,20 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Modelo, Numero, Proprietario, Imeis FROM Celulares";
+        command.CommandText = "SELECT Id, Hostname, Modelo, Numero, Proprietario, Imei1, Imei2 FROM Celulares";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
-            var imeisRaw = reader.IsDBNull(4) ? string.Empty : reader.GetString(4);
-
             celulares.Add(new Celular
             {
                 Id = reader.GetInt32(0),
-                Modelo = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                Numero = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                Proprietario = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                Imeis = DeviceStringUtils.ImeisFromString(imeisRaw)
+                Hostname = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                Modelo = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                Numero = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                Proprietario = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                Imei1 = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
+                Imei2 = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)
             });
         }
 
@@ -327,20 +329,21 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             UPDATE Celulares
-            SET Modelo = ?, Numero = ?, Proprietario = ?, Imeis = ?
+            SET Hostname = ?, Modelo = ?, Numero = ?, Proprietario = ?, Imei1 = ?, Imei2 = ?
             WHERE Id = ?
         ";
 
+        command.Parameters.Add("Hostname", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Hostname);
         command.Parameters.Add("Modelo", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Modelo);
         command.Parameters.Add("Numero", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Numero);
         command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Proprietario);
-        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(celular.Imeis);
+        command.Parameters.Add("Imei1", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei1);
+        command.Parameters.Add("Imei2", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei2);
         command.Parameters.Add("Id", OdbcType.Int).Value = celular.Id;
 
         command.ExecuteNonQuery();
 
-        var imeisText = string.Join(";", celular.Imeis ?? new());
         InventoryLogger.Info("AccessInventoryStore",
-            $"Celular atualizado (Id={celular.Id}): Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{imeisText}'");
+            $"Celular atualizado (Id={celular.Id}): Hostname='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEIs='{celular.Imei1};{celular.Imei2}'");
     }
 }
