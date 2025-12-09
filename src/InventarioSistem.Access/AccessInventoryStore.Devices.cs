@@ -93,6 +93,20 @@ public partial class AccessInventoryStore
             $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
     }
 
+    public void DeleteComputer(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Computadores WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Computador excluído (Id={id}).");
+    }
+
     //
     //  TABLETS
     //
@@ -179,6 +193,20 @@ public partial class AccessInventoryStore
             $"Tablet atualizado (Id={tablet.Id}): Host='{tablet.Host}', NS='{tablet.SerialNumber}', Local='{tablet.Local}', Responsavel='{tablet.Responsavel}', IMEIs='{imeisText}'");
     }
 
+    public void DeleteTablet(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Tablets WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Tablet excluído (Id={id}).");
+    }
+
     //
     //  COLETORES ANDROID
     //
@@ -260,6 +288,20 @@ public partial class AccessInventoryStore
 
         InventoryLogger.Info("AccessInventoryStore",
             $"Coletor atualizado (Id={coletor.Id}): Host='{coletor.Host}', NS='{coletor.SerialNumber}', MAC='{coletor.MacAddress}', IP='{coletor.IpAddress}', Local='{coletor.Local}'");
+    }
+
+    public void DeleteColetor(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM ColetoresAndroid WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Coletor excluído (Id={id}).");
     }
 
     //
@@ -348,6 +390,20 @@ public partial class AccessInventoryStore
             $"Celular atualizado (Id={celular.Id}): Host='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
     }
 
+    public void DeleteCelular(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Celulares WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Celular excluído (Id={id}).");
+    }
+
     //
     //  IMPRESSORAS
     //
@@ -431,6 +487,20 @@ public partial class AccessInventoryStore
             $"Impressora atualizada (Id={impressora.Id}): Host='{impressora.Hostname}', Modelo='{impressora.Modelo}', NS='{impressora.NumeroSerie}', Local='{impressora.Local}', Resp='{impressora.Responsavel}'");
     }
 
+    public void DeleteImpressora(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Impressoras WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Impressora excluída (Id={id}).");
+    }
+
     //
     //  DECT
     //
@@ -509,6 +579,20 @@ public partial class AccessInventoryStore
 
         InventoryLogger.Info("AccessInventoryStore",
             $"DECT atualizado (Id={dect.Id}): Host='{dect.Hostname}', Ramal='{dect.Ramal}', NS='{dect.NumeroSerie}', Resp='{dect.Responsavel}'");
+    }
+
+    public void DeleteDect(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Dects WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"DECT excluído (Id={id}).");
     }
 
     //
@@ -592,6 +676,20 @@ public partial class AccessInventoryStore
 
         InventoryLogger.Info("AccessInventoryStore",
             $"Telefone Cisco atualizado (Id={phone.Id}): Host='{phone.Hostname}', MAC='{phone.MacAddress}', IP='{phone.IpAddress}', Ramal='{phone.Ramal}', Resp='{phone.Responsavel}'");
+    }
+
+    public void DeleteTelefoneCisco(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM TelefonesCisco WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Telefone Cisco excluído (Id={id}).");
     }
 
     //
@@ -678,6 +776,20 @@ public partial class AccessInventoryStore
 
         InventoryLogger.Info("AccessInventoryStore",
             $"Relógio de ponto atualizado (Id={relogio.Id}): Host='{relogio.Hostname}', Modelo='{relogio.Modelo}', NS='{relogio.NumeroSerie}', IP='{relogio.IpAddress}', Local='{relogio.Local}', Resp='{relogio.Responsavel}'");
+    }
+
+    public void DeleteRelogioPonto(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM RelogiosPonto WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Relógio de ponto excluído (Id={id}).");
     }
 
     private static void AddTextParameter(OdbcCommand command, string name, string? value)

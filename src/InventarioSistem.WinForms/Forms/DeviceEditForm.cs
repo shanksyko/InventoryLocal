@@ -75,12 +75,9 @@ namespace InventarioSistem.WinForms
         private static Dictionary<string, string> BuildInitialValues(Device? device)
         {
             // Como não sabemos exatamente quais propriedades existem em Device,
-            // jogamos ao menos um campo "Info" com ToString(), e campos básicos
-            // mais comuns em inventário, se existirem (via padrão de nome).
-            var dict = new Dictionary<string, string>
-            {
-                ["Info"] = device?.ToString() ?? string.Empty
-            };
+            // preenchemos campos básicos mais comuns em inventário, se existirem
+            // (via padrão de nome).
+            var dict = new Dictionary<string, string>();
 
             try
             {

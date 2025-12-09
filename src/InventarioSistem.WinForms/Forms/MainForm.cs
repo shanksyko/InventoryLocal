@@ -30,21 +30,25 @@ namespace InventarioSistem.WinForms
         private Button _btnAtualizarComputadores = null!;
         private Button _btnNovoComputador = null!;
         private Button _btnEditarComputador = null!;
+        private Button _btnExcluirComputador = null!;
 
         private DataGridView _gridTablets = null!;
         private Button _btnAtualizarTablets = null!;
         private Button _btnNovoTablet = null!;
         private Button _btnEditarTablet = null!;
+        private Button _btnExcluirTablet = null!;
 
         private DataGridView _gridColetores = null!;
         private Button _btnAtualizarColetores = null!;
         private Button _btnNovoColetor = null!;
         private Button _btnEditarColetor = null!;
+        private Button _btnExcluirColetor = null!;
 
         private DataGridView _gridCelulares = null!;
         private Button _btnAtualizarCelulares = null!;
         private Button _btnNovoCelular = null!;
         private Button _btnEditarCelular = null!;
+        private Button _btnExcluirCelular = null!;
 
         private DataGridView _gridImpressoras = null!;
         private Button _btnAtualizarImpressoras = null!;
@@ -74,6 +78,7 @@ namespace InventarioSistem.WinForms
         private Button _btnAtualizarRelogiosPonto = null!;
         private Button _btnNovoRelogioPonto = null!;
         private Button _btnEditarRelogioPonto = null!;
+        private Button _btnExcluirRelogioPonto = null!;
 
         // Aba Avançado (config do banco)
         private Label _lblDbPath = null!;
@@ -249,6 +254,14 @@ namespace InventarioSistem.WinForms
             };
             _btnEditarComputador.Click += (_, _) => EditarComputador();
 
+            _btnExcluirComputador = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirComputador.Click += (_, _) => ExcluirComputador();
+
             _gridComputadores = new DataGridView
             {
                 Location = new Point(10, 45),
@@ -277,6 +290,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnAtualizarComputadores);
             page.Controls.Add(_btnNovoComputador);
             page.Controls.Add(_btnEditarComputador);
+            page.Controls.Add(_btnExcluirComputador);
             page.Controls.Add(_gridComputadores);
         }
 
@@ -306,6 +320,14 @@ namespace InventarioSistem.WinForms
             };
             _btnEditarTablet.Click += (_, _) => EditarTablet();
 
+            _btnExcluirTablet = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirTablet.Click += (_, _) => ExcluirTablet();
+
             _gridTablets = new DataGridView
             {
                 Location = new Point(10, 45),
@@ -334,6 +356,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnAtualizarTablets);
             page.Controls.Add(_btnNovoTablet);
             page.Controls.Add(_btnEditarTablet);
+            page.Controls.Add(_btnExcluirTablet);
             page.Controls.Add(_gridTablets);
         }
 
@@ -363,6 +386,14 @@ namespace InventarioSistem.WinForms
             };
             _btnEditarColetor.Click += (_, _) => EditarColetor();
 
+            _btnExcluirColetor = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirColetor.Click += (_, _) => ExcluirColetor();
+
             _gridColetores = new DataGridView
             {
                 Location = new Point(10, 45),
@@ -391,6 +422,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnAtualizarColetores);
             page.Controls.Add(_btnNovoColetor);
             page.Controls.Add(_btnEditarColetor);
+            page.Controls.Add(_btnExcluirColetor);
             page.Controls.Add(_gridColetores);
         }
 
@@ -420,6 +452,14 @@ namespace InventarioSistem.WinForms
             };
             _btnEditarCelular.Click += (_, _) => EditarCelular();
 
+            _btnExcluirCelular = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirCelular.Click += (_, _) => ExcluirCelular();
+
             _gridCelulares = new DataGridView
             {
                 Location = new Point(10, 45),
@@ -448,6 +488,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnAtualizarCelulares);
             page.Controls.Add(_btnNovoCelular);
             page.Controls.Add(_btnEditarCelular);
+            page.Controls.Add(_btnExcluirCelular);
             page.Controls.Add(_gridCelulares);
         }
 
@@ -653,12 +694,21 @@ namespace InventarioSistem.WinForms
             };
             _btnEditarRelogioPonto.Click += (_, _) => EditarRelogioPonto();
 
+            _btnExcluirRelogioPonto = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirRelogioPonto.Click += (_, _) => ExcluirRelogioPonto();
+
             _gridRelogiosPonto = CreateGenericGrid(page);
             _gridRelogiosPonto.CellDoubleClick += (_, _) => EditarRelogioPonto();
 
             page.Controls.Add(_btnAtualizarRelogiosPonto);
             page.Controls.Add(_btnNovoRelogioPonto);
             page.Controls.Add(_btnEditarRelogioPonto);
+            page.Controls.Add(_btnExcluirRelogioPonto);
             page.Controls.Add(_gridRelogiosPonto);
         }
 
@@ -751,15 +801,19 @@ namespace InventarioSistem.WinForms
             _btnAtualizarComputadores.Enabled = enabled;
             _btnNovoComputador.Enabled = enabled;
             _btnEditarComputador.Enabled = enabled;
+            _btnExcluirComputador.Enabled = enabled;
             _btnAtualizarTablets.Enabled = enabled;
             _btnNovoTablet.Enabled = enabled;
             _btnEditarTablet.Enabled = enabled;
+            _btnExcluirTablet.Enabled = enabled;
             _btnAtualizarColetores.Enabled = enabled;
             _btnNovoColetor.Enabled = enabled;
             _btnEditarColetor.Enabled = enabled;
+            _btnExcluirColetor.Enabled = enabled;
             _btnAtualizarCelulares.Enabled = enabled;
             _btnNovoCelular.Enabled = enabled;
             _btnEditarCelular.Enabled = enabled;
+            _btnExcluirCelular.Enabled = enabled;
             _btnAtualizarImpressoras.Enabled = enabled;
             _btnNovaImpressora.Enabled = enabled;
             _btnEditarImpressora.Enabled = enabled;
@@ -779,6 +833,7 @@ namespace InventarioSistem.WinForms
             _btnAtualizarRelogiosPonto.Enabled = enabled;
             _btnNovoRelogioPonto.Enabled = enabled;
             _btnEditarRelogioPonto.Enabled = enabled;
+            _btnExcluirRelogioPonto.Enabled = enabled;
 
             _gridComputadores.Enabled = enabled;
             _gridTablets.Enabled = enabled;
@@ -955,6 +1010,30 @@ namespace InventarioSistem.WinForms
             }
         }
 
+        private void ExcluirComputador()
+        {
+            if (_store == null) return;
+            if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
+            {
+                MessageBox.Show(this, "Selecione um computador para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(this,
+                "Deseja realmente excluir o computador selecionado?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            _store.DeleteComputer(selected.Id);
+            LoadComputadores();
+            InventoryLogger.Info("WinForms", $"Computador excluído via UI (Id={selected.Id}).");
+        }
+
         private void NovoTablet()
         {
             if (_store == null)
@@ -992,6 +1071,30 @@ namespace InventarioSistem.WinForms
                 LoadTablets();
                 InventoryLogger.Info("WinForms", $"Tablet editado via UI (Id={updated.Id}): Host='{updated.Host}', NS='{updated.SerialNumber}'");
             }
+        }
+
+        private void ExcluirTablet()
+        {
+            if (_store == null) return;
+            if (_gridTablets.CurrentRow?.DataBoundItem is not LegacyDevices.Tablet selected)
+            {
+                MessageBox.Show(this, "Selecione um tablet para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(this,
+                "Deseja realmente excluir o tablet selecionado?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            _store.DeleteTablet(selected.Id);
+            LoadTablets();
+            InventoryLogger.Info("WinForms", $"Tablet excluído via UI (Id={selected.Id}).");
         }
 
         private void NovoColetor()
@@ -1033,6 +1136,30 @@ namespace InventarioSistem.WinForms
             }
         }
 
+        private void ExcluirColetor()
+        {
+            if (_store == null) return;
+            if (_gridColetores.CurrentRow?.DataBoundItem is not LegacyDevices.ColetorAndroid selected)
+            {
+                MessageBox.Show(this, "Selecione um coletor para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(this,
+                "Deseja realmente excluir o coletor selecionado?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            _store.DeleteColetor(selected.Id);
+            LoadColetores();
+            InventoryLogger.Info("WinForms", $"Coletor excluído via UI (Id={selected.Id}).");
+        }
+
         private void NovoCelular()
         {
             if (_store == null)
@@ -1070,6 +1197,30 @@ namespace InventarioSistem.WinForms
                 LoadCelulares();
                 InventoryLogger.Info("WinForms", $"Celular editado via UI (Id={updated.Id}): Modelo='{updated.Modelo}', Numero='{updated.Numero}'");
             }
+        }
+
+        private void ExcluirCelular()
+        {
+            if (_store == null) return;
+            if (_gridCelulares.CurrentRow?.DataBoundItem is not LegacyDevices.Celular selected)
+            {
+                MessageBox.Show(this, "Selecione um celular para excluir.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(this,
+                "Deseja realmente excluir o celular selecionado?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            _store.DeleteCelular(selected.Id);
+            LoadCelulares();
+            InventoryLogger.Info("WinForms", $"Celular excluído via UI (Id={selected.Id}).");
         }
 
         private void LoadDevices(DeviceType type, DataGridView grid)
@@ -1190,6 +1341,11 @@ namespace InventarioSistem.WinForms
         private void EditarRelogioPonto() => EditarDevice(
             _gridRelogiosPonto,
             "Selecione um relógio ponto para editar.",
+            LoadRelogiosPonto);
+
+        private void ExcluirRelogioPonto() => ExcluirDevice(
+            _gridRelogiosPonto,
+            "Selecione um relógio ponto para excluir.",
             LoadRelogiosPonto);
 
         private static List<T> ToList<T>(IEnumerable<T> source)
