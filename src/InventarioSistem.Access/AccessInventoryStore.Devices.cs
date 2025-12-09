@@ -23,8 +23,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Computadores
-            (Host, SerialNumber, Proprietario, Departamento, Matricula)
-            VALUES (?, ?, ?, ?, ?)
+            (Host, SerialNumber, Proprietario, Departamento, Matricula, Monitores)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", computer.Host);
@@ -32,11 +32,12 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Proprietario", computer.Proprietario);
         AddTextParameter(command, "Departamento", computer.Departamento);
         AddTextParameter(command, "Matricula", computer.Matricula);
+        AddTextParameter(command, "Monitores", computer.Monitores);
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
+            $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}', Monitores='{computer.Monitores}'");
     }
 
     public List<Computer> GetAllComputers()
@@ -47,7 +48,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula FROM Computadores";
+        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula, Monitores FROM Computadores";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -59,7 +60,8 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 Proprietario = GetStringSafe(reader, 3),
                 Departamento = GetStringSafe(reader, 4),
-                Matricula = GetStringSafe(reader, 5)
+                Matricula = GetStringSafe(reader, 5),
+                Monitores = reader.FieldCount > 6 ? GetStringSafe(reader, 6) : string.Empty
             });
         }
 
@@ -76,7 +78,7 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             UPDATE Computadores
-            SET Host = ?, SerialNumber = ?, Proprietario = ?, Departamento = ?, Matricula = ?
+            SET Host = ?, SerialNumber = ?, Proprietario = ?, Departamento = ?, Matricula = ?, Monitores = ?
             WHERE Id = ?
         ";
 
@@ -85,12 +87,13 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Proprietario", computer.Proprietario);
         AddTextParameter(command, "Departamento", computer.Departamento);
         AddTextParameter(command, "Matricula", computer.Matricula);
+        AddTextParameter(command, "Monitores", computer.Monitores);
         command.Parameters.Add("Id", OdbcType.Int).Value = computer.Id;
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
+            $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}', Monitores='{computer.Monitores}'");
     }
 
     public void DeleteComputer(int id)
