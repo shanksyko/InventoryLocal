@@ -2,6 +2,7 @@ using System;
 using System.Data.Odbc;
 using System.IO;
 using System.Text;
+using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Schema;
 
@@ -48,6 +49,9 @@ public static class AccessDatabaseManager
             DatabasePath = databasePath
         };
         config.Save();
+
+        // Garante que o banco aberto contenha toda a estrutura obrigatória.
+        AccessSchemaManager.EnsureRequiredTables(new AccessConnectionFactory(databasePath));
     }
 
     /// <summary>
@@ -69,7 +73,7 @@ public static class AccessDatabaseManager
         SetActiveDatabasePath(targetPath);
 
         // Cria as tabelas padrão (se ainda não existirem)
-        AccessSchemaManager.EnsureRequiredTables();
+        AccessSchemaManager.EnsureRequiredTables(new AccessConnectionFactory(targetPath));
 
         return targetPath;
     }
@@ -115,8 +119,8 @@ public static class AccessDatabaseManager
         TryCount("ColetoresAndroid");
         TryCount("Celulares");
         TryCount("Impressoras");
-        TryCount("DectPhones");
-        TryCount("CiscoPhones");
+        TryCount("Dects");
+        TryCount("TelefonesCisco");
         TryCount("Televisores");
 
         return sb.ToString();

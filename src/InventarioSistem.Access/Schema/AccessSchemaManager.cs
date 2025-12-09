@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Odbc;
 using System.Linq;
+using InventarioSistem.Access;
 
 namespace InventarioSistem.Access.Schema;
 
@@ -17,8 +18,8 @@ public static class AccessSchemaManager
         "ColetoresAndroid",
         "Celulares",
         "Impressoras",
-        "DectPhones",
-        "CiscoPhones",
+        "Dects",
+        "TelefonesCisco",
         "Televisores"
     };
 
@@ -57,9 +58,10 @@ public static class AccessSchemaManager
     /// Cria as tabelas obrigatórias que ainda não existirem.
     /// Não apaga nem altera tabelas já existentes.
     /// </summary>
-    public static void EnsureRequiredTables()
+    public static void EnsureRequiredTables() => EnsureRequiredTables(new AccessConnectionFactory());
+
+    public static void EnsureRequiredTables(AccessConnectionFactory factory)
     {
-        var factory = new AccessConnectionFactory();
         using var conn = factory.CreateConnection();
         conn.Open();
 
@@ -140,31 +142,31 @@ public static class AccessSchemaManager
                 Id AUTOINCREMENT PRIMARY KEY,
                 Hostname TEXT(100),
                 Modelo TEXT(100),
-                NumeroSerie TEXT(100),
+                SerialNumber TEXT(100),
                 Local TEXT(100),
                 Responsavel TEXT(100)
             )
         ");
 
-        // DectPhones
-        CreateTable("DectPhones", @"
-            CREATE TABLE DectPhones (
+        // Dects
+        CreateTable("Dects", @"
+            CREATE TABLE Dects (
                 Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                NumeroSerie TEXT(100),
-                Ramal TEXT(50),
-                Responsavel TEXT(100)
+                Numero TEXT(50),
+                SerialNumber TEXT(100),
+                Proprietario TEXT(100),
+                Departamento TEXT(100)
             )
         ");
 
-        // CiscoPhones
-        CreateTable("CiscoPhones", @"
-            CREATE TABLE CiscoPhones (
+        // TelefonesCisco
+        CreateTable("TelefonesCisco", @"
+            CREATE TABLE TelefonesCisco (
                 Id AUTOINCREMENT PRIMARY KEY,
                 Hostname TEXT(100),
                 MacAddress TEXT(50),
                 IpAddress TEXT(50),
-                Ramal TEXT(50),
+                Local TEXT(100),
                 Responsavel TEXT(100)
             )
         ");
@@ -174,8 +176,9 @@ public static class AccessSchemaManager
             CREATE TABLE Televisores (
                 Id AUTOINCREMENT PRIMARY KEY,
                 Hostname TEXT(100),
+                Marca TEXT(100),
                 Modelo TEXT(100),
-                NumeroSerie TEXT(100),
+                SerialNumber TEXT(100),
                 Local TEXT(100),
                 Responsavel TEXT(100)
             )
