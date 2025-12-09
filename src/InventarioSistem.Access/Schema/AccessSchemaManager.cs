@@ -194,29 +194,25 @@ public static class AccessSchemaManager
             CreateTable("RelogiosPonto", @"
                 CREATE TABLE RelogiosPonto (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Patrimonio TEXT(100),
-                    Marca TEXT(100),
                     Modelo TEXT(100),
                     NumeroSerie TEXT(100),
-                    Imei TEXT(30),
-                    Responsavel TEXT(100),
-                    Localizacao TEXT(100),
-                    Observacoes MEMO,
-                    AtualizadoEm DATETIME
+                    Local TEXT(100),
+                    Ip TEXT(50),
+                    DataBateria DATETIME,
+                    DataNobreak DATETIME,
+                    ProximasVerificacoes DATETIME
                 )
             ");
 
             EnsureColumns("RelogiosPonto", new (string, string)[]
             {
-                ("Patrimonio", "Patrimonio TEXT(100)"),
-                ("Marca", "Marca TEXT(100)"),
                 ("Modelo", "Modelo TEXT(100)"),
                 ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Imei", "Imei TEXT(30)"),
-                ("Responsavel", "Responsavel TEXT(100)"),
-                ("Localizacao", "Localizacao TEXT(100)"),
-                ("Observacoes", "Observacoes MEMO"),
-                ("AtualizadoEm", "AtualizadoEm DATETIME")
+                ("Local", "Local TEXT(100)"),
+                ("Ip", "Ip TEXT(50)"),
+                ("DataBateria", "DataBateria DATETIME"),
+                ("DataNobreak", "DataNobreak DATETIME"),
+                ("ProximasVerificacoes", "ProximasVerificacoes DATETIME")
             });
         }
 
@@ -321,29 +317,21 @@ public static class AccessSchemaManager
             CreateTable("Impressoras", @"
                 CREATE TABLE Impressoras (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Patrimonio TEXT(100),
-                    Marca TEXT(100),
-                    Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
-                    Imei TEXT(30),
-                    Responsavel TEXT(100),
-                    Localizacao TEXT(100),
-                    Observacoes MEMO,
-                    AtualizadoEm DATETIME
+                    Nome TEXT(200),
+                    TipoModelo TEXT(100),
+                    SerialNumber TEXT(100),
+                    LocalizacaoAtual TEXT(100),
+                    LocalizacaoAnterior TEXT(100)
                 )
             ");
 
             EnsureColumns("Impressoras", new (string, string)[]
             {
-                ("Patrimonio", "Patrimonio TEXT(100)"),
-                ("Marca", "Marca TEXT(100)"),
-                ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Imei", "Imei TEXT(30)"),
-                ("Responsavel", "Responsavel TEXT(100)"),
-                ("Localizacao", "Localizacao TEXT(100)"),
-                ("Observacoes", "Observacoes MEMO"),
-                ("AtualizadoEm", "AtualizadoEm DATETIME")
+                ("Nome", "Nome TEXT(200)"),
+                ("TipoModelo", "TipoModelo TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("LocalizacaoAtual", "LocalizacaoAtual TEXT(100)"),
+                ("LocalizacaoAnterior", "LocalizacaoAnterior TEXT(100)")
             });
         });
 
@@ -352,29 +340,21 @@ public static class AccessSchemaManager
             CreateTable("Dects", @"
                 CREATE TABLE Dects (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Patrimonio TEXT(100),
-                    Marca TEXT(100),
-                    Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
-                    Imei TEXT(30),
                     Responsavel TEXT(100),
-                    Localizacao TEXT(100),
-                    Observacoes MEMO,
-                    AtualizadoEm DATETIME
+                    Ipei TEXT(100),
+                    MacAddress TEXT(50),
+                    Numero TEXT(50),
+                    Local TEXT(100)
                 )
             ");
 
             EnsureColumns("Dects", new (string, string)[]
             {
-                ("Patrimonio", "Patrimonio TEXT(100)"),
-                ("Marca", "Marca TEXT(100)"),
-                ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Imei", "Imei TEXT(30)"),
                 ("Responsavel", "Responsavel TEXT(100)"),
-                ("Localizacao", "Localizacao TEXT(100)"),
-                ("Observacoes", "Observacoes MEMO"),
-                ("AtualizadoEm", "AtualizadoEm DATETIME")
+                ("Ipei", "Ipei TEXT(100)"),
+                ("MacAddress", "MacAddress TEXT(50)"),
+                ("Numero", "Numero TEXT(50)"),
+                ("Local", "Local TEXT(100)")
             });
         });
 
@@ -383,29 +363,19 @@ public static class AccessSchemaManager
             CreateTable("TelefonesCisco", @"
                 CREATE TABLE TelefonesCisco (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Patrimonio TEXT(100),
-                    Marca TEXT(100),
-                    Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
-                    Imei TEXT(30),
                     Responsavel TEXT(100),
-                    Localizacao TEXT(100),
-                    Observacoes MEMO,
-                    AtualizadoEm DATETIME
+                    MacAddress TEXT(50),
+                    Numero TEXT(50),
+                    Local TEXT(100)
                 )
             ");
 
             EnsureColumns("TelefonesCisco", new (string, string)[]
             {
-                ("Patrimonio", "Patrimonio TEXT(100)"),
-                ("Marca", "Marca TEXT(100)"),
-                ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Imei", "Imei TEXT(30)"),
                 ("Responsavel", "Responsavel TEXT(100)"),
-                ("Localizacao", "Localizacao TEXT(100)"),
-                ("Observacoes", "Observacoes MEMO"),
-                ("AtualizadoEm", "AtualizadoEm DATETIME")
+                ("MacAddress", "MacAddress TEXT(50)"),
+                ("Numero", "Numero TEXT(50)"),
+                ("Local", "Local TEXT(100)")
             });
         });
 
@@ -414,21 +384,17 @@ public static class AccessSchemaManager
             CreateTable("Televisores", @"
                 CREATE TABLE Televisores (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Hostname TEXT(100),
                     Modelo TEXT(100),
                     NumeroSerie TEXT(100),
-                    Local TEXT(100),
-                    Responsavel TEXT(100)
+                    Local TEXT(100)
                 )
             ");
 
             EnsureColumns("Televisores", new (string, string)[]
             {
-                ("Hostname", "Hostname TEXT(100)"),
                 ("Modelo", "Modelo TEXT(100)"),
                 ("NumeroSerie", "NumeroSerie TEXT(100)"),
-                ("Local", "Local TEXT(100)"),
-                ("Responsavel", "Responsavel TEXT(100)")
+                ("Local", "Local TEXT(100)")
             });
         });
 
