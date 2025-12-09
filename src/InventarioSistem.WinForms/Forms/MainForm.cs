@@ -80,7 +80,7 @@ namespace InventarioSistem.WinForms
 
         public MainForm()
         {
-            Text = "InventarioSistem";
+            Text = "Inventory System";
             StartPosition = FormStartPosition.CenterScreen;
             Size = new Size(1100, 650);
             MinimumSize = new Size(900, 550);
@@ -147,7 +147,7 @@ namespace InventarioSistem.WinForms
             _lblTitle = new Label
             {
                 AutoSize = true,
-                Text = "InventarioSistem",
+                Text = "Inventory System",
                 Font = new Font("Segoe UI", 14F, FontStyle.Bold, GraphicsUnit.Point),
                 Location = new Point(10, 10)
             };
