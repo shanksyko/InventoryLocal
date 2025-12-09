@@ -15,7 +15,11 @@ public static class AccessSchemaManager
         "Computadores",
         "Tablets",
         "ColetoresAndroid",
-        "Celulares"
+        "Celulares",
+        "Impressoras",
+        "DectPhones",
+        "CiscoPhones",
+        "Televisores"
     };
 
     /// <summary>
@@ -121,10 +125,59 @@ public static class AccessSchemaManager
         CreateTable("Celulares", @"
             CREATE TABLE Celulares (
                 Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
                 Modelo TEXT(100),
                 Numero TEXT(50),
                 Proprietario TEXT(100),
-                Imeis TEXT(255)
+                Imei1 TEXT(50),
+                Imei2 TEXT(50)
+            )
+        ");
+
+        // Impressoras
+        CreateTable("Impressoras", @"
+            CREATE TABLE Impressoras (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
+                Modelo TEXT(100),
+                NumeroSerie TEXT(100),
+                Local TEXT(100),
+                Responsavel TEXT(100)
+            )
+        ");
+
+        // DectPhones
+        CreateTable("DectPhones", @"
+            CREATE TABLE DectPhones (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
+                NumeroSerie TEXT(100),
+                Ramal TEXT(50),
+                Responsavel TEXT(100)
+            )
+        ");
+
+        // CiscoPhones
+        CreateTable("CiscoPhones", @"
+            CREATE TABLE CiscoPhones (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
+                MacAddress TEXT(50),
+                IpAddress TEXT(50),
+                Ramal TEXT(50),
+                Responsavel TEXT(100)
+            )
+        ");
+
+        // Televisores
+        CreateTable("Televisores", @"
+            CREATE TABLE Televisores (
+                Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
+                Modelo TEXT(100),
+                NumeroSerie TEXT(100),
+                Local TEXT(100),
+                Responsavel TEXT(100)
             )
         ");
     }

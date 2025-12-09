@@ -114,6 +114,10 @@ public static class AccessDatabaseManager
         TryCount("Tablets");
         TryCount("ColetoresAndroid");
         TryCount("Celulares");
+        TryCount("Impressoras");
+        TryCount("DectPhones");
+        TryCount("CiscoPhones");
+        TryCount("Televisores");
 
         return sb.ToString();
     }
