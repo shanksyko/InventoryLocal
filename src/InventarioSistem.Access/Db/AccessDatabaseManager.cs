@@ -122,6 +122,7 @@ public static class AccessDatabaseManager
         TryCount("Dects");
         TryCount("TelefonesCisco");
         TryCount("Televisores");
+        TryCount("RelogiosPonto");
 
         return sb.ToString();
     }
