@@ -804,7 +804,7 @@ public partial class AccessInventoryStore
     private static void AddDateParameter(OdbcCommand command, string name, DateTime? value)
     {
         var parameter = command.Parameters.Add(name, OdbcType.DateTime);
-        parameter.Value = value ?? DBNull.Value;
+        parameter.Value = value.HasValue ? value.Value : (object)DBNull.Value;
     }
 
     private static string GetStringSafe(OdbcDataReader reader, int ordinal)
