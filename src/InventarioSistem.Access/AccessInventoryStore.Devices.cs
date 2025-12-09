@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
+using System.Linq;
 using InventarioSistem.Core.Devices;
 using InventarioSistem.Core.Logging;
 using InventarioSistem.Core.Utils;

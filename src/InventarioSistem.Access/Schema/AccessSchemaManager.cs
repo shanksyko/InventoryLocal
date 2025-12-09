@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Odbc;
 using System.Linq;
+using InventarioSistem.Access;
 
 namespace InventarioSistem.Access.Schema;
 
@@ -15,7 +16,11 @@ public static class AccessSchemaManager
         "Computadores",
         "Tablets",
         "ColetoresAndroid",
-        "Celulares"
+        "Celulares",
+        "Impressoras",
+        "Dects",
+        "TelefonesCisco",
+        "Televisores"
     };
 
     /// <summary>
@@ -53,9 +58,10 @@ public static class AccessSchemaManager
     /// Cria as tabelas obrigatórias que ainda não existirem.
     /// Não apaga nem altera tabelas já existentes.
     /// </summary>
-    public static void EnsureRequiredTables()
+    public static void EnsureRequiredTables() => EnsureRequiredTables(new AccessConnectionFactory());
+
+    public static void EnsureRequiredTables(AccessConnectionFactory factory)
     {
-        var factory = new AccessConnectionFactory();
         using var conn = factory.CreateConnection();
         conn.Open();
 
