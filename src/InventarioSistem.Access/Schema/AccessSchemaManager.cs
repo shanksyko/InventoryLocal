@@ -18,6 +18,7 @@ public static class AccessSchemaManager
 
     private static readonly string[] RequiredTables =
     {
+        "Devices",
         "Computadores",
         "Tablets",
         "ColetoresAndroid",
@@ -135,6 +136,59 @@ public static class AccessSchemaManager
             }
         }
 
+        void EnsureDevicesTable()
+        {
+            CreateTable("Devices", @"
+                CREATE TABLE Devices (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Tipo TEXT(50),
+                    Patrimonio TEXT(100),
+                    Marca TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Imei TEXT(30),
+                    SistemaOperacional TEXT(100),
+                    Processador TEXT(100),
+                    MemoriaRamGb INTEGER,
+                    ArmazenamentoGb INTEGER,
+                    VersaoAndroid TEXT(50),
+                    LinhaTelefonica TEXT(50),
+                    Responsavel TEXT(100),
+                    Localizacao TEXT(100),
+                    Observacoes MEMO,
+                    AtualizadoEm DATETIME,
+                    FabricanteScanner TEXT(100),
+                    PossuiCarregadorBase YESNO,
+                    PossuiTeclado YESNO,
+                    Corporativo YESNO
+                )
+            ");
+
+            EnsureColumns("Devices", new (string, string)[]
+            {
+                ("Tipo", "Tipo TEXT(50)"),
+                ("Patrimonio", "Patrimonio TEXT(100)"),
+                ("Marca", "Marca TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Imei", "Imei TEXT(30)"),
+                ("SistemaOperacional", "SistemaOperacional TEXT(100)"),
+                ("Processador", "Processador TEXT(100)"),
+                ("MemoriaRamGb", "MemoriaRamGb INTEGER"),
+                ("ArmazenamentoGb", "ArmazenamentoGb INTEGER"),
+                ("VersaoAndroid", "VersaoAndroid TEXT(50)"),
+                ("LinhaTelefonica", "LinhaTelefonica TEXT(50)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Localizacao", "Localizacao TEXT(100)"),
+                ("Observacoes", "Observacoes MEMO"),
+                ("AtualizadoEm", "AtualizadoEm DATETIME"),
+                ("FabricanteScanner", "FabricanteScanner TEXT(100)"),
+                ("PossuiCarregadorBase", "PossuiCarregadorBase YESNO"),
+                ("PossuiTeclado", "PossuiTeclado YESNO"),
+                ("Corporativo", "Corporativo YESNO")
+            });
+        }
+
         void EnsureRelogiosPontoTable()
         {
             CreateTable("RelogiosPonto", @"
@@ -165,6 +219,8 @@ public static class AccessSchemaManager
                 ("AtualizadoEm", "AtualizadoEm DATETIME")
             });
         }
+
+        EnsureSafe("Devices", EnsureDevicesTable);
 
         EnsureSafe("Computadores", () =>
         {

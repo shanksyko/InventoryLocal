@@ -34,29 +34,54 @@ public class DashboardForm : Form
 
     private async Task LoadAsync()
     {
-        var totals = await _store.CountByTypeAsync();
-
-        _chart.Series.Clear();
-        var series = new Series("Dispositivos")
+        try
         {
-            ChartType = SeriesChartType.Pie,
-            ChartArea = "Main",
-            Legend = "Legenda",
-            IsValueShownAsLabel = true,
-            LabelFormat = "{0}"
-        };
+            await _store.EnsureSchemaAsync();
+            var totals = await _store.CountByTypeAsync();
 
-        foreach (var item in totals)
-        {
-            series.Points.AddXY(item.Key.ToString(), item.Value);
+            _chart.Series.Clear();
+            var series = new Series("Dispositivos")
+            {
+                ChartType = SeriesChartType.Pie,
+                ChartArea = "Main",
+                Legend = "Legenda",
+                IsValueShownAsLabel = true,
+                LabelFormat = "{0}"
+            };
+
+            foreach (var item in totals)
+            {
+                series.Points.AddXY(item.Key.ToString(), item.Value);
+            }
+
+            if (series.Points.Count == 0)
+            {
+                series.Points.AddXY("Sem dados", 1);
+                series.Points[0].Color = Color.LightGray;
+            }
+
+            _chart.Series.Add(series);
         }
-
-        if (series.Points.Count == 0)
+        catch (Exception ex)
         {
-            series.Points.AddXY("Sem dados", 1);
-            series.Points[0].Color = Color.LightGray;
-        }
+            MessageBox.Show(this,
+                "Erro ao carregar dashboard:\n\n" + ex.Message,
+                "Dashboard",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
 
-        _chart.Series.Add(series);
+            _chart.Series.Clear();
+            var fallback = new Series("Dispositivos")
+            {
+                ChartType = SeriesChartType.Pie,
+                ChartArea = "Main",
+                Legend = "Legenda",
+                IsValueShownAsLabel = true
+            };
+
+            fallback.Points.AddXY("Erro", 1);
+            fallback.Points[0].Color = Color.LightGray;
+            _chart.Series.Add(fallback);
+        }
     }
 }
