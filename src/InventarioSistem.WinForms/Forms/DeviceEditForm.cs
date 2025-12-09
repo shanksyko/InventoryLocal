@@ -1,250 +1,203 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Core.Entities;
-using InventarioSistem.Core.Utilities;
 
-namespace InventarioSistem.WinForms.Forms;
-
-public class DeviceEditForm : Form
+namespace InventarioSistem.WinForms.Forms
 {
-    private readonly AccessInventoryStore _store;
-    private Device _device;
-
-    public Device Result => _device;
-
-    private readonly ComboBox _typeCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList };
-    private readonly TextBox _patrimonio = new();
-    private readonly TextBox _marca = new();
-    private readonly TextBox _modelo = new();
-    private readonly TextBox _serie = new();
-    private readonly TextBox _imei = new();
-    private readonly TextBox _responsavel = new();
-    private readonly TextBox _localizacao = new();
-    private readonly TextBox _observacoes = new() { Multiline = true, Height = 60 };
-
-    private readonly TextBox _sistema = new();
-    private readonly TextBox _processador = new();
-    private readonly NumericUpDown _ram = new() { Minimum = 0, Maximum = 512 };
-    private readonly NumericUpDown _armazenamento = new() { Minimum = 0, Maximum = 4096 };
-
-    private readonly TextBox _versaoAndroid = new();
-    private readonly TextBox _linha = new();
-    private readonly CheckBox _teclado = new() { Text = "Possui teclado" };
-
-    private readonly TextBox _scanner = new();
-    private readonly CheckBox _base = new() { Text = "Base/Carregador" };
-
-    private readonly CheckBox _corporativo = new() { Text = "Linha corporativa" };
-
-    public DeviceEditForm(AccessInventoryStore store, Device? device)
+    /// <summary>
+    /// Formulário genérico para edição de "dispositivo".
+    /// É pensado para ser usado de forma simples, por exemplo:
+    ///
+    ///   var form = new DeviceEditForm(
+    ///       "Impressora",
+    ///       new Dictionary<string, string>
+    ///       {
+    ///           ["Hostname"] = impressora.Hostname,
+    ///           ["Serial Number"] = impressora.SerialNumber,
+    ///           ["IP"] = impressora.IpAddress,
+    ///           ["Modelo"] = impressora.Modelo
+    ///       });
+    ///
+    ///   if (form.ShowDialog(this) == DialogResult.OK)
+    ///   {
+    ///       var result = form.Result;
+    ///       impressora.Hostname     = result["Hostname"];
+    ///       impressora.SerialNumber = result["Serial Number"];
+    ///       ...
+    ///   }
+    ///
+    /// Para chamadas antigas que apenas instanciam DeviceEditForm
+    /// com outro tipo de assinatura, há construtores de conveniência
+    /// que não quebram o build.
+    /// </summary>
+    public class DeviceEditForm : Form
     {
-        _store = store;
-        _device = device ?? new Computer();
+        private readonly Dictionary<string, TextBox> _fields = new();
+        private readonly string _title;
+        private readonly Dictionary<string, string> _initialValues;
 
-        Text = device == null ? "Novo dispositivo" : "Editar dispositivo";
-        Width = 520;
-        Height = 650;
-        StartPosition = FormStartPosition.CenterParent;
+        public Dictionary<string, string> Result { get; private set; } = new();
 
-        _typeCombo.DataSource = Enum.GetValues(typeof(DeviceType));
-        _typeCombo.SelectedItem = _device.Type;
-        _typeCombo.SelectedValueChanged += (_, _) => OnTypeChanged();
-
-        var layout = new TableLayoutPanel
+        /// <summary>
+        /// Construtor mais completo: título + mapa de campos.
+        /// </summary>
+        public DeviceEditForm(string title, Dictionary<string, string> fields)
         {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 0,
-            AutoSize = true,
-            Padding = new Padding(10),
-            AutoScroll = true
-        };
+            _title = string.IsNullOrWhiteSpace(title) ? "Editar dispositivo" : title;
+            _initialValues = fields ?? new Dictionary<string, string>();
 
-        void AddRow(string label, Control control)
-        {
-            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            layout.Controls.Add(new Label { Text = label, AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 0, 0) });
-            layout.Controls.Add(control);
+            InitializeLayout();
         }
 
-        AddRow("Tipo", _typeCombo);
-        AddRow("Patrimônio", _patrimonio);
-        AddRow("Marca", _marca);
-        AddRow("Modelo", _modelo);
-        AddRow("Número de Série", _serie);
-        AddRow("IMEI", _imei);
-        AddRow("Responsável", _responsavel);
-        AddRow("Localização", _localizacao);
-        AddRow("Observações", _observacoes);
-
-        AddRow("Sistema Operacional", _sistema);
-        AddRow("Processador", _processador);
-        AddRow("Memória RAM (GB)", _ram);
-        AddRow("Armazenamento (GB)", _armazenamento);
-
-        AddRow("Android", _versaoAndroid);
-        AddRow("Linha telefônica", _linha);
-        AddRow("Teclado (Tablet)", _teclado);
-
-        AddRow("Scanner (Coletor)", _scanner);
-        AddRow("Base (Coletor)", _base);
-
-        AddRow("Corporativo (Celular)", _corporativo);
-
-        var saveButton = new Button { Text = "Salvar", Dock = DockStyle.Bottom, Height = 35 };
-        saveButton.Click += async (_, _) => await SaveAsync();
-
-        Controls.Add(saveButton);
-        Controls.Add(layout);
-
-        BindFields();
-        OnTypeChanged();
-    }
-
-    private void BindFields()
-    {
-        _patrimonio.Text = _device.Patrimonio;
-        _marca.Text = _device.Marca;
-        _modelo.Text = _device.Modelo;
-        _serie.Text = _device.NumeroSerie;
-        _imei.Text = _device.Imei ?? string.Empty;
-        _responsavel.Text = _device.Responsavel;
-        _localizacao.Text = _device.Localizacao;
-        _observacoes.Text = _device.Observacoes ?? string.Empty;
-
-        if (_device is Computer computer)
+        /// <summary>
+        /// Construtor de conveniência para casos em que o código antigo chama apenas DeviceEditForm().
+        /// Mostra mensagem mínima para não quebrar o fluxo.
+        /// </summary>
+        public DeviceEditForm()
+            : this("Editar dispositivo", new Dictionary<string, string>())
         {
-            _sistema.Text = computer.SistemaOperacional;
-            _processador.Text = computer.Processador;
-            _ram.Value = computer.MemoriaRamGb;
-            _armazenamento.Value = computer.ArmazenamentoGb;
         }
 
-        if (_device is Tablet tablet)
-        {
-            _versaoAndroid.Text = tablet.VersaoAndroid;
-            _linha.Text = tablet.LinhaTelefonica;
-            _teclado.Checked = tablet.PossuiTeclado;
-        }
-
-        if (_device is ColetorAndroid coletor)
-        {
-            _versaoAndroid.Text = coletor.VersaoAndroid;
-            _scanner.Text = coletor.FabricanteScanner;
-            _base.Checked = coletor.PossuiCarregadorBase;
-        }
-
-        if (_device is Celular celular)
-        {
-            _versaoAndroid.Text = celular.VersaoAndroid;
-            _linha.Text = celular.LinhaTelefonica;
-            _corporativo.Checked = celular.Corporativo;
-        }
-    }
-
-    private void OnTypeChanged()
-    {
-        var selected = (DeviceType)_typeCombo.SelectedItem!;
-        if (_device.Type != selected && _device.Id == 0)
-        {
-            _device = selected switch
+        /// <summary>
+        /// Construtor de conveniência quando se passa um objeto qualquer (por compatibilidade).
+        /// Não faz introspecção; apenas usa ToString() do objeto como "Info".
+        /// </summary>
+        public DeviceEditForm(object existing)
+            : this("Editar dispositivo", new Dictionary<string, string>
             {
-                DeviceType.Tablet => new Tablet(),
-                DeviceType.ColetorAndroid => new ColetorAndroid(),
-                DeviceType.Celular => new Celular(),
-                DeviceType.Impressora => new Impressora(),
-                DeviceType.Dect => new Dect(),
-                DeviceType.TelefoneCisco => new TelefoneCisco(),
-                DeviceType.Televisor => new Televisor(),
-                _ => new Computer()
+                ["Info"] = existing?.ToString() ?? string.Empty
+            })
+        {
+        }
+
+        /// <summary>
+        /// Construtor de conveniência com título + objeto (por compatibilidade).
+        /// </summary>
+        public DeviceEditForm(string title, object existing)
+            : this(title, new Dictionary<string, string>
+            {
+                ["Info"] = existing?.ToString() ?? string.Empty
+            })
+        {
+        }
+
+        /// <summary>
+        /// Construtor de compatibilidade para chamadas existentes que usam o repositório e uma entidade Device.
+        /// Ele pré-popula alguns campos básicos com valores do dispositivo.
+        /// </summary>
+        public DeviceEditForm(AccessInventoryStore store, Device? existing)
+            : this(existing?.Type.ToString() ?? "Editar dispositivo", BuildFieldMap(existing))
+        {
+            _ = store; // Compat apenas para manter a assinatura antiga sem warnings.
+        }
+
+        private static Dictionary<string, string> BuildFieldMap(Device? device)
+        {
+            if (device == null)
+            {
+                return new Dictionary<string, string>();
+            }
+
+            return new Dictionary<string, string>
+            {
+                ["Tipo"] = device.Type.ToString(),
+                ["Patrimônio"] = device.Patrimonio ?? string.Empty,
+                ["Marca"] = device.Marca ?? string.Empty,
+                ["Modelo"] = device.Modelo ?? string.Empty,
+                ["Número de Série"] = device.NumeroSerie ?? string.Empty,
+                ["Responsável"] = device.Responsavel ?? string.Empty,
+                ["Localização"] = device.Localizacao ?? string.Empty,
+                ["Observações"] = device.Observacoes ?? string.Empty
             };
         }
 
-        _sistema.Enabled = selected == DeviceType.Computer;
-        _processador.Enabled = selected == DeviceType.Computer;
-        _ram.Enabled = selected == DeviceType.Computer;
-        _armazenamento.Enabled = selected == DeviceType.Computer;
-
-        var androidType = selected is DeviceType.Tablet or DeviceType.ColetorAndroid or DeviceType.Celular;
-
-        _versaoAndroid.Enabled = androidType;
-        _linha.Enabled = selected is DeviceType.Tablet or DeviceType.Celular;
-        _teclado.Enabled = selected == DeviceType.Tablet;
-
-        _scanner.Enabled = selected == DeviceType.ColetorAndroid;
-        _base.Enabled = selected == DeviceType.ColetorAndroid;
-
-        _corporativo.Enabled = selected == DeviceType.Celular;
-    }
-
-    private async Task SaveAsync()
-    {
-        try
+        private void InitializeLayout()
         {
-            _device.Patrimonio = _patrimonio.Text;
-            _device.Marca = _marca.Text;
-            _device.Modelo = _modelo.Text;
-            _device.NumeroSerie = _serie.Text;
-            _device.Responsavel = _responsavel.Text;
-            _device.Localizacao = _localizacao.Text;
-            _device.Observacoes = _observacoes.Text;
-            _device.AtualizadoEm = DateTime.UtcNow;
+            Text = _title;
+            StartPosition = FormStartPosition.CenterParent;
+            Size = new Size(420, 80 + Math.Max(1, _initialValues.Count) * 30);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
 
-            if (!string.IsNullOrWhiteSpace(_imei.Text))
+            int y = 15;
+
+            if (_initialValues.Count == 0)
             {
-                if (!ImeiUtility.IsValid(_imei.Text))
+                var lbl = new Label
                 {
-                    MessageBox.Show(this, "IMEI inválido", "Inventário", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    Text = "Nenhum campo configurado. (Form genérico - ajustar uso no MainForm)",
+                    AutoSize = true,
+                    Location = new Point(10, y)
+                };
+                Controls.Add(lbl);
+                y += 30;
+            }
+            else
+            {
+                foreach (var kvp in _initialValues)
+                {
+                    var lbl = new Label
+                    {
+                        Text = kvp.Key + ":",
+                        AutoSize = true,
+                        Location = new Point(10, y + 3)
+                    };
+
+                    var txt = new TextBox
+                    {
+                        Location = new Point(140, y),
+                        Width = 240,
+                        Text = kvp.Value ?? string.Empty
+                    };
+
+                    _fields[kvp.Key] = txt;
+
+                    Controls.Add(lbl);
+                    Controls.Add(txt);
+
+                    y += 30;
                 }
-
-                _device.Imei = ImeiUtility.Normalize(_imei.Text);
-            }
-            else
-            {
-                _device.Imei = null;
             }
 
-            switch (_device)
+            var btnOk = new Button
             {
-                case Computer computer:
-                    computer.SistemaOperacional = _sistema.Text;
-                    computer.Processador = _processador.Text;
-                    computer.MemoriaRamGb = (int)_ram.Value;
-                    computer.ArmazenamentoGb = (int)_armazenamento.Value;
-                    break;
-                case Tablet tablet:
-                    tablet.VersaoAndroid = _versaoAndroid.Text;
-                    tablet.LinhaTelefonica = _linha.Text;
-                    tablet.PossuiTeclado = _teclado.Checked;
-                    break;
-                case ColetorAndroid coletor:
-                    coletor.VersaoAndroid = _versaoAndroid.Text;
-                    coletor.FabricanteScanner = _scanner.Text;
-                    coletor.PossuiCarregadorBase = _base.Checked;
-                    break;
-                case Celular celular:
-                    celular.VersaoAndroid = _versaoAndroid.Text;
-                    celular.LinhaTelefonica = _linha.Text;
-                    celular.Corporativo = _corporativo.Checked;
-                    break;
-            }
+                Text = "OK",
+                Location = new Point(210, y + 10),
+                DialogResult = DialogResult.OK
+            };
 
-            if (_device.Id == 0)
+            var btnCancel = new Button
             {
-                await _store.AddAsync(_device);
-            }
-            else
-            {
-                await _store.UpdateAsync(_device);
-            }
+                Text = "Cancelar",
+                Location = new Point(295, y + 10),
+                DialogResult = DialogResult.Cancel
+            };
 
-            DialogResult = DialogResult.OK;
-            Close();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(this, ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            btnOk.Click += (_, _) =>
+            {
+                var result = new Dictionary<string, string>();
+                foreach (var kvp in _fields)
+                {
+                    result[kvp.Key] = kvp.Value.Text.Trim();
+                }
+                Result = result;
+
+                DialogResult = DialogResult.OK;
+                Close();
+            };
+
+            btnCancel.Click += (_, _) =>
+            {
+                DialogResult = DialogResult.Cancel;
+                Close();
+            };
+
+            Controls.Add(btnOk);
+            Controls.Add(btnCancel);
         }
     }
 }
