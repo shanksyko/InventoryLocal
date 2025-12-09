@@ -4,13 +4,17 @@ public class RelogioPonto
 {
     public int Id { get; set; }
 
-    public string Hostname { get; set; } = string.Empty;
-    public string Modelo { get; set; } = string.Empty;
+    public string IdRelogio { get; set; } = string.Empty;
+    public string Ip { get; set; } = string.Empty;
+    public string Mac { get; set; } = string.Empty;
     public string NumeroSerie { get; set; } = string.Empty;
-    public string IpAddress { get; set; } = string.Empty;
-    public string Local { get; set; } = string.Empty;
-    public string Responsavel { get; set; } = string.Empty;
+    public string VersaoFirmwareMrp { get; set; } = string.Empty;
+    public string VersaoFirmware { get; set; } = string.Empty;
+    public string IdSwitch { get; set; } = string.Empty;
+    public string Bateria { get; set; } = string.Empty;
+    public string Nobreak { get; set; } = string.Empty;
+    public string ProximaAvaliacao { get; set; } = string.Empty;
 
     public override string ToString()
-        => $"[RelogioPonto] Id={Id}, Host={Hostname}, Modelo={Modelo}, NS={NumeroSerie}, IP={IpAddress}, Local={Local}, Resp={Responsavel}";
+        => $"[RelogioPonto] Id={Id}, IdRelogio={IdRelogio}, IP={Ip}, MAC={Mac}, NS={NumeroSerie}, FirmwareMRP={VersaoFirmwareMrp}, Firmware={VersaoFirmware}, IdSwitch={IdSwitch}, Bateria={Bateria}, Nobreak={Nobreak}, ProximaAvaliacao={ProximaAvaliacao}";
 }
