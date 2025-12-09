@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Core.Entities;
 
-namespace InventarioSistem.WinForms.Forms
+namespace InventarioSistem.WinForms
 {
     /// <summary>
     /// Formulário genérico para edição de um "Device" (InventarioSistem.Core.Entities.Device)
@@ -57,7 +57,7 @@ namespace InventarioSistem.WinForms.Forms
         /// Construtor usado quando temos o store e um Device.
         /// Compatível com chamadas: new DeviceEditForm(_store, device)
         /// </summary>
-        public DeviceEditForm(AccessInventoryStore store, Device device)
+        public DeviceEditForm(AccessInventoryStore store, Device? device)
             : this("Editar dispositivo", BuildInitialValues(device))
         {
             _store = store;
