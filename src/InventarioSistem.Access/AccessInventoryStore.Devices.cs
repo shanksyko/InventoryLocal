@@ -5,6 +5,7 @@ using System.Linq;
 using InventarioSistem.Core.Devices;
 using InventarioSistem.Core.Logging;
 using InventarioSistem.Core.Utils;
+using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
 
 namespace InventarioSistem.Access;
 
@@ -906,9 +907,9 @@ public partial class AccessInventoryStore
     //
     //  MONITORES
     //
-    public List<Monitor> GetAllMonitores()
+    public List<MonitorDevice> GetAllMonitores()
     {
-        var monitores = new List<Monitor>();
+        var monitores = new List<MonitorDevice>();
 
         using var connection = _factory.CreateConnection();
         connection.Open();
@@ -919,7 +920,7 @@ public partial class AccessInventoryStore
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
-            monitores.Add(new Monitor
+            monitores.Add(new MonitorDevice
             {
                 Id = reader.GetInt32(0),
                 Modelo = GetStringSafe(reader, 1),
@@ -933,7 +934,7 @@ public partial class AccessInventoryStore
         return monitores;
     }
 
-    public void AddMonitor(Monitor monitor)
+    public void AddMonitor(MonitorDevice monitor)
     {
         ArgumentNullException.ThrowIfNull(monitor);
 
@@ -959,7 +960,7 @@ public partial class AccessInventoryStore
             $"Monitor inserido: Modelo='{monitor.Modelo}', Serial='{monitor.SerialNumber}', Local='{monitor.Local}', Resp='{monitor.Responsavel}', PC='{monitor.ComputadorVinculado}'");
     }
 
-    public void UpdateMonitor(Monitor monitor)
+    public void UpdateMonitor(MonitorDevice monitor)
     {
         ArgumentNullException.ThrowIfNull(monitor);
 
