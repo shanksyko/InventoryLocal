@@ -1196,7 +1196,25 @@ namespace InventarioSistem.WinForms
                     }
                 }
 
+                // Habilita as abas de dados e garante também o schema "novo" baseado em Devices
                 EnableDataTabs(true);
+                try
+                {
+                    // Cria/ajusta a tabela Devices, usada pelos tipos mais novos
+                    _store?.EnsureSchemaAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception schemaEx)
+                {
+                    MessageBox.Show(this,
+                        "Banco selecionado, mas houve erro ao garantir a estrutura interna (tabela Devices):\n\n"
+                        + schemaEx.Message +
+                        "\n\nVocê ainda pode usar as abas legadas (Computadores/Tablets/Coletores/Celulares), " +
+                        "mas as novas abas (Impressoras/DECT/Cisco/TVs) podem não funcionar até corrigir o banco.",
+                        "Aviso de estrutura",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
+
                 LoadAllGrids();
 
                 MessageBox.Show(this,
