@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
 using System.Linq;
 using InventarioSistem.Access;
+using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.Access.Schema;
 
@@ -12,6 +14,8 @@ namespace InventarioSistem.Access.Schema;
 /// </summary>
 public static class AccessSchemaManager
 {
+    private const string LoggerSource = "AccessSchema";
+
     private static readonly string[] RequiredTables =
     {
         "Computadores",
@@ -64,6 +68,10 @@ public static class AccessSchemaManager
 
     public static void EnsureRequiredTables(AccessConnectionFactory factory)
     {
+        InventoryLogger.Info(LoggerSource, "Iniciando verificação/criação do schema Access.");
+
+        var errors = new List<Exception>();
+
         using var conn = factory.CreateConnection();
         conn.Open();
 
@@ -110,6 +118,23 @@ public static class AccessSchemaManager
             }
         }
 
+        bool EnsureSafe(string tableName, Action action)
+        {
+            try
+            {
+                InventoryLogger.Info(LoggerSource, $"Verificando tabela '{tableName}'...");
+                action();
+                InventoryLogger.Info(LoggerSource, $"Tabela '{tableName}' ok (existente ou criada).");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                InventoryLogger.Error(LoggerSource, $"Falha ao garantir tabela '{tableName}'.", ex);
+                errors.Add(ex);
+                return false;
+            }
+        }
+
         void EnsureRelogiosPontoTable()
         {
             CreateTable("RelogiosPonto", @"
@@ -141,200 +166,223 @@ public static class AccessSchemaManager
             });
         }
 
-        // Computadores
-        CreateTable("Computadores", @"
-            CREATE TABLE Computadores (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Host TEXT(100),
-                SerialNumber TEXT(100),
-                Proprietario TEXT(100),
-                Departamento TEXT(100),
-                Matricula TEXT(50)
-            )
-        ");
-
-        EnsureColumns("Computadores", new (string, string)[]
+        EnsureSafe("Computadores", () =>
         {
-            ("Host", "Host TEXT(100)"),
-            ("SerialNumber", "SerialNumber TEXT(100)"),
-            ("Proprietario", "Proprietario TEXT(100)"),
-            ("Departamento", "Departamento TEXT(100)"),
-            ("Matricula", "Matricula TEXT(50)")
+            CreateTable("Computadores", @"
+                CREATE TABLE Computadores (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Host TEXT(100),
+                    SerialNumber TEXT(100),
+                    Proprietario TEXT(100),
+                    Departamento TEXT(100),
+                    Matricula TEXT(50)
+                )
+            ");
+
+            EnsureColumns("Computadores", new (string, string)[]
+            {
+                ("Host", "Host TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("Proprietario", "Proprietario TEXT(100)"),
+                ("Departamento", "Departamento TEXT(100)"),
+                ("Matricula", "Matricula TEXT(50)")
+            });
         });
 
-        // Tablets
-        CreateTable("Tablets", @"
-            CREATE TABLE Tablets (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Host TEXT(100),
-                SerialNumber TEXT(100),
-                Local TEXT(100),
-                Responsavel TEXT(100),
-                Imeis TEXT(255)
-            )
-        ");
-
-        EnsureColumns("Tablets", new (string, string)[]
+        EnsureSafe("Tablets", () =>
         {
-            ("Host", "Host TEXT(100)"),
-            ("SerialNumber", "SerialNumber TEXT(100)"),
-            ("Local", "Local TEXT(100)"),
-            ("Responsavel", "Responsavel TEXT(100)"),
-            ("Imeis", "Imeis TEXT(255)")
+            CreateTable("Tablets", @"
+                CREATE TABLE Tablets (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Host TEXT(100),
+                    SerialNumber TEXT(100),
+                    Local TEXT(100),
+                    Responsavel TEXT(100),
+                    Imeis TEXT(255)
+                )
+            ");
+
+            EnsureColumns("Tablets", new (string, string)[]
+            {
+                ("Host", "Host TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("Local", "Local TEXT(100)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Imeis", "Imeis TEXT(255)")
+            });
         });
 
-        // ColetoresAndroid
-        CreateTable("ColetoresAndroid", @"
-            CREATE TABLE ColetoresAndroid (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Host TEXT(100),
-                SerialNumber TEXT(100),
-                MacAddress TEXT(50),
-                IpAddress TEXT(50),
-                Local TEXT(100)
-            )
-        ");
-
-        EnsureColumns("ColetoresAndroid", new (string, string)[]
+        EnsureSafe("ColetoresAndroid", () =>
         {
-            ("Host", "Host TEXT(100)"),
-            ("SerialNumber", "SerialNumber TEXT(100)"),
-            ("MacAddress", "MacAddress TEXT(50)"),
-            ("IpAddress", "IpAddress TEXT(50)"),
-            ("Local", "Local TEXT(100)")
+            CreateTable("ColetoresAndroid", @"
+                CREATE TABLE ColetoresAndroid (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Host TEXT(100),
+                    SerialNumber TEXT(100),
+                    MacAddress TEXT(50),
+                    IpAddress TEXT(50),
+                    Local TEXT(100)
+                )
+            ");
+
+            EnsureColumns("ColetoresAndroid", new (string, string)[]
+            {
+                ("Host", "Host TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("MacAddress", "MacAddress TEXT(50)"),
+                ("IpAddress", "IpAddress TEXT(50)"),
+                ("Local", "Local TEXT(100)")
+            });
         });
 
-        // Celulares
-        CreateTable("Celulares", @"
-            CREATE TABLE Celulares (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                Modelo TEXT(100),
-                Numero TEXT(50),
-                Proprietario TEXT(100),
-                Imei1 TEXT(50),
-                Imei2 TEXT(50)
-            )
-        ");
-
-        EnsureColumns("Celulares", new (string, string)[]
+        EnsureSafe("Celulares", () =>
         {
-            ("Hostname", "Hostname TEXT(100)"),
-            ("Modelo", "Modelo TEXT(100)"),
-            ("Numero", "Numero TEXT(50)"),
-            ("Proprietario", "Proprietario TEXT(100)"),
-            ("Imei1", "Imei1 TEXT(50)"),
-            ("Imei2", "Imei2 TEXT(50)")
+            CreateTable("Celulares", @"
+                CREATE TABLE Celulares (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Hostname TEXT(100),
+                    Modelo TEXT(100),
+                    Numero TEXT(50),
+                    Proprietario TEXT(100),
+                    Imei1 TEXT(50),
+                    Imei2 TEXT(50)
+                )
+            ");
+
+            EnsureColumns("Celulares", new (string, string)[]
+            {
+                ("Hostname", "Hostname TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("Numero", "Numero TEXT(50)"),
+                ("Proprietario", "Proprietario TEXT(100)"),
+                ("Imei1", "Imei1 TEXT(50)"),
+                ("Imei2", "Imei2 TEXT(50)")
+            });
         });
 
-        // Impressoras
-        CreateTable("Impressoras", @"
-            CREATE TABLE Impressoras (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Patrimonio TEXT(100),
-                Marca TEXT(100),
-                Modelo TEXT(100),
-                NumeroSerie TEXT(100),
-                Imei TEXT(30),
-                Responsavel TEXT(100),
-                Localizacao TEXT(100),
-                Observacoes MEMO,
-                AtualizadoEm DATETIME
-            )
-        ");
-
-        EnsureColumns("Impressoras", new (string, string)[]
+        EnsureSafe("Impressoras", () =>
         {
-            ("Patrimonio", "Patrimonio TEXT(100)"),
-            ("Marca", "Marca TEXT(100)"),
-            ("Modelo", "Modelo TEXT(100)"),
-            ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Imei", "Imei TEXT(30)"),
-            ("Responsavel", "Responsavel TEXT(100)"),
-            ("Localizacao", "Localizacao TEXT(100)"),
-            ("Observacoes", "Observacoes MEMO"),
-            ("AtualizadoEm", "AtualizadoEm DATETIME")
+            CreateTable("Impressoras", @"
+                CREATE TABLE Impressoras (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Patrimonio TEXT(100),
+                    Marca TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Imei TEXT(30),
+                    Responsavel TEXT(100),
+                    Localizacao TEXT(100),
+                    Observacoes MEMO,
+                    AtualizadoEm DATETIME
+                )
+            ");
+
+            EnsureColumns("Impressoras", new (string, string)[]
+            {
+                ("Patrimonio", "Patrimonio TEXT(100)"),
+                ("Marca", "Marca TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Imei", "Imei TEXT(30)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Localizacao", "Localizacao TEXT(100)"),
+                ("Observacoes", "Observacoes MEMO"),
+                ("AtualizadoEm", "AtualizadoEm DATETIME")
+            });
         });
 
-        // Dects
-        CreateTable("Dects", @"
-            CREATE TABLE Dects (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Patrimonio TEXT(100),
-                Marca TEXT(100),
-                Modelo TEXT(100),
-                NumeroSerie TEXT(100),
-                Imei TEXT(30),
-                Responsavel TEXT(100),
-                Localizacao TEXT(100),
-                Observacoes MEMO,
-                AtualizadoEm DATETIME
-            )
-        ");
-
-        EnsureColumns("Dects", new (string, string)[]
+        EnsureSafe("Dects", () =>
         {
-            ("Patrimonio", "Patrimonio TEXT(100)"),
-            ("Marca", "Marca TEXT(100)"),
-            ("Modelo", "Modelo TEXT(100)"),
-            ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Imei", "Imei TEXT(30)"),
-            ("Responsavel", "Responsavel TEXT(100)"),
-            ("Localizacao", "Localizacao TEXT(100)"),
-            ("Observacoes", "Observacoes MEMO"),
-            ("AtualizadoEm", "AtualizadoEm DATETIME")
+            CreateTable("Dects", @"
+                CREATE TABLE Dects (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Patrimonio TEXT(100),
+                    Marca TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Imei TEXT(30),
+                    Responsavel TEXT(100),
+                    Localizacao TEXT(100),
+                    Observacoes MEMO,
+                    AtualizadoEm DATETIME
+                )
+            ");
+
+            EnsureColumns("Dects", new (string, string)[]
+            {
+                ("Patrimonio", "Patrimonio TEXT(100)"),
+                ("Marca", "Marca TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Imei", "Imei TEXT(30)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Localizacao", "Localizacao TEXT(100)"),
+                ("Observacoes", "Observacoes MEMO"),
+                ("AtualizadoEm", "AtualizadoEm DATETIME")
+            });
         });
 
-        // TelefonesCisco
-        CreateTable("TelefonesCisco", @"
-            CREATE TABLE TelefonesCisco (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Patrimonio TEXT(100),
-                Marca TEXT(100),
-                Modelo TEXT(100),
-                NumeroSerie TEXT(100),
-                Imei TEXT(30),
-                Responsavel TEXT(100),
-                Localizacao TEXT(100),
-                Observacoes MEMO,
-                AtualizadoEm DATETIME
-            )
-        ");
-
-        EnsureColumns("TelefonesCisco", new (string, string)[]
+        EnsureSafe("TelefonesCisco", () =>
         {
-            ("Patrimonio", "Patrimonio TEXT(100)"),
-            ("Marca", "Marca TEXT(100)"),
-            ("Modelo", "Modelo TEXT(100)"),
-            ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Imei", "Imei TEXT(30)"),
-            ("Responsavel", "Responsavel TEXT(100)"),
-            ("Localizacao", "Localizacao TEXT(100)"),
-            ("Observacoes", "Observacoes MEMO"),
-            ("AtualizadoEm", "AtualizadoEm DATETIME")
+            CreateTable("TelefonesCisco", @"
+                CREATE TABLE TelefonesCisco (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Patrimonio TEXT(100),
+                    Marca TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Imei TEXT(30),
+                    Responsavel TEXT(100),
+                    Localizacao TEXT(100),
+                    Observacoes MEMO,
+                    AtualizadoEm DATETIME
+                )
+            ");
+
+            EnsureColumns("TelefonesCisco", new (string, string)[]
+            {
+                ("Patrimonio", "Patrimonio TEXT(100)"),
+                ("Marca", "Marca TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Imei", "Imei TEXT(30)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Localizacao", "Localizacao TEXT(100)"),
+                ("Observacoes", "Observacoes MEMO"),
+                ("AtualizadoEm", "AtualizadoEm DATETIME")
+            });
         });
 
-        // Televisores
-        CreateTable("Televisores", @"
-            CREATE TABLE Televisores (
-                Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                Modelo TEXT(100),
-                NumeroSerie TEXT(100),
-                Local TEXT(100),
-                Responsavel TEXT(100)
-            )
-        ");
-
-        EnsureColumns("Televisores", new (string, string)[]
+        EnsureSafe("Televisores", () =>
         {
-            ("Hostname", "Hostname TEXT(100)"),
-            ("Modelo", "Modelo TEXT(100)"),
-            ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Local", "Local TEXT(100)"),
-            ("Responsavel", "Responsavel TEXT(100)")
+            CreateTable("Televisores", @"
+                CREATE TABLE Televisores (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Hostname TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Local TEXT(100),
+                    Responsavel TEXT(100)
+                )
+            ");
+
+            EnsureColumns("Televisores", new (string, string)[]
+            {
+                ("Hostname", "Hostname TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Local", "Local TEXT(100)"),
+                ("Responsavel", "Responsavel TEXT(100)")
+            });
         });
 
-        EnsureRelogiosPontoTable();
+        EnsureSafe("RelogiosPonto", EnsureRelogiosPontoTable);
+
+        if (errors.Count > 0)
+        {
+            throw new AggregateException("Falha ao garantir as tabelas obrigatórias do Access.", errors);
+        }
+
+        InventoryLogger.Info(LoggerSource, "Verificação/criação do schema Access concluída.");
     }
 }

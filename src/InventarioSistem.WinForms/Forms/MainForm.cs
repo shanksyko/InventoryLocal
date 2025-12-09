@@ -105,11 +105,11 @@ namespace InventarioSistem.WinForms
                 var path = AccessDatabaseManager.ResolveActiveDatabasePath();
                 if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
                 {
-                _lblDbPath.Text = $"Banco atual: {path}";
-                EnableDataTabs(true);
-                _store.EnsureSchemaAsync().GetAwaiter().GetResult();
-                LoadAllGrids();
-            }
+                    _lblDbPath.Text = $"Banco atual: {path}";
+                    EnableDataTabs(true);
+                    AccessSchemaManager.EnsureRequiredTables();
+                    LoadAllGrids();
+                }
                 else
                 {
                     _lblDbPath.Text = "Banco atual: (não configurado)";
@@ -1217,75 +1217,42 @@ namespace InventarioSistem.WinForms
                 InventoryLogger.Info("WinForms", $"Banco definido: {path}");
 
                 // Garante estrutura mínima
-                bool hasAllTables;
                 try
                 {
-                    hasAllTables = AccessSchemaManager.HasAllRequiredTables();
+                    InventoryLogger.Info("WinForms", "Iniciando EnsureRequiredTables() para o banco selecionado.");
+                    AccessSchemaManager.EnsureRequiredTables();
+                    InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
                 }
                 catch (Exception ex)
                 {
+                    InventoryLogger.Error("WinForms", "Erro ao garantir schema Access para o banco selecionado.", ex);
                     MessageBox.Show(this,
-                        "Erro ao verificar estrutura do banco:\n\n" + ex.Message,
-                        "Erro",
+                        "Ocorreu um erro ao criar/verificar as tabelas no banco selecionado:\n\n" +
+                        ex.Message +
+                        "\n\nVerifique o arquivo .accdb (permissões, bloqueio, etc.) ou escolha outro caminho.",
+                        "Erro de schema",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
+                    EnableDataTabs(false);
                     return;
                 }
 
-                if (!hasAllTables)
-                {
-                    var respCreate = MessageBox.Show(
-                        this,
-                        "Este banco não possui todas as tabelas padrão do InventarioSistem.\n\n" +
-                        "Deseja criá-las agora?",
-                        "Criar tabelas",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Question);
-
-                    if (respCreate == DialogResult.Yes)
-                    {
-                        try
-                        {
-                            AccessSchemaManager.EnsureRequiredTables();
-                            InventoryLogger.Info("WinForms", "Tabelas padrão criadas/ajustadas no banco selecionado.");
-                            MessageBox.Show(this,
-                                "Tabelas criadas/ajustadas com sucesso.",
-                                "Banco Access",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(this,
-                                "Erro ao criar tabelas:\n\n" + ex.Message,
-                                "Erro",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-                            return;
-                        }
-                    }
-                }
-
-                // Habilita as abas de dados e garante também o schema "novo" baseado em Devices
                 EnableDataTabs(true);
+
                 try
                 {
-                    // Cria/ajusta a tabela Devices, usada pelos tipos mais novos
-                    _store?.EnsureSchemaAsync().GetAwaiter().GetResult();
+                    LoadAllGrids();
                 }
-                catch (Exception schemaEx)
+                catch (Exception ex)
                 {
+                    InventoryLogger.Error("WinForms", "Erro ao carregar grids após configuração do banco.", ex);
                     MessageBox.Show(this,
-                        "Banco selecionado, mas houve erro ao garantir a estrutura interna (tabela Devices):\n\n"
-                        + schemaEx.Message +
-                        "\n\nVocê ainda pode usar as abas legadas (Computadores/Tablets/Coletores/Celulares), " +
-                        "mas as novas abas (Impressoras/DECT/Cisco/TVs) podem não funcionar até corrigir o banco.",
-                        "Aviso de estrutura",
+                        "O banco foi configurado e as tabelas foram criadas/verificadas,\n" +
+                        "mas houve erro ao carregar os dados na interface:\n\n" + ex.Message,
+                        "Erro ao carregar dados",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                 }
-
-                LoadAllGrids();
 
                 MessageBox.Show(this,
                     "✔ Banco configurado e salvo nas configurações.\n" +
