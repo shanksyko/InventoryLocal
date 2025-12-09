@@ -121,10 +121,12 @@ public static class AccessSchemaManager
         CreateTable("Celulares", @"
             CREATE TABLE Celulares (
                 Id AUTOINCREMENT PRIMARY KEY,
+                Hostname TEXT(100),
                 Modelo TEXT(100),
                 Numero TEXT(50),
                 Proprietario TEXT(100),
-                Imeis TEXT(255)
+                Imei1 TEXT(50),
+                Imei2 TEXT(50)
             )
         ");
     }
