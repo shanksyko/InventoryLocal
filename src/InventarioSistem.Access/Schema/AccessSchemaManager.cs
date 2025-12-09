@@ -195,7 +195,7 @@ public static class AccessSchemaManager
                 CREATE TABLE RelogiosPonto (
                     Id AUTOINCREMENT PRIMARY KEY,
                     Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
+                    SerialNumber TEXT(100),
                     Local TEXT(100),
                     Ip TEXT(50),
                     DataBateria DATETIME,
@@ -207,7 +207,7 @@ public static class AccessSchemaManager
             EnsureColumns("RelogiosPonto", new (string, string)[]
             {
                 ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Local", "Local TEXT(100)"),
                 ("Ip", "Ip TEXT(50)"),
                 ("DataBateria", "DataBateria DATETIME"),
@@ -320,8 +320,8 @@ public static class AccessSchemaManager
                     Nome TEXT(200),
                     TipoModelo TEXT(100),
                     SerialNumber TEXT(100),
-                    LocalizacaoAtual TEXT(100),
-                    LocalizacaoAnterior TEXT(100)
+                    LocalAtual TEXT(100),
+                    LocalAnterior TEXT(100)
                 )
             ");
 
@@ -330,8 +330,8 @@ public static class AccessSchemaManager
                 ("Nome", "Nome TEXT(200)"),
                 ("TipoModelo", "TipoModelo TEXT(100)"),
                 ("SerialNumber", "SerialNumber TEXT(100)"),
-                ("LocalizacaoAtual", "LocalizacaoAtual TEXT(100)"),
-                ("LocalizacaoAnterior", "LocalizacaoAnterior TEXT(100)")
+                ("LocalAtual", "LocalAtual TEXT(100)"),
+                ("LocalAnterior", "LocalAnterior TEXT(100)")
             });
         });
 
@@ -385,7 +385,7 @@ public static class AccessSchemaManager
                 CREATE TABLE Televisores (
                     Id AUTOINCREMENT PRIMARY KEY,
                     Modelo TEXT(100),
-                    NumeroSerie TEXT(100),
+                    SerialNumber TEXT(100),
                     Local TEXT(100)
                 )
             ");
@@ -393,7 +393,7 @@ public static class AccessSchemaManager
             EnsureColumns("Televisores", new (string, string)[]
             {
                 ("Modelo", "Modelo TEXT(100)"),
-                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Local", "Local TEXT(100)")
             });
         });
