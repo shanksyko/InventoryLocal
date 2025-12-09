@@ -21,7 +21,8 @@ public static class AccessSchemaManager
         "Impressoras",
         "Dects",
         "TelefonesCisco",
-        "Televisores"
+        "Televisores",
+        "RelogiosPonto"
     };
 
     /// <summary>
@@ -107,6 +108,37 @@ public static class AccessSchemaManager
                 alter.CommandText = $"ALTER TABLE [{tableName}] ADD COLUMN {definition}";
                 alter.ExecuteNonQuery();
             }
+        }
+
+        void EnsureRelogiosPontoTable()
+        {
+            CreateTable("RelogiosPonto", @"
+                CREATE TABLE RelogiosPonto (
+                    Id AUTOINCREMENT PRIMARY KEY,
+                    Patrimonio TEXT(100),
+                    Marca TEXT(100),
+                    Modelo TEXT(100),
+                    NumeroSerie TEXT(100),
+                    Imei TEXT(30),
+                    Responsavel TEXT(100),
+                    Localizacao TEXT(100),
+                    Observacoes MEMO,
+                    AtualizadoEm DATETIME
+                )
+            ");
+
+            EnsureColumns("RelogiosPonto", new (string, string)[]
+            {
+                ("Patrimonio", "Patrimonio TEXT(100)"),
+                ("Marca", "Marca TEXT(100)"),
+                ("Modelo", "Modelo TEXT(100)"),
+                ("NumeroSerie", "NumeroSerie TEXT(100)"),
+                ("Imei", "Imei TEXT(30)"),
+                ("Responsavel", "Responsavel TEXT(100)"),
+                ("Localizacao", "Localizacao TEXT(100)"),
+                ("Observacoes", "Observacoes MEMO"),
+                ("AtualizadoEm", "AtualizadoEm DATETIME")
+            });
         }
 
         // Computadores
@@ -199,61 +231,87 @@ public static class AccessSchemaManager
         CreateTable("Impressoras", @"
             CREATE TABLE Impressoras (
                 Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
+                Patrimonio TEXT(100),
+                Marca TEXT(100),
                 Modelo TEXT(100),
                 NumeroSerie TEXT(100),
-                Local TEXT(100),
-                Responsavel TEXT(100)
+                Imei TEXT(30),
+                Responsavel TEXT(100),
+                Localizacao TEXT(100),
+                Observacoes MEMO,
+                AtualizadoEm DATETIME
             )
         ");
 
         EnsureColumns("Impressoras", new (string, string)[]
         {
-            ("Hostname", "Hostname TEXT(100)"),
+            ("Patrimonio", "Patrimonio TEXT(100)"),
+            ("Marca", "Marca TEXT(100)"),
             ("Modelo", "Modelo TEXT(100)"),
             ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Local", "Local TEXT(100)"),
-            ("Responsavel", "Responsavel TEXT(100)")
+            ("Imei", "Imei TEXT(30)"),
+            ("Responsavel", "Responsavel TEXT(100)"),
+            ("Localizacao", "Localizacao TEXT(100)"),
+            ("Observacoes", "Observacoes MEMO"),
+            ("AtualizadoEm", "AtualizadoEm DATETIME")
         });
 
         // Dects
         CreateTable("Dects", @"
             CREATE TABLE Dects (
                 Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
+                Patrimonio TEXT(100),
+                Marca TEXT(100),
+                Modelo TEXT(100),
                 NumeroSerie TEXT(100),
-                Ramal TEXT(50),
-                Responsavel TEXT(100)
+                Imei TEXT(30),
+                Responsavel TEXT(100),
+                Localizacao TEXT(100),
+                Observacoes MEMO,
+                AtualizadoEm DATETIME
             )
         ");
 
         EnsureColumns("Dects", new (string, string)[]
         {
-            ("Hostname", "Hostname TEXT(100)"),
+            ("Patrimonio", "Patrimonio TEXT(100)"),
+            ("Marca", "Marca TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
             ("NumeroSerie", "NumeroSerie TEXT(100)"),
-            ("Ramal", "Ramal TEXT(50)"),
-            ("Responsavel", "Responsavel TEXT(100)")
+            ("Imei", "Imei TEXT(30)"),
+            ("Responsavel", "Responsavel TEXT(100)"),
+            ("Localizacao", "Localizacao TEXT(100)"),
+            ("Observacoes", "Observacoes MEMO"),
+            ("AtualizadoEm", "AtualizadoEm DATETIME")
         });
 
         // TelefonesCisco
         CreateTable("TelefonesCisco", @"
             CREATE TABLE TelefonesCisco (
                 Id AUTOINCREMENT PRIMARY KEY,
-                Hostname TEXT(100),
-                MacAddress TEXT(50),
-                IpAddress TEXT(50),
-                Ramal TEXT(50),
-                Responsavel TEXT(100)
+                Patrimonio TEXT(100),
+                Marca TEXT(100),
+                Modelo TEXT(100),
+                NumeroSerie TEXT(100),
+                Imei TEXT(30),
+                Responsavel TEXT(100),
+                Localizacao TEXT(100),
+                Observacoes MEMO,
+                AtualizadoEm DATETIME
             )
         ");
 
         EnsureColumns("TelefonesCisco", new (string, string)[]
         {
-            ("Hostname", "Hostname TEXT(100)"),
-            ("MacAddress", "MacAddress TEXT(50)"),
-            ("IpAddress", "IpAddress TEXT(50)"),
-            ("Ramal", "Ramal TEXT(50)"),
-            ("Responsavel", "Responsavel TEXT(100)")
+            ("Patrimonio", "Patrimonio TEXT(100)"),
+            ("Marca", "Marca TEXT(100)"),
+            ("Modelo", "Modelo TEXT(100)"),
+            ("NumeroSerie", "NumeroSerie TEXT(100)"),
+            ("Imei", "Imei TEXT(30)"),
+            ("Responsavel", "Responsavel TEXT(100)"),
+            ("Localizacao", "Localizacao TEXT(100)"),
+            ("Observacoes", "Observacoes MEMO"),
+            ("AtualizadoEm", "AtualizadoEm DATETIME")
         });
 
         // Televisores
@@ -276,5 +334,7 @@ public static class AccessSchemaManager
             ("Local", "Local TEXT(100)"),
             ("Responsavel", "Responsavel TEXT(100)")
         });
+
+        EnsureRelogiosPontoTable();
     }
 }
