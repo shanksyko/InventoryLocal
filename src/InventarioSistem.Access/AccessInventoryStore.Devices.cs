@@ -27,11 +27,11 @@ public partial class AccessInventoryStore
             VALUES (?, ?, ?, ?, ?)
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.SerialNumber);
-        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Proprietario);
-        command.Parameters.Add("Departamento", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Departamento);
-        command.Parameters.Add("Matricula", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Matricula);
+        AddTextParameter(command, "Host", computer.Host);
+        AddTextParameter(command, "SerialNumber", computer.SerialNumber);
+        AddTextParameter(command, "Proprietario", computer.Proprietario);
+        AddTextParameter(command, "Departamento", computer.Departamento);
+        AddTextParameter(command, "Matricula", computer.Matricula);
 
         command.ExecuteNonQuery();
 
@@ -55,11 +55,11 @@ public partial class AccessInventoryStore
             computers.Add(new Computer
             {
                 Id = reader.GetInt32(0),
-                Host = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                SerialNumber = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                Proprietario = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                Departamento = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                Matricula = reader.IsDBNull(5) ? string.Empty : reader.GetString(5)
+                Host = GetStringSafe(reader, 1),
+                SerialNumber = GetStringSafe(reader, 2),
+                Proprietario = GetStringSafe(reader, 3),
+                Departamento = GetStringSafe(reader, 4),
+                Matricula = GetStringSafe(reader, 5)
             });
         }
 
@@ -80,11 +80,11 @@ public partial class AccessInventoryStore
             WHERE Id = ?
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.SerialNumber);
-        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Proprietario);
-        command.Parameters.Add("Departamento", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Departamento);
-        command.Parameters.Add("Matricula", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(computer.Matricula);
+        AddTextParameter(command, "Host", computer.Host);
+        AddTextParameter(command, "SerialNumber", computer.SerialNumber);
+        AddTextParameter(command, "Proprietario", computer.Proprietario);
+        AddTextParameter(command, "Departamento", computer.Departamento);
+        AddTextParameter(command, "Matricula", computer.Matricula);
         command.Parameters.Add("Id", OdbcType.Int).Value = computer.Id;
 
         command.ExecuteNonQuery();
@@ -110,11 +110,11 @@ public partial class AccessInventoryStore
             VALUES (?, ?, ?, ?, ?)
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.SerialNumber);
-        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Local);
-        command.Parameters.Add("Responsavel", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Responsavel);
-        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(tablet.Imeis);
+        AddTextParameter(command, "Host", tablet.Host);
+        AddTextParameter(command, "SerialNumber", tablet.SerialNumber);
+        AddTextParameter(command, "Local", tablet.Local);
+        AddTextParameter(command, "Responsavel", tablet.Responsavel);
+        AddTextParameter(command, "Imeis", DeviceStringUtils.ImeisToString(tablet.Imeis));
 
         command.ExecuteNonQuery();
 
@@ -140,10 +140,10 @@ public partial class AccessInventoryStore
             tablets.Add(new Tablet
             {
                 Id = reader.GetInt32(0),
-                Host = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                SerialNumber = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                Local = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                Responsavel = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                Host = GetStringSafe(reader, 1),
+                SerialNumber = GetStringSafe(reader, 2),
+                Local = GetStringSafe(reader, 3),
+                Responsavel = GetStringSafe(reader, 4),
                 Imeis = DeviceStringUtils.ImeisFromString(imeisRaw)
             });
         }
@@ -165,11 +165,11 @@ public partial class AccessInventoryStore
             WHERE Id = ?
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.SerialNumber);
-        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Local);
-        command.Parameters.Add("Responsavel", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(tablet.Responsavel);
-        command.Parameters.Add("Imeis", OdbcType.VarChar).Value = DeviceStringUtils.ImeisToString(tablet.Imeis);
+        AddTextParameter(command, "Host", tablet.Host);
+        AddTextParameter(command, "SerialNumber", tablet.SerialNumber);
+        AddTextParameter(command, "Local", tablet.Local);
+        AddTextParameter(command, "Responsavel", tablet.Responsavel);
+        AddTextParameter(command, "Imeis", DeviceStringUtils.ImeisToString(tablet.Imeis));
         command.Parameters.Add("Id", OdbcType.Int).Value = tablet.Id;
 
         command.ExecuteNonQuery();
@@ -196,11 +196,11 @@ public partial class AccessInventoryStore
             VALUES (?, ?, ?, ?, ?)
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.SerialNumber);
-        command.Parameters.Add("MacAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.MacAddress);
-        command.Parameters.Add("IpAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.IpAddress);
-        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Local);
+        AddTextParameter(command, "Host", coletor.Host);
+        AddTextParameter(command, "SerialNumber", coletor.SerialNumber);
+        AddTextParameter(command, "MacAddress", coletor.MacAddress);
+        AddTextParameter(command, "IpAddress", coletor.IpAddress);
+        AddTextParameter(command, "Local", coletor.Local);
 
         command.ExecuteNonQuery();
 
@@ -224,11 +224,11 @@ public partial class AccessInventoryStore
             coletores.Add(new ColetorAndroid
             {
                 Id = reader.GetInt32(0),
-                Host = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                SerialNumber = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                MacAddress = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                IpAddress = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                Local = reader.IsDBNull(5) ? string.Empty : reader.GetString(5)
+                Host = GetStringSafe(reader, 1),
+                SerialNumber = GetStringSafe(reader, 2),
+                MacAddress = GetStringSafe(reader, 3),
+                IpAddress = GetStringSafe(reader, 4),
+                Local = GetStringSafe(reader, 5)
             });
         }
 
@@ -249,11 +249,11 @@ public partial class AccessInventoryStore
             WHERE Id = ?
         ";
 
-        command.Parameters.Add("Host", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Host);
-        command.Parameters.Add("SerialNumber", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.SerialNumber);
-        command.Parameters.Add("MacAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.MacAddress);
-        command.Parameters.Add("IpAddress", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.IpAddress);
-        command.Parameters.Add("Local", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(coletor.Local);
+        AddTextParameter(command, "Host", coletor.Host);
+        AddTextParameter(command, "SerialNumber", coletor.SerialNumber);
+        AddTextParameter(command, "MacAddress", coletor.MacAddress);
+        AddTextParameter(command, "IpAddress", coletor.IpAddress);
+        AddTextParameter(command, "Local", coletor.Local);
         command.Parameters.Add("Id", OdbcType.Int).Value = coletor.Id;
 
         command.ExecuteNonQuery();
@@ -279,12 +279,12 @@ public partial class AccessInventoryStore
             VALUES (?, ?, ?, ?, ?, ?)
         ";
 
-        command.Parameters.Add("Hostname", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Hostname);
-        command.Parameters.Add("Modelo", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Modelo);
-        command.Parameters.Add("Numero", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Numero);
-        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Proprietario);
-        command.Parameters.Add("Imei1", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei1);
-        command.Parameters.Add("Imei2", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei2);
+        AddTextParameter(command, "Hostname", celular.Hostname);
+        AddTextParameter(command, "Modelo", celular.Modelo);
+        AddTextParameter(command, "Numero", celular.Numero);
+        AddTextParameter(command, "Proprietario", celular.Proprietario);
+        AddTextParameter(command, "Imei1", celular.Imei1);
+        AddTextParameter(command, "Imei2", celular.Imei2);
 
         command.ExecuteNonQuery();
 
@@ -308,12 +308,12 @@ public partial class AccessInventoryStore
             celulares.Add(new Celular
             {
                 Id = reader.GetInt32(0),
-                Hostname = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                Modelo = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                Numero = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                Proprietario = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                Imei1 = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                Imei2 = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)
+                Hostname = GetStringSafe(reader, 1),
+                Modelo = GetStringSafe(reader, 2),
+                Numero = GetStringSafe(reader, 3),
+                Proprietario = GetStringSafe(reader, 4),
+                Imei1 = GetStringSafe(reader, 5),
+                Imei2 = GetStringSafe(reader, 6)
             });
         }
 
@@ -334,17 +334,364 @@ public partial class AccessInventoryStore
             WHERE Id = ?
         ";
 
-        command.Parameters.Add("Hostname", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Hostname);
-        command.Parameters.Add("Modelo", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Modelo);
-        command.Parameters.Add("Numero", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Numero);
-        command.Parameters.Add("Proprietario", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Proprietario);
-        command.Parameters.Add("Imei1", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei1);
-        command.Parameters.Add("Imei2", OdbcType.VarChar).Value = DeviceStringUtils.NormalizeString(celular.Imei2);
+        AddTextParameter(command, "Hostname", celular.Hostname);
+        AddTextParameter(command, "Modelo", celular.Modelo);
+        AddTextParameter(command, "Numero", celular.Numero);
+        AddTextParameter(command, "Proprietario", celular.Proprietario);
+        AddTextParameter(command, "Imei1", celular.Imei1);
+        AddTextParameter(command, "Imei2", celular.Imei2);
         command.Parameters.Add("Id", OdbcType.Int).Value = celular.Id;
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
             $"Celular atualizado (Id={celular.Id}): Host='{celular.Hostname}', Modelo='{celular.Modelo}', Numero='{celular.Numero}', Proprietario='{celular.Proprietario}', IMEI1='{celular.Imei1}', IMEI2='{celular.Imei2}'");
+    }
+
+    //
+    //  IMPRESSORAS
+    //
+    public void AddImpressora(Impressora impressora)
+    {
+        ArgumentNullException.ThrowIfNull(impressora);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO Impressoras
+            (Hostname, Modelo, NumeroSerie, Local, Responsavel)
+            VALUES (?, ?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Hostname", impressora.Hostname);
+        AddTextParameter(command, "Modelo", impressora.Modelo);
+        AddTextParameter(command, "NumeroSerie", impressora.NumeroSerie);
+        AddTextParameter(command, "Local", impressora.Local);
+        AddTextParameter(command, "Responsavel", impressora.Responsavel);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Impressora inserida: Host='{impressora.Hostname}', Modelo='{impressora.Modelo}', NS='{impressora.NumeroSerie}', Local='{impressora.Local}', Resp='{impressora.Responsavel}'");
+    }
+
+    public List<Impressora> GetAllImpressoras()
+    {
+        var impressoras = new List<Impressora>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Hostname, Modelo, NumeroSerie, Local, Responsavel FROM Impressoras";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            impressoras.Add(new Impressora
+            {
+                Id = reader.GetInt32(0),
+                Hostname = GetStringSafe(reader, 1),
+                Modelo = GetStringSafe(reader, 2),
+                NumeroSerie = GetStringSafe(reader, 3),
+                Local = GetStringSafe(reader, 4),
+                Responsavel = GetStringSafe(reader, 5)
+            });
+        }
+
+        return impressoras;
+    }
+
+    public void UpdateImpressora(Impressora impressora)
+    {
+        ArgumentNullException.ThrowIfNull(impressora);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Impressoras
+            SET Hostname = ?, Modelo = ?, NumeroSerie = ?, Local = ?, Responsavel = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Hostname", impressora.Hostname);
+        AddTextParameter(command, "Modelo", impressora.Modelo);
+        AddTextParameter(command, "NumeroSerie", impressora.NumeroSerie);
+        AddTextParameter(command, "Local", impressora.Local);
+        AddTextParameter(command, "Responsavel", impressora.Responsavel);
+        command.Parameters.Add("Id", OdbcType.Int).Value = impressora.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Impressora atualizada (Id={impressora.Id}): Host='{impressora.Hostname}', Modelo='{impressora.Modelo}', NS='{impressora.NumeroSerie}', Local='{impressora.Local}', Resp='{impressora.Responsavel}'");
+    }
+
+    //
+    //  DECT
+    //
+    public void AddDect(DectPhone dect)
+    {
+        ArgumentNullException.ThrowIfNull(dect);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO Dects
+            (Hostname, NumeroSerie, Ramal, Responsavel)
+            VALUES (?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Hostname", dect.Hostname);
+        AddTextParameter(command, "NumeroSerie", dect.NumeroSerie);
+        AddTextParameter(command, "Ramal", dect.Ramal);
+        AddTextParameter(command, "Responsavel", dect.Responsavel);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"DECT inserido: Host='{dect.Hostname}', Ramal='{dect.Ramal}', NS='{dect.NumeroSerie}', Resp='{dect.Responsavel}'");
+    }
+
+    public List<DectPhone> GetAllDects()
+    {
+        var dects = new List<DectPhone>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Hostname, NumeroSerie, Ramal, Responsavel FROM Dects";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            dects.Add(new DectPhone
+            {
+                Id = reader.GetInt32(0),
+                Hostname = GetStringSafe(reader, 1),
+                NumeroSerie = GetStringSafe(reader, 2),
+                Ramal = GetStringSafe(reader, 3),
+                Responsavel = GetStringSafe(reader, 4)
+            });
+        }
+
+        return dects;
+    }
+
+    public void UpdateDect(DectPhone dect)
+    {
+        ArgumentNullException.ThrowIfNull(dect);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Dects
+            SET Hostname = ?, NumeroSerie = ?, Ramal = ?, Responsavel = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Hostname", dect.Hostname);
+        AddTextParameter(command, "NumeroSerie", dect.NumeroSerie);
+        AddTextParameter(command, "Ramal", dect.Ramal);
+        AddTextParameter(command, "Responsavel", dect.Responsavel);
+        command.Parameters.Add("Id", OdbcType.Int).Value = dect.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"DECT atualizado (Id={dect.Id}): Host='{dect.Hostname}', Ramal='{dect.Ramal}', NS='{dect.NumeroSerie}', Resp='{dect.Responsavel}'");
+    }
+
+    //
+    //  TELEFONES CISCO
+    //
+    public void AddTelefoneCisco(CiscoPhone phone)
+    {
+        ArgumentNullException.ThrowIfNull(phone);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO TelefonesCisco
+            (Hostname, MacAddress, IpAddress, Ramal, Responsavel)
+            VALUES (?, ?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Hostname", phone.Hostname);
+        AddTextParameter(command, "MacAddress", phone.MacAddress);
+        AddTextParameter(command, "IpAddress", phone.IpAddress);
+        AddTextParameter(command, "Ramal", phone.Ramal);
+        AddTextParameter(command, "Responsavel", phone.Responsavel);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Telefone Cisco inserido: Host='{phone.Hostname}', MAC='{phone.MacAddress}', IP='{phone.IpAddress}', Ramal='{phone.Ramal}', Resp='{phone.Responsavel}'");
+    }
+
+    public List<CiscoPhone> GetAllTelefonesCisco()
+    {
+        var telefones = new List<CiscoPhone>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Hostname, MacAddress, IpAddress, Ramal, Responsavel FROM TelefonesCisco";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            telefones.Add(new CiscoPhone
+            {
+                Id = reader.GetInt32(0),
+                Hostname = GetStringSafe(reader, 1),
+                MacAddress = GetStringSafe(reader, 2),
+                IpAddress = GetStringSafe(reader, 3),
+                Ramal = GetStringSafe(reader, 4),
+                Responsavel = GetStringSafe(reader, 5)
+            });
+        }
+
+        return telefones;
+    }
+
+    public void UpdateTelefoneCisco(CiscoPhone phone)
+    {
+        ArgumentNullException.ThrowIfNull(phone);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE TelefonesCisco
+            SET Hostname = ?, MacAddress = ?, IpAddress = ?, Ramal = ?, Responsavel = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Hostname", phone.Hostname);
+        AddTextParameter(command, "MacAddress", phone.MacAddress);
+        AddTextParameter(command, "IpAddress", phone.IpAddress);
+        AddTextParameter(command, "Ramal", phone.Ramal);
+        AddTextParameter(command, "Responsavel", phone.Responsavel);
+        command.Parameters.Add("Id", OdbcType.Int).Value = phone.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Telefone Cisco atualizado (Id={phone.Id}): Host='{phone.Hostname}', MAC='{phone.MacAddress}', IP='{phone.IpAddress}', Ramal='{phone.Ramal}', Resp='{phone.Responsavel}'");
+    }
+
+    //
+    //  RELÓGIOS DE PONTO
+    //
+    public void AddRelogioPonto(RelogioPonto relogio)
+    {
+        ArgumentNullException.ThrowIfNull(relogio);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO RelogiosPonto
+            (Hostname, Modelo, NumeroSerie, IpAddress, Local, Responsavel)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Hostname", relogio.Hostname);
+        AddTextParameter(command, "Modelo", relogio.Modelo);
+        AddTextParameter(command, "NumeroSerie", relogio.NumeroSerie);
+        AddTextParameter(command, "IpAddress", relogio.IpAddress);
+        AddTextParameter(command, "Local", relogio.Local);
+        AddTextParameter(command, "Responsavel", relogio.Responsavel);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Relógio de ponto inserido: Host='{relogio.Hostname}', Modelo='{relogio.Modelo}', NS='{relogio.NumeroSerie}', IP='{relogio.IpAddress}', Local='{relogio.Local}', Resp='{relogio.Responsavel}'");
+    }
+
+    public List<RelogioPonto> GetAllRelogiosPonto()
+    {
+        var relogios = new List<RelogioPonto>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Hostname, Modelo, NumeroSerie, IpAddress, Local, Responsavel FROM RelogiosPonto";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            relogios.Add(new RelogioPonto
+            {
+                Id = reader.GetInt32(0),
+                Hostname = GetStringSafe(reader, 1),
+                Modelo = GetStringSafe(reader, 2),
+                NumeroSerie = GetStringSafe(reader, 3),
+                IpAddress = GetStringSafe(reader, 4),
+                Local = GetStringSafe(reader, 5),
+                Responsavel = GetStringSafe(reader, 6)
+            });
+        }
+
+        return relogios;
+    }
+
+    public void UpdateRelogioPonto(RelogioPonto relogio)
+    {
+        ArgumentNullException.ThrowIfNull(relogio);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE RelogiosPonto
+            SET Hostname = ?, Modelo = ?, NumeroSerie = ?, IpAddress = ?, Local = ?, Responsavel = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Hostname", relogio.Hostname);
+        AddTextParameter(command, "Modelo", relogio.Modelo);
+        AddTextParameter(command, "NumeroSerie", relogio.NumeroSerie);
+        AddTextParameter(command, "IpAddress", relogio.IpAddress);
+        AddTextParameter(command, "Local", relogio.Local);
+        AddTextParameter(command, "Responsavel", relogio.Responsavel);
+        command.Parameters.Add("Id", OdbcType.Int).Value = relogio.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Relógio de ponto atualizado (Id={relogio.Id}): Host='{relogio.Hostname}', Modelo='{relogio.Modelo}', NS='{relogio.NumeroSerie}', IP='{relogio.IpAddress}', Local='{relogio.Local}', Resp='{relogio.Responsavel}'");
+    }
+
+    private static void AddTextParameter(OdbcCommand command, string name, string? value)
+    {
+        var parameter = command.Parameters.Add(name, OdbcType.VarChar);
+        parameter.Value = NormalizeToDbValue(value);
+    }
+
+    private static string GetStringSafe(OdbcDataReader reader, int ordinal)
+        => reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+
+    private static object NormalizeToDbValue(string? value)
+    {
+        var normalized = DeviceStringUtils.NormalizeString(value);
+        return string.IsNullOrWhiteSpace(normalized) ? DBNull.Value : normalized;
     }
 }
