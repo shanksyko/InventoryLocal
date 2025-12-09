@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Odbc;
+using System.Threading.Tasks;
 using System.Linq;
 using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Models;
 using InventarioSistem.Core.Logging;
 using InventarioSistem.Core.Utils;
 using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
@@ -1099,6 +1101,197 @@ public partial class AccessInventoryStore
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore", $"Nobreak excluído (Id={id}).");
+    }
+
+    private static Device ReadDevice(OdbcDataReader reader)
+    {
+        Device d = new();
+
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            string col = reader.GetName(i);
+            if (reader.IsDBNull(i)) continue;
+
+            switch (col)
+            {
+                case "Id": d.Id = reader.GetInt32(i); break;
+                case "Tipo": d.Tipo = reader.GetString(i); break;
+
+                case "Hostname": d.Hostname = reader.GetString(i); break;
+                case "Modelo": d.Modelo = reader.GetString(i); break;
+                case "SerialNumber": d.SerialNumber = reader.GetString(i); break;
+                case "Local": d.Local = reader.GetString(i); break;
+                case "Responsavel": d.Responsavel = reader.GetString(i); break;
+
+                case "TipoModelo": d.TipoModelo = reader.GetString(i); break;
+                case "LocalizacaoAtual": d.LocalizacaoAtual = reader.GetString(i); break;
+                case "LocalizacaoAnterior": d.LocalizacaoAnterior = reader.GetString(i); break;
+
+                case "Numero": d.Numero = reader.GetString(i); break;
+                case "IPEI": d.IPEI = reader.GetString(i); break;
+                case "MacAddress": d.MacAddress = reader.GetString(i); break;
+                case "IP": d.IP = reader.GetString(i); break;
+
+                case "IMEI1": d.IMEI1 = reader.GetString(i); break;
+                case "IMEI2": d.IMEI2 = reader.GetString(i); break;
+                case "Roaming": d.Roaming = reader.GetBoolean(i); break;
+                case "Usuario": d.Usuario = reader.GetString(i); break;
+                case "Matricula": d.Matricula = reader.GetString(i); break;
+                case "Cargo": d.Cargo = reader.GetString(i); break;
+                case "Setor": d.Setor = reader.GetString(i); break;
+                case "Email": d.Email = reader.GetString(i); break;
+                case "Senha": d.Senha = reader.GetString(i); break;
+
+                case "ComputadorVinculado": d.ComputadorVinculado = reader.GetString(i); break;
+                case "Status": d.Status = reader.GetString(i); break;
+
+                case "DataBateria": d.DataBateria = reader.GetDateTime(i); break;
+                case "DataNobreak": d.DataNobreak = reader.GetDateTime(i); break;
+                case "ProximaVerificacao": d.ProximaVerificacao = reader.GetDateTime(i); break;
+            }
+        }
+
+        return d;
+    }
+
+    public async Task<List<Device>> LoadByTypeAsync(string tipo)
+    {
+        List<Device> list = new();
+
+        await using var conn = _factory.CreateConnection();
+        await conn.OpenAsync();
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT * FROM Devices WHERE Tipo = ?";
+        cmd.Parameters.AddWithValue("@p1", tipo);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+            list.Add(ReadDevice(reader));
+
+        return list;
+    }
+
+    public async Task<int> InsertDeviceAsync(Device d)
+    {
+        await using var conn = _factory.CreateConnection();
+        await conn.OpenAsync();
+
+        var cols = new List<string>();
+        var vals = new List<string>();
+        var pars = new List<OdbcParameter>();
+
+        void Add(string name, object? value)
+        {
+            cols.Add(name);
+            vals.Add("?");
+            pars.Add(new OdbcParameter($"@{name}", value ?? DBNull.Value));
+        }
+
+        Add("Tipo", d.Tipo);
+        Add("Hostname", d.Hostname);
+        Add("Modelo", d.Modelo);
+        Add("SerialNumber", d.SerialNumber);
+        Add("Local", d.Local);
+        Add("Responsavel", d.Responsavel);
+        Add("TipoModelo", d.TipoModelo);
+        Add("LocalizacaoAtual", d.LocalizacaoAtual);
+        Add("LocalizacaoAnterior", d.LocalizacaoAnterior);
+        Add("Numero", d.Numero);
+        Add("IPEI", d.IPEI);
+        Add("MacAddress", d.MacAddress);
+        Add("IP", d.IP);
+        Add("IMEI1", d.IMEI1);
+        Add("IMEI2", d.IMEI2);
+        Add("Roaming", d.Roaming);
+        Add("Usuario", d.Usuario);
+        Add("Matricula", d.Matricula);
+        Add("Cargo", d.Cargo);
+        Add("Setor", d.Setor);
+        Add("Email", d.Email);
+        Add("Senha", d.Senha);
+        Add("ComputadorVinculado", d.ComputadorVinculado);
+        Add("Status", d.Status);
+        Add("DataBateria", d.DataBateria);
+        Add("DataNobreak", d.DataNobreak);
+        Add("ProximaVerificacao", d.ProximaVerificacao);
+
+        string sql = $"INSERT INTO Devices ({string.Join(",", cols)}) VALUES ({string.Join(",", vals)})";
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        foreach (var p in pars)
+            cmd.Parameters.Add(p);
+
+        await cmd.ExecuteNonQueryAsync();
+
+        cmd.CommandText = "SELECT @@IDENTITY";
+        var id = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(id);
+    }
+
+    public async Task UpdateDeviceAsync(Device d)
+    {
+        await using var conn = _factory.CreateConnection();
+        await conn.OpenAsync();
+
+        var sets = new List<string>();
+        var pars = new List<OdbcParameter>();
+
+        void Add(string name, object? value)
+        {
+            sets.Add($"{name} = ?");
+            pars.Add(new OdbcParameter($"@{name}", value ?? DBNull.Value));
+        }
+
+        Add("Hostname", d.Hostname);
+        Add("Modelo", d.Modelo);
+        Add("SerialNumber", d.SerialNumber);
+        Add("Local", d.Local);
+        Add("Responsavel", d.Responsavel);
+        Add("TipoModelo", d.TipoModelo);
+        Add("LocalizacaoAtual", d.LocalizacaoAtual);
+        Add("LocalizacaoAnterior", d.LocalizacaoAnterior);
+        Add("Numero", d.Numero);
+        Add("IPEI", d.IPEI);
+        Add("MacAddress", d.MacAddress);
+        Add("IP", d.IP);
+        Add("IMEI1", d.IMEI1);
+        Add("IMEI2", d.IMEI2);
+        Add("Roaming", d.Roaming);
+        Add("Usuario", d.Usuario);
+        Add("Matricula", d.Matricula);
+        Add("Cargo", d.Cargo);
+        Add("Setor", d.Setor);
+        Add("Email", d.Email);
+        Add("Senha", d.Senha);
+        Add("ComputadorVinculado", d.ComputadorVinculado);
+        Add("Status", d.Status);
+        Add("DataBateria", d.DataBateria);
+        Add("DataNobreak", d.DataNobreak);
+        Add("ProximaVerificacao", d.ProximaVerificacao);
+
+        string sql = $"UPDATE Devices SET {string.Join(",", sets)} WHERE Id = ?";
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        foreach (var p in pars)
+            cmd.Parameters.Add(p);
+
+        cmd.Parameters.Add(new OdbcParameter("@Id", d.Id));
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task DeleteDeviceAsync(int id)
+    {
+        await using var conn = _factory.CreateConnection();
+        await conn.OpenAsync();
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM Devices WHERE Id = ?";
+        cmd.Parameters.AddWithValue("@p1", id);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     private static void AddTextParameter(OdbcCommand command, string name, string? value)
