@@ -5,5 +5,9 @@ public enum DeviceType
     Computer,
     Tablet,
     ColetorAndroid,
-    Celular
+    Celular,
+    Impressora,
+    Dect,
+    TelefoneCisco,
+    Televisor
 }

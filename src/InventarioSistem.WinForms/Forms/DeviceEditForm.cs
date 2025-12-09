@@ -10,6 +10,8 @@ public class DeviceEditForm : Form
     private readonly AccessInventoryStore _store;
     private Device _device;
 
+    public Device Result => _device;
+
     private readonly ComboBox _typeCombo = new() { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly TextBox _patrimonio = new();
     private readonly TextBox _marca = new();
@@ -150,6 +152,10 @@ public class DeviceEditForm : Form
                 DeviceType.Tablet => new Tablet(),
                 DeviceType.ColetorAndroid => new ColetorAndroid(),
                 DeviceType.Celular => new Celular(),
+                DeviceType.Impressora => new Impressora(),
+                DeviceType.Dect => new Dect(),
+                DeviceType.TelefoneCisco => new TelefoneCisco(),
+                DeviceType.Televisor => new Televisor(),
                 _ => new Computer()
             };
         }
@@ -159,7 +165,9 @@ public class DeviceEditForm : Form
         _ram.Enabled = selected == DeviceType.Computer;
         _armazenamento.Enabled = selected == DeviceType.Computer;
 
-        _versaoAndroid.Enabled = selected != DeviceType.Computer;
+        var androidType = selected is DeviceType.Tablet or DeviceType.ColetorAndroid or DeviceType.Celular;
+
+        _versaoAndroid.Enabled = androidType;
         _linha.Enabled = selected is DeviceType.Tablet or DeviceType.Celular;
         _teclado.Enabled = selected == DeviceType.Tablet;
 

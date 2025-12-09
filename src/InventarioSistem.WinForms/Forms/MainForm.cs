@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
-using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
+using LegacyDevices = InventarioSistem.Core.Devices;
 
 namespace InventarioSistem.WinForms
 {
@@ -20,6 +22,7 @@ namespace InventarioSistem.WinForms
         private Panel _headerPanel = null!;
         private Label _lblTitle = null!;
         private Label _lblSubtitle = null!;
+        private Button _btnDashboard = null!;
 
         private TabControl _tabs = null!;
 
@@ -42,6 +45,30 @@ namespace InventarioSistem.WinForms
         private Button _btnAtualizarCelulares = null!;
         private Button _btnNovoCelular = null!;
         private Button _btnEditarCelular = null!;
+
+        private DataGridView _gridImpressoras = null!;
+        private Button _btnAtualizarImpressoras = null!;
+        private Button _btnNovaImpressora = null!;
+        private Button _btnEditarImpressora = null!;
+        private Button _btnExcluirImpressora = null!;
+
+        private DataGridView _gridDects = null!;
+        private Button _btnAtualizarDects = null!;
+        private Button _btnNovoDect = null!;
+        private Button _btnEditarDect = null!;
+        private Button _btnExcluirDect = null!;
+
+        private DataGridView _gridTelefonesCisco = null!;
+        private Button _btnAtualizarTelefonesCisco = null!;
+        private Button _btnNovoTelefoneCisco = null!;
+        private Button _btnEditarTelefoneCisco = null!;
+        private Button _btnExcluirTelefoneCisco = null!;
+
+        private DataGridView _gridTelevisores = null!;
+        private Button _btnAtualizarTelevisores = null!;
+        private Button _btnNovoTelevisor = null!;
+        private Button _btnEditarTelevisor = null!;
+        private Button _btnExcluirTelevisor = null!;
 
         // Aba Avançado (config do banco)
         private Label _lblDbPath = null!;
@@ -73,10 +100,11 @@ namespace InventarioSistem.WinForms
                 var path = AccessDatabaseManager.ResolveActiveDatabasePath();
                 if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
                 {
-                    _lblDbPath.Text = $"Banco atual: {path}";
-                    EnableDataTabs(true);
-                    LoadAllGrids();
-                }
+                _lblDbPath.Text = $"Banco atual: {path}";
+                EnableDataTabs(true);
+                _store.EnsureSchemaAsync().GetAwaiter().GetResult();
+                LoadAllGrids();
+            }
                 else
                 {
                     _lblDbPath.Text = "Banco atual: (não configurado)";
@@ -127,13 +155,23 @@ namespace InventarioSistem.WinForms
             _lblSubtitle = new Label
             {
                 AutoSize = true,
-                Text = "Controle unificado de Computadores, Tablets, Coletores e Celulares",
+                Text = "Controle unificado de Computadores, Tablets, Coletores, Celulares e mais",
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
                 Location = new Point(12, 40)
             };
 
+            _btnDashboard = new Button
+            {
+                Text = "Dashboard",
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(950, 20)
+            };
+            _btnDashboard.Click += (_, _) => MostrarDashboard();
+
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
+            _headerPanel.Controls.Add(_btnDashboard);
 
             _tabs = new TabControl
             {
@@ -144,6 +182,10 @@ namespace InventarioSistem.WinForms
             var tabTablets = new TabPage("Tablets");
             var tabColetores = new TabPage("Coletores Android");
             var tabCelulares = new TabPage("Celulares");
+            var tabImpressoras = new TabPage("Impressoras");
+            var tabDects = new TabPage("DECTs");
+            var tabTelefonesCisco = new TabPage("Telefones Cisco");
+            var tabTelevisores = new TabPage("Televisores");
             var tabAvancado = new TabPage("Avançado");
             var tabLog = new TabPage("Log");
 
@@ -151,6 +193,10 @@ namespace InventarioSistem.WinForms
             InitializeTabletsTab(tabTablets);
             InitializeColetoresTab(tabColetores);
             InitializeCelularesTab(tabCelulares);
+            InitializeImpressorasTab(tabImpressoras);
+            InitializeDectsTab(tabDects);
+            InitializeTelefonesCiscoTab(tabTelefonesCisco);
+            InitializeTelevisoresTab(tabTelevisores);
             InitializeAvancadoTab(tabAvancado);
             InitializeLogTab(tabLog);
 
@@ -158,6 +204,10 @@ namespace InventarioSistem.WinForms
             _tabs.TabPages.Add(tabTablets);
             _tabs.TabPages.Add(tabColetores);
             _tabs.TabPages.Add(tabCelulares);
+            _tabs.TabPages.Add(tabImpressoras);
+            _tabs.TabPages.Add(tabDects);
+            _tabs.TabPages.Add(tabTelefonesCisco);
+            _tabs.TabPages.Add(tabTelevisores);
             _tabs.TabPages.Add(tabAvancado);
             _tabs.TabPages.Add(tabLog);
 
@@ -393,6 +443,210 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_gridCelulares);
         }
 
+        private void InitializeImpressorasTab(TabPage page)
+        {
+            _btnAtualizarImpressoras = new Button
+            {
+                Text = "Atualizar",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            _btnAtualizarImpressoras.Click += (_, _) => LoadImpressoras();
+
+            _btnNovaImpressora = new Button
+            {
+                Text = "Nova",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovaImpressora.Click += (_, _) => NovoImpressora();
+
+            _btnEditarImpressora = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarImpressora.Click += (_, _) => EditarImpressora();
+
+            _btnExcluirImpressora = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirImpressora.Click += (_, _) => ExcluirImpressora();
+
+            _gridImpressoras = CreateGenericGrid(page);
+            _gridImpressoras.CellDoubleClick += (_, _) => EditarImpressora();
+
+            page.Controls.Add(_btnAtualizarImpressoras);
+            page.Controls.Add(_btnNovaImpressora);
+            page.Controls.Add(_btnEditarImpressora);
+            page.Controls.Add(_btnExcluirImpressora);
+            page.Controls.Add(_gridImpressoras);
+        }
+
+        private void InitializeDectsTab(TabPage page)
+        {
+            _btnAtualizarDects = new Button
+            {
+                Text = "Atualizar",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            _btnAtualizarDects.Click += (_, _) => LoadDects();
+
+            _btnNovoDect = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoDect.Click += (_, _) => NovoDect();
+
+            _btnEditarDect = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarDect.Click += (_, _) => EditarDect();
+
+            _btnExcluirDect = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirDect.Click += (_, _) => ExcluirDect();
+
+            _gridDects = CreateGenericGrid(page);
+            _gridDects.CellDoubleClick += (_, _) => EditarDect();
+
+            page.Controls.Add(_btnAtualizarDects);
+            page.Controls.Add(_btnNovoDect);
+            page.Controls.Add(_btnEditarDect);
+            page.Controls.Add(_btnExcluirDect);
+            page.Controls.Add(_gridDects);
+        }
+
+        private void InitializeTelefonesCiscoTab(TabPage page)
+        {
+            _btnAtualizarTelefonesCisco = new Button
+            {
+                Text = "Atualizar",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            _btnAtualizarTelefonesCisco.Click += (_, _) => LoadTelefonesCisco();
+
+            _btnNovoTelefoneCisco = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoTelefoneCisco.Click += (_, _) => NovoTelefoneCisco();
+
+            _btnEditarTelefoneCisco = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarTelefoneCisco.Click += (_, _) => EditarTelefoneCisco();
+
+            _btnExcluirTelefoneCisco = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirTelefoneCisco.Click += (_, _) => ExcluirTelefoneCisco();
+
+            _gridTelefonesCisco = CreateGenericGrid(page);
+            _gridTelefonesCisco.CellDoubleClick += (_, _) => EditarTelefoneCisco();
+
+            page.Controls.Add(_btnAtualizarTelefonesCisco);
+            page.Controls.Add(_btnNovoTelefoneCisco);
+            page.Controls.Add(_btnEditarTelefoneCisco);
+            page.Controls.Add(_btnExcluirTelefoneCisco);
+            page.Controls.Add(_gridTelefonesCisco);
+        }
+
+        private void InitializeTelevisoresTab(TabPage page)
+        {
+            _btnAtualizarTelevisores = new Button
+            {
+                Text = "Atualizar",
+                AutoSize = true,
+                Location = new Point(10, 10)
+            };
+            _btnAtualizarTelevisores.Click += (_, _) => LoadTelevisores();
+
+            _btnNovoTelevisor = new Button
+            {
+                Text = "Novo",
+                AutoSize = true,
+                Location = new Point(100, 10)
+            };
+            _btnNovoTelevisor.Click += (_, _) => NovoTelevisor();
+
+            _btnEditarTelevisor = new Button
+            {
+                Text = "Editar selecionado",
+                AutoSize = true,
+                Location = new Point(170, 10)
+            };
+            _btnEditarTelevisor.Click += (_, _) => EditarTelevisor();
+
+            _btnExcluirTelevisor = new Button
+            {
+                Text = "Excluir",
+                AutoSize = true,
+                Location = new Point(310, 10)
+            };
+            _btnExcluirTelevisor.Click += (_, _) => ExcluirTelevisor();
+
+            _gridTelevisores = CreateGenericGrid(page);
+            _gridTelevisores.CellDoubleClick += (_, _) => EditarTelevisor();
+
+            page.Controls.Add(_btnAtualizarTelevisores);
+            page.Controls.Add(_btnNovoTelevisor);
+            page.Controls.Add(_btnEditarTelevisor);
+            page.Controls.Add(_btnExcluirTelevisor);
+            page.Controls.Add(_gridTelevisores);
+        }
+
+        private DataGridView CreateGenericGrid(TabPage page)
+        {
+            var grid = new DataGridView
+            {
+                Location = new Point(10, 45),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55),
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false,
+                AutoGenerateColumns = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                MultiSelect = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                BackgroundColor = Color.White,
+                RowHeadersVisible = false,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+
+            grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            grid.Resize += (_, _) =>
+            {
+                grid.Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 55);
+            };
+
+            return grid;
+        }
+
         private void InitializeAvancadoTab(TabPage page)
         {
             _lblDbPath = new Label
@@ -463,11 +717,31 @@ namespace InventarioSistem.WinForms
             _btnAtualizarCelulares.Enabled = enabled;
             _btnNovoCelular.Enabled = enabled;
             _btnEditarCelular.Enabled = enabled;
+            _btnAtualizarImpressoras.Enabled = enabled;
+            _btnNovaImpressora.Enabled = enabled;
+            _btnEditarImpressora.Enabled = enabled;
+            _btnExcluirImpressora.Enabled = enabled;
+            _btnAtualizarDects.Enabled = enabled;
+            _btnNovoDect.Enabled = enabled;
+            _btnEditarDect.Enabled = enabled;
+            _btnExcluirDect.Enabled = enabled;
+            _btnAtualizarTelefonesCisco.Enabled = enabled;
+            _btnNovoTelefoneCisco.Enabled = enabled;
+            _btnEditarTelefoneCisco.Enabled = enabled;
+            _btnExcluirTelefoneCisco.Enabled = enabled;
+            _btnAtualizarTelevisores.Enabled = enabled;
+            _btnNovoTelevisor.Enabled = enabled;
+            _btnEditarTelevisor.Enabled = enabled;
+            _btnExcluirTelevisor.Enabled = enabled;
 
             _gridComputadores.Enabled = enabled;
             _gridTablets.Enabled = enabled;
             _gridColetores.Enabled = enabled;
             _gridCelulares.Enabled = enabled;
+            _gridImpressoras.Enabled = enabled;
+            _gridDects.Enabled = enabled;
+            _gridTelefonesCisco.Enabled = enabled;
+            _gridTelevisores.Enabled = enabled;
         }
 
         private void OnLogMessage(string line)
@@ -500,6 +774,10 @@ namespace InventarioSistem.WinForms
             LoadTablets();
             LoadColetores();
             LoadCelulares();
+            LoadImpressoras();
+            LoadDects();
+            LoadTelefonesCisco();
+            LoadTelevisores();
         }
 
         private void LoadComputadores()
@@ -509,7 +787,7 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllComputers();
-                _gridComputadores.DataSource = new BindingList<Computer>(ToList(list));
+                _gridComputadores.DataSource = new BindingList<LegacyDevices.Computer>(ToList(list));
             }
             catch (Exception ex)
             {
@@ -528,7 +806,7 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllTablets();
-                _gridTablets.DataSource = new BindingList<Tablet>(ToList(list));
+                _gridTablets.DataSource = new BindingList<LegacyDevices.Tablet>(ToList(list));
             }
             catch (Exception ex)
             {
@@ -547,7 +825,7 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllColetores();
-                _gridColetores.DataSource = new BindingList<ColetorAndroid>(ToList(list));
+                _gridColetores.DataSource = new BindingList<LegacyDevices.ColetorAndroid>(ToList(list));
             }
             catch (Exception ex)
             {
@@ -566,7 +844,7 @@ namespace InventarioSistem.WinForms
             try
             {
                 var list = _store.GetAllCelulares();
-                _gridCelulares.DataSource = new BindingList<Celular>(ToList(list));
+                _gridCelulares.DataSource = new BindingList<LegacyDevices.Celular>(ToList(list));
             }
             catch (Exception ex)
             {
@@ -599,7 +877,7 @@ namespace InventarioSistem.WinForms
         private void EditarComputador()
         {
             if (_store == null) return;
-            if (_gridComputadores.CurrentRow?.DataBoundItem is not Computer selected)
+            if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
             {
                 MessageBox.Show(this, "Selecione um computador para editar.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -638,7 +916,7 @@ namespace InventarioSistem.WinForms
         private void EditarTablet()
         {
             if (_store == null) return;
-            if (_gridTablets.CurrentRow?.DataBoundItem is not Tablet selected)
+            if (_gridTablets.CurrentRow?.DataBoundItem is not LegacyDevices.Tablet selected)
             {
                 MessageBox.Show(this, "Selecione um tablet para editar.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -677,7 +955,7 @@ namespace InventarioSistem.WinForms
         private void EditarColetor()
         {
             if (_store == null) return;
-            if (_gridColetores.CurrentRow?.DataBoundItem is not ColetorAndroid selected)
+            if (_gridColetores.CurrentRow?.DataBoundItem is not LegacyDevices.ColetorAndroid selected)
             {
                 MessageBox.Show(this, "Selecione um coletor para editar.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -716,7 +994,7 @@ namespace InventarioSistem.WinForms
         private void EditarCelular()
         {
             if (_store == null) return;
-            if (_gridCelulares.CurrentRow?.DataBoundItem is not Celular selected)
+            if (_gridCelulares.CurrentRow?.DataBoundItem is not LegacyDevices.Celular selected)
             {
                 MessageBox.Show(this, "Selecione um celular para editar.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -733,6 +1011,116 @@ namespace InventarioSistem.WinForms
                 InventoryLogger.Info("WinForms", $"Celular editado via UI (Id={updated.Id}): Modelo='{updated.Modelo}', Numero='{updated.Numero}'");
             }
         }
+
+        private void LoadDevices(DeviceType type, DataGridView grid)
+        {
+            if (_store == null) return;
+
+            try
+            {
+                var list = _store.ListAsync(type).GetAwaiter().GetResult();
+                grid.DataSource = new BindingList<Device>(list.ToList());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    $"Erro ao carregar lista de {type}:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void NovoDevice(Device deviceTemplate, string logLabel, Action reload)
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this, "Banco não configurado.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new DeviceEditForm(_store, deviceTemplate);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                reload();
+                InventoryLogger.Info("WinForms", $"{logLabel} cadastrado via UI: {form.Result}");
+            }
+        }
+
+        private void EditarDevice(DataGridView grid, string selectMessage, Action reload)
+        {
+            if (_store == null) return;
+            if (grid.CurrentRow?.DataBoundItem is not Device selected)
+            {
+                MessageBox.Show(this, selectMessage, "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var form = new DeviceEditForm(_store, selected);
+            if (form.ShowDialog(this) == DialogResult.OK)
+            {
+                reload();
+                InventoryLogger.Info("WinForms", $"{selected.Type} editado via UI (Id={selected.Id}): {form.Result}");
+            }
+        }
+
+        private void ExcluirDevice(DataGridView grid, string selectMessage, Action reload)
+        {
+            if (_store == null) return;
+            if (grid.CurrentRow?.DataBoundItem is not Device selected)
+            {
+                MessageBox.Show(this, selectMessage, "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(this,
+                "Deseja realmente excluir o item selecionado?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            _store.DeleteAsync(selected.Id).GetAwaiter().GetResult();
+            reload();
+            InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
+        }
+
+        private void LoadImpressoras() => LoadDevices(DeviceType.Impressora, _gridImpressoras);
+
+        private void NovoImpressora() => NovoDevice(new Impressora(), "Impressora", LoadImpressoras);
+
+        private void EditarImpressora() => EditarDevice(_gridImpressoras, "Selecione uma impressora para editar.", LoadImpressoras);
+
+        private void ExcluirImpressora() => ExcluirDevice(_gridImpressoras, "Selecione uma impressora para excluir.", LoadImpressoras);
+
+        private void LoadDects() => LoadDevices(DeviceType.Dect, _gridDects);
+
+        private void NovoDect() => NovoDevice(new Dect(), "DECT", LoadDects);
+
+        private void EditarDect() => EditarDevice(_gridDects, "Selecione um DECT para editar.", LoadDects);
+
+        private void ExcluirDect() => ExcluirDevice(_gridDects, "Selecione um DECT para excluir.", LoadDects);
+
+        private void LoadTelefonesCisco() => LoadDevices(DeviceType.TelefoneCisco, _gridTelefonesCisco);
+
+        private void NovoTelefoneCisco() => NovoDevice(new TelefoneCisco(), "Telefone Cisco", LoadTelefonesCisco);
+
+        private void EditarTelefoneCisco() => EditarDevice(_gridTelefonesCisco, "Selecione um telefone Cisco para editar.", LoadTelefonesCisco);
+
+        private void ExcluirTelefoneCisco() => ExcluirDevice(_gridTelefonesCisco, "Selecione um telefone Cisco para excluir.", LoadTelefonesCisco);
+
+        private void LoadTelevisores() => LoadDevices(DeviceType.Televisor, _gridTelevisores);
+
+        private void NovoTelevisor() => NovoDevice(new Televisor(), "Televisor", LoadTelevisores);
+
+        private void EditarTelevisor() => EditarDevice(_gridTelevisores, "Selecione um televisor para editar.", LoadTelevisores);
+
+        private void ExcluirTelevisor() => ExcluirDevice(_gridTelevisores, "Selecione um televisor para excluir.", LoadTelevisores);
 
         private static List<T> ToList<T>(IEnumerable<T> source)
         {
@@ -862,6 +1250,22 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void MostrarDashboard()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this,
+                    "Configure o banco antes de abrir o dashboard.",
+                    "Dashboard",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            using var dashboard = new Forms.DashboardForm(_store);
+            dashboard.ShowDialog(this);
         }
     }
 }
