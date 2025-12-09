@@ -17,6 +17,8 @@ namespace InventarioSistem.WinForms
         private List<LegacyDevices.CiscoPhone> _ciscoCache = new();
         private List<LegacyDevices.Televisor> _tvsCache = new();
         private List<LegacyDevices.RelogioPonto> _relogiosCache = new();
+        private List<LegacyDevices.Monitor> _monitoresCache = new();
+        private List<LegacyDevices.Nobreak> _nobreaksCache = new();
 
         private TextBox _txtComputersFilter = null!;
         private TextBox _txtTabletsFilter = null!;
@@ -27,6 +29,8 @@ namespace InventarioSistem.WinForms
         private TextBox _txtCiscoFilter = null!;
         private TextBox _txtTvsFilter = null!;
         private TextBox _txtRelogiosFilter = null!;
+        private TextBox _txtMonitoresFilter = null!;
+        private TextBox _txtNobreaksFilter = null!;
 
         private void ApplyComputersFilter()
         {
@@ -253,6 +257,57 @@ namespace InventarioSistem.WinForms
 
             _gridRelogiosPonto.DataSource = new BindingList<LegacyDevices.RelogioPonto>(ToList(view));
             HideIdColumn(_gridRelogiosPonto);
+        }
+
+        private void ApplyMonitoresFilter()
+        {
+            if (_gridMonitores == null)
+                return;
+
+            var view = _monitoresCache ?? new List<LegacyDevices.Monitor>();
+            var term = _txtMonitoresFilter?.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                var normalized = term.ToLowerInvariant();
+                view = view
+                    .Where(m =>
+                        (!string.IsNullOrEmpty(m.Modelo) && m.Modelo.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(m.SerialNumber) && m.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(m.Local) && m.Local.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(m.Responsavel) && m.Responsavel.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(m.ComputadorVinculado) && m.ComputadorVinculado.ToLowerInvariant().Contains(normalized)))
+                    .ToList();
+            }
+
+            _gridMonitores.DataSource = new BindingList<LegacyDevices.Monitor>(ToList(view));
+            HideIdColumn(_gridMonitores);
+        }
+
+        private void ApplyNobreaksFilter()
+        {
+            if (_gridNobreaks == null)
+                return;
+
+            var view = _nobreaksCache ?? new List<LegacyDevices.Nobreak>();
+            var term = _txtNobreaksFilter?.Text?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                var normalized = term.ToLowerInvariant();
+                view = view
+                    .Where(n =>
+                        (!string.IsNullOrEmpty(n.Hostname) && n.Hostname.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(n.Local) && n.Local.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(n.IpAddress) && n.IpAddress.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(n.Modelo) && n.Modelo.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(n.Status) && n.Status.ToLowerInvariant().Contains(normalized)) ||
+                        (!string.IsNullOrEmpty(n.SerialNumber) && n.SerialNumber.ToLowerInvariant().Contains(normalized)))
+                    .ToList();
+            }
+
+            _gridNobreaks.DataSource = new BindingList<LegacyDevices.Nobreak>(ToList(view));
+            HideIdColumn(_gridNobreaks);
         }
     }
 }

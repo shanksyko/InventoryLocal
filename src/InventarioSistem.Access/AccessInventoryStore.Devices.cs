@@ -23,8 +23,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Computadores
-            (Host, SerialNumber, Proprietario, Departamento, Matricula, Monitores)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (Host, SerialNumber, Proprietario, Departamento, Matricula)
+            VALUES (?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", computer.Host);
@@ -32,12 +32,11 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Proprietario", computer.Proprietario);
         AddTextParameter(command, "Departamento", computer.Departamento);
         AddTextParameter(command, "Matricula", computer.Matricula);
-        AddTextParameter(command, "Monitores", computer.Monitores);
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}', Monitores='{computer.Monitores}'");
+            $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
     }
 
     public List<Computer> GetAllComputers()
@@ -48,7 +47,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula, Monitores FROM Computadores";
+        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula FROM Computadores";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -60,8 +59,7 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 Proprietario = GetStringSafe(reader, 3),
                 Departamento = GetStringSafe(reader, 4),
-                Matricula = GetStringSafe(reader, 5),
-                Monitores = reader.FieldCount > 6 ? GetStringSafe(reader, 6) : string.Empty
+                Matricula = GetStringSafe(reader, 5)
             });
         }
 
@@ -78,7 +76,7 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             UPDATE Computadores
-            SET Host = ?, SerialNumber = ?, Proprietario = ?, Departamento = ?, Matricula = ?, Monitores = ?
+            SET Host = ?, SerialNumber = ?, Proprietario = ?, Departamento = ?, Matricula = ?
             WHERE Id = ?
         ";
 
@@ -87,13 +85,12 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Proprietario", computer.Proprietario);
         AddTextParameter(command, "Departamento", computer.Departamento);
         AddTextParameter(command, "Matricula", computer.Matricula);
-        AddTextParameter(command, "Monitores", computer.Monitores);
         command.Parameters.Add("Id", OdbcType.Int).Value = computer.Id;
 
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore",
-            $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}', Monitores='{computer.Monitores}'");
+            $"Computador atualizado (Id={computer.Id}): Host='{computer.Host}', NS='{computer.SerialNumber}', Proprietario='{computer.Proprietario}', Departamento='{computer.Departamento}', Matricula='{computer.Matricula}'");
     }
 
     public void DeleteComputer(int id)
@@ -904,6 +901,203 @@ public partial class AccessInventoryStore
         command.ExecuteNonQuery();
 
         InventoryLogger.Info("AccessInventoryStore", $"Relógio de ponto excluído (Id={id}).");
+    }
+
+    //
+    //  MONITORES
+    //
+    public List<Monitor> GetAllMonitores()
+    {
+        var monitores = new List<Monitor>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado FROM Monitores";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            monitores.Add(new Monitor
+            {
+                Id = reader.GetInt32(0),
+                Modelo = GetStringSafe(reader, 1),
+                SerialNumber = GetStringSafe(reader, 2),
+                Local = GetStringSafe(reader, 3),
+                Responsavel = GetStringSafe(reader, 4),
+                ComputadorVinculado = GetStringSafe(reader, 5)
+            });
+        }
+
+        return monitores;
+    }
+
+    public void AddMonitor(Monitor monitor)
+    {
+        ArgumentNullException.ThrowIfNull(monitor);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO Monitores
+            (Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado)
+            VALUES (?, ?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Modelo", monitor.Modelo);
+        AddTextParameter(command, "SerialNumber", monitor.SerialNumber);
+        AddTextParameter(command, "Local", monitor.Local);
+        AddTextParameter(command, "Responsavel", monitor.Responsavel);
+        AddTextParameter(command, "ComputadorVinculado", monitor.ComputadorVinculado);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Monitor inserido: Modelo='{monitor.Modelo}', Serial='{monitor.SerialNumber}', Local='{monitor.Local}', Resp='{monitor.Responsavel}', PC='{monitor.ComputadorVinculado}'");
+    }
+
+    public void UpdateMonitor(Monitor monitor)
+    {
+        ArgumentNullException.ThrowIfNull(monitor);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Monitores
+            SET Modelo = ?, SerialNumber = ?, Local = ?, Responsavel = ?, ComputadorVinculado = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Modelo", monitor.Modelo);
+        AddTextParameter(command, "SerialNumber", monitor.SerialNumber);
+        AddTextParameter(command, "Local", monitor.Local);
+        AddTextParameter(command, "Responsavel", monitor.Responsavel);
+        AddTextParameter(command, "ComputadorVinculado", monitor.ComputadorVinculado);
+        command.Parameters.Add("Id", OdbcType.Int).Value = monitor.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Monitor atualizado (Id={monitor.Id}): Modelo='{monitor.Modelo}', Serial='{monitor.SerialNumber}', Local='{monitor.Local}', Resp='{monitor.Responsavel}', PC='{monitor.ComputadorVinculado}'");
+    }
+
+    public void DeleteMonitor(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Monitores WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Monitor excluído (Id={id}).");
+    }
+
+    //
+    //  NOBREAKS
+    //
+    public List<Nobreak> GetAllNobreaks()
+    {
+        var nobreaks = new List<Nobreak>();
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT Id, Hostname, Local, IpAddress, Modelo, Status, SerialNumber FROM Nobreaks";
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            nobreaks.Add(new Nobreak
+            {
+                Id = reader.GetInt32(0),
+                Hostname = GetStringSafe(reader, 1),
+                Local = GetStringSafe(reader, 2),
+                IpAddress = GetStringSafe(reader, 3),
+                Modelo = GetStringSafe(reader, 4),
+                Status = GetStringSafe(reader, 5),
+                SerialNumber = GetStringSafe(reader, 6)
+            });
+        }
+
+        return nobreaks;
+    }
+
+    public void AddNobreak(Nobreak nobreak)
+    {
+        ArgumentNullException.ThrowIfNull(nobreak);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            INSERT INTO Nobreaks
+            (Hostname, Local, IpAddress, Modelo, Status, SerialNumber)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ";
+
+        AddTextParameter(command, "Hostname", nobreak.Hostname);
+        AddTextParameter(command, "Local", nobreak.Local);
+        AddTextParameter(command, "IpAddress", nobreak.IpAddress);
+        AddTextParameter(command, "Modelo", nobreak.Modelo);
+        AddTextParameter(command, "Status", nobreak.Status);
+        AddTextParameter(command, "SerialNumber", nobreak.SerialNumber);
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Nobreak inserido: Host='{nobreak.Hostname}', Local='{nobreak.Local}', IP='{nobreak.IpAddress}', Modelo='{nobreak.Modelo}', Status='{nobreak.Status}', Serial='{nobreak.SerialNumber}'");
+    }
+
+    public void UpdateNobreak(Nobreak nobreak)
+    {
+        ArgumentNullException.ThrowIfNull(nobreak);
+
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = @"
+            UPDATE Nobreaks
+            SET Hostname = ?, Local = ?, IpAddress = ?, Modelo = ?, Status = ?, SerialNumber = ?
+            WHERE Id = ?
+        ";
+
+        AddTextParameter(command, "Hostname", nobreak.Hostname);
+        AddTextParameter(command, "Local", nobreak.Local);
+        AddTextParameter(command, "IpAddress", nobreak.IpAddress);
+        AddTextParameter(command, "Modelo", nobreak.Modelo);
+        AddTextParameter(command, "Status", nobreak.Status);
+        AddTextParameter(command, "SerialNumber", nobreak.SerialNumber);
+        command.Parameters.Add("Id", OdbcType.Int).Value = nobreak.Id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore",
+            $"Nobreak atualizado (Id={nobreak.Id}): Host='{nobreak.Hostname}', Local='{nobreak.Local}', IP='{nobreak.IpAddress}', Modelo='{nobreak.Modelo}', Status='{nobreak.Status}', Serial='{nobreak.SerialNumber}'");
+    }
+
+    public void DeleteNobreak(int id)
+    {
+        using var connection = _factory.CreateConnection();
+        connection.Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "DELETE FROM Nobreaks WHERE Id = ?";
+        command.Parameters.Add("Id", OdbcType.Int).Value = id;
+
+        command.ExecuteNonQuery();
+
+        InventoryLogger.Info("AccessInventoryStore", $"Nobreak excluído (Id={id}).");
     }
 
     private static void AddTextParameter(OdbcCommand command, string name, string? value)
