@@ -1477,7 +1477,8 @@ namespace InventarioSistem.WinForms
 
         private void LoadComputadores()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
 
             try
             {
@@ -1497,7 +1498,8 @@ namespace InventarioSistem.WinForms
 
         private void LoadTablets()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
 
             try
             {
@@ -1517,7 +1519,8 @@ namespace InventarioSistem.WinForms
 
         private void LoadColetores()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
 
             try
             {
@@ -1537,7 +1540,8 @@ namespace InventarioSistem.WinForms
 
         private void LoadCelulares()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
 
             try
             {
@@ -1555,8 +1559,24 @@ namespace InventarioSistem.WinForms
             }
         }
 
+        // Método de validação de permissão para edit/delete
+        private bool IsUserAuthorizedForEdit()
+        {
+            if (_currentUser?.Role == UserRole.Visualizador)
+            {
+                MessageBox.Show(this,
+                    "Usuários em modo Visualizador não podem alterar dados.",
+                    "Acesso Negado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return false;
+            }
+            return true;
+        }
+
         private void NovoComputador()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null)
             {
                 MessageBox.Show(this, "Banco não configurado.", "Aviso",
@@ -1575,7 +1595,9 @@ namespace InventarioSistem.WinForms
 
         private void EditarComputador()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
             if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
             {
                 MessageBox.Show(this, "Selecione um computador para editar.", "Aviso",
@@ -1596,7 +1618,9 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirComputador()
         {
-            if (_store == null) return;
+            if (!IsUserAuthorizedForEdit()) return;
+            if (!IsUserAuthorizedForEdit()) return;
+                if (_store == null) return;
             if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
             {
                 MessageBox.Show(this, "Selecione um computador para excluir.", "Aviso",
@@ -1620,6 +1644,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoTablet()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null)
             {
                 MessageBox.Show(this, "Banco não configurado.", "Aviso",
@@ -1638,6 +1663,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarTablet()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridTablets.CurrentRow?.DataBoundItem is not LegacyDevices.Tablet selected)
             {
@@ -1659,6 +1685,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirTablet()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridTablets.CurrentRow?.DataBoundItem is not LegacyDevices.Tablet selected)
             {
@@ -1683,6 +1710,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoColetor()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null)
             {
                 MessageBox.Show(this, "Banco não configurado.", "Aviso",
@@ -1701,6 +1729,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarColetor()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridColetores.CurrentRow?.DataBoundItem is not LegacyDevices.ColetorAndroid selected)
             {
@@ -1722,6 +1751,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirColetor()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridColetores.CurrentRow?.DataBoundItem is not LegacyDevices.ColetorAndroid selected)
             {
@@ -1746,6 +1776,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoCelular()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null)
             {
                 MessageBox.Show(this, "Banco não configurado.", "Aviso",
@@ -1764,6 +1795,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarCelular()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridCelulares.CurrentRow?.DataBoundItem is not LegacyDevices.Celular selected)
             {
@@ -1785,6 +1817,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirCelular()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridCelulares.CurrentRow?.DataBoundItem is not LegacyDevices.Celular selected)
             {
@@ -1967,6 +2000,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoImpressora()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
 
             var model = new LegacyDevices.Impressora();
@@ -1980,6 +2014,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarImpressora()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridImpressoras.CurrentRow?.DataBoundItem is not LegacyDevices.Impressora selected)
             {
@@ -1998,6 +2033,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirImpressora()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridImpressoras.CurrentRow?.DataBoundItem is not LegacyDevices.Impressora selected)
             {
@@ -2062,6 +2098,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoDect()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
 
             var model = new LegacyDevices.DectPhone();
@@ -2075,6 +2112,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarDect()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridDects.CurrentRow?.DataBoundItem is not LegacyDevices.DectPhone selected)
             {
@@ -2093,6 +2131,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirDect()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridDects.CurrentRow?.DataBoundItem is not LegacyDevices.DectPhone selected)
             {
@@ -2155,6 +2194,7 @@ namespace InventarioSistem.WinForms
 
         private void NovoTelefoneCisco()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
 
             var model = new LegacyDevices.CiscoPhone();
@@ -2168,6 +2208,7 @@ namespace InventarioSistem.WinForms
 
         private void EditarTelefoneCisco()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridTelefonesCisco.CurrentRow?.DataBoundItem is not LegacyDevices.CiscoPhone selected)
             {
@@ -2186,6 +2227,7 @@ namespace InventarioSistem.WinForms
 
         private void ExcluirTelefoneCisco()
         {
+            if (!IsUserAuthorizedForEdit()) return;
             if (_store == null) return;
             if (_gridTelefonesCisco.CurrentRow?.DataBoundItem is not LegacyDevices.CiscoPhone selected)
             {
