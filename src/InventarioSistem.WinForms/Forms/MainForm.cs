@@ -264,7 +264,7 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(1035, 18),
+                Location = new Point(990, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White
             };
