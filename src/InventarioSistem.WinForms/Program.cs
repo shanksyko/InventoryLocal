@@ -30,61 +30,64 @@ namespace InventarioSistem.WinForms
                     // Banco não configurado - criar um novo
                     var defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InventarioSistem.accdb");
                     
-                    // Create new empty database
-                    AccessDatabaseManager.CreateNewDatabase(defaultPath);
-                    
-                    AccessDatabaseManager.SetActiveDatabasePath(defaultPath);
-                    dbPath = defaultPath;
+                        // Banco não configurado: não tentamos criar o arquivo aqui.
+                        // A criação do banco será oferecida após o login pelo usuário.
+                        dbPath = null;
                 }
 
-                // Initialize user store
+                // Initialize user store *only if* the database file is available
                 var factory = new AccessConnectionFactory();
-                var userStore = new UserStore(factory);
+                UserStore? userStore = null;
 
-                // Ensure all required tables exist
-                try
+                if (!string.IsNullOrWhiteSpace(dbPath) && File.Exists(dbPath))
                 {
-                    AccessSchemaManager.EnsureRequiredTables();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Erro ao criar tabelas do banco:\n\n{ex.Message}",
-                        "Erro no Schema",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }
+                    userStore = new UserStore(factory);
 
-                // Ensure Users table exists
-                userStore.EnsureUsersTableAsync().Wait();
-                
-                // Check if any users exist, create default admin if not
-                var users = userStore.GetAllUsersAsync().Result;
-                if (users == null || !users.Any())
-                {
-                    var defaultAdmin = new User
+                    // Ensure all required tables exist
+                    try
                     {
-                        Username = "admin",
-                        PasswordHash = User.HashPassword("admin123"),
-                        FullName = "Administrador",
-                        Email = "admin@inventory.local",
-                        Role = UserRole.Admin,
-                        IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        Provider = "Local"
-                    };
+                        AccessSchemaManager.EnsureRequiredTables();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            $"Erro ao criar tabelas do banco:\n\n{ex.Message}",
+                            "Erro no Schema",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                    }
 
-                    userStore.AddUserAsync(defaultAdmin).Wait();
+                    // Ensure Users table exists
+                    userStore.EnsureUsersTableAsync().Wait();
                     
-                    MessageBox.Show(
-                        "Primeiro acesso detectado. Usuário padrão criado:\n\n" +
-                        "Usuário: admin\n" +
-                        "Senha: admin123\n\n" +
-                        "Altere a senha após o primeiro login.",
-                        "Primeiro Acesso",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    // Check if any users exist, create default admin if not
+                    var users = userStore.GetAllUsersAsync().Result;
+                    if (users == null || !users.Any())
+                    {
+                        var defaultAdmin = new User
+                        {
+                            Username = "admin",
+                            PasswordHash = User.HashPassword("admin123"),
+                            FullName = "Administrador",
+                            Email = "admin@inventory.local",
+                            Role = UserRole.Admin,
+                            IsActive = true,
+                            CreatedAt = DateTime.Now,
+                            Provider = "Local"
+                        };
+
+                        userStore.AddUserAsync(defaultAdmin).Wait();
+                        
+                        MessageBox.Show(
+                            "Primeiro acesso detectado. Usuário padrão criado:\n\n" +
+                            "Usuário: admin\n" +
+                            "Senha: admin123\n\n" +
+                            "Altere a senha após o primeiro login.",
+                            "Primeiro Acesso",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
                 }
 
                 // Show login form
