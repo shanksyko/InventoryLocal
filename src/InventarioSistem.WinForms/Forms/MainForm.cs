@@ -28,7 +28,6 @@ namespace InventarioSistem.WinForms
         private CheckBox _chkUserMode = null!;
         private Label _lblMode = null!;
         private Label _lblUserInfo = null!;
-        private Button _btnManageUsers = null!;
         private Button _btnLogoff = null!;
         private Button _btnTotalDashboard = null!;
 
@@ -228,16 +227,6 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.FromArgb(64, 64, 64)
             };
 
-            _btnManageUsers = new Button
-            {
-                Text = "Gerenciar Usuários",
-                Size = new System.Drawing.Size(115, 28),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 890, 18),
-                Visible = _currentUser?.Role == UserRole.Admin
-            };
-            _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
-
             _btnTotalDashboard = new Button
             {
                 Text = "Dashboard Total",
@@ -254,7 +243,7 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 150, 18),
+                Location = new Point(ClientSize.Width - 330, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White,
                 TabIndex = 1000
@@ -264,7 +253,6 @@ namespace InventarioSistem.WinForms
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
             _headerPanel.Controls.Add(_lblUserInfo);
-            _headerPanel.Controls.Add(_btnManageUsers);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnTotalDashboard);
@@ -2769,11 +2757,12 @@ namespace InventarioSistem.WinForms
 
         private void RealizarLogoff()
         {
-            var result = MessageBox.Show(this,
+            DialogResult result = MessageBox.Show(
                 "Deseja realmente sair da conta?",
-                "Confirmação",
+                "Confirmação de Logoff",
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2);
 
             if (result != DialogResult.Yes)
                 return;
@@ -2782,18 +2771,17 @@ namespace InventarioSistem.WinForms
             {
                 AuditLog.LogLogoff(_currentUser?.Username ?? "Unknown");
             }
-            catch { }
+            catch (Exception ex)
+            {
+                InventoryLogger.Error("MainForm", $"Erro ao registrar logoff: {ex.Message}");
+            }
+            
+            // Desabilitar botão para evitar cliques duplos
+            _btnLogoff.Enabled = false;
             
             // Fechar a janela principal
+            this.DialogResult = DialogResult.Cancel;
             this.Close();
-            
-            // Abrir novamente o formulário de login
-            var loginForm = new LoginForm(_userStore);
-            loginForm.ShowDialog();
-            
-            // Se não fez login, fecha a aplicação
-            if (loginForm.LoggedInUser == null)
-                Application.Exit();
         }
     }
 }
