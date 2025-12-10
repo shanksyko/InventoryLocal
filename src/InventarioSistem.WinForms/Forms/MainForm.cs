@@ -7,8 +7,6 @@ using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.WinForms.Forms;
-using InventarioSistem.Access.Db;
-using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
 using LegacyDevices = InventarioSistem.Core.Devices;
@@ -17,8 +15,9 @@ namespace InventarioSistem.WinForms
 {
     public partial class MainForm : Form
     {
-        private readonly AccessInventoryStore? _store;
-        private readonly UserStore? _userStore;
+        private readonly SqlServerInventoryStore? _store;
+        private readonly SqlServerUserStore? _userStore;
+        private readonly SqlServerConnectionFactory? _sqlFactory;
         private User? _currentUser;
 
         // Cabeçalho visual
@@ -107,7 +106,7 @@ namespace InventarioSistem.WinForms
         // Aba Log
         private TextBox _txtLog = null!;
 
-        public MainForm(User? user = null)
+        public MainForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerInventoryStore? store = null, SqlServerUserStore? userStore = null)
         {
             Text = "Inventory System";
             StartPosition = FormStartPosition.CenterScreen;
@@ -129,32 +128,24 @@ namespace InventarioSistem.WinForms
             }
             catch { /* Ignora se não conseguir carregar o ícone */ }
 
-            // Initialize user system
-            _currentUser = user;
-            var factory = new AccessConnectionFactory();
-            _userStore = new UserStore(factory);
+            // Initialize with SQL Server infrastructure
+            _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(new SqlServerConfig());
+            _store = store ?? new SqlServerInventoryStore(_sqlFactory);
+            _userStore = userStore;
+            _currentUser = new User { Username = "admin", FullName = "Administrador" }; // Placeholder
 
             InitializeLayout();
 
             try
             {
-                // Tenta usar o banco já salvo em config
-                _store = new AccessInventoryStore(factory);
-
-                var path = AccessDatabaseManager.ResolveActiveDatabasePath();
-                if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
-                {
-                    _lblDbPath.Text = $"Banco atual: {path}";
-                    EnableDataTabs(true);
-                    AccessSchemaManager.EnsureRequiredTables();
-                    // Lazy-loading: não carrega todas as abas automaticamente
-                    // Dados serão carregados quando o usuário selecionar cada aba
-                }
-                else
-                {
-                    _lblDbPath.Text = "Banco atual: (não configurado)";
-                    EnableDataTabs(false);
-                }
+                // Ensure schema is created
+                var schemaManager = new SqlServerSchemaManager(_sqlFactory);
+                schemaManager.EnsureRequiredTables();
+                
+                _lblDbPath.Text = "Banco: SQL Server (configurado)";
+                EnableDataTabs(true);
+                // Lazy-loading: não carrega todas as abas automaticamente
+                // Dados serão carregados quando o usuário selecionar cada aba
             }
             catch (Exception ex)
             {

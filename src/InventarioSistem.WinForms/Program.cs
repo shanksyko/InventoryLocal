@@ -3,15 +3,15 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
-using InventarioSistem.Access.Db;
-using InventarioSistem.Access.Schema;
-using InventarioSistem.Core.Entities;
 using InventarioSistem.WinForms.Forms;
 
 namespace InventarioSistem.WinForms
 {
     internal static class Program
     {
+        private static SqlServerConnectionFactory? _sqlServerFactory;
+        private static SqlServerUserStore? _sqlServerUserStore;
+
         [STAThread]
         private static void Main()
         {
@@ -19,66 +19,52 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                // Try to resolve database path, if it fails, show error
-                string? dbPath = null;
+                // Initialize SQL Server infrastructure
+                var sqlConfig = new SqlServerConfig();
+                _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig);
+                _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
+
+                // Test connection and initialize database if needed
                 try
                 {
-                    dbPath = AccessDatabaseManager.ResolveActiveDatabasePath();
-                }
-                catch (FileNotFoundException)
-                {
-                    // Banco não configurado - criar um novo
-                    var defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InventarioSistem.accdb");
+                    var dbManager = new SqlServerDatabaseManager(sqlConfig);
                     
-                        // Banco não configurado: não tentamos criar o arquivo aqui.
-                        // A criação do banco será oferecida após o login pelo usuário.
-                        dbPath = null;
-                }
-
-                // Initialize user store *only if* the database file is available
-                var factory = new AccessConnectionFactory();
-                UserStore? userStore = null;
-
-                if (!string.IsNullOrWhiteSpace(dbPath) && File.Exists(dbPath))
-                {
-                    userStore = new UserStore(factory);
-
-                    // Ensure all required tables exist
-                    try
+                    // Test if connection string is configured
+                    if (string.IsNullOrWhiteSpace(sqlConfig.GetConnectionString()))
                     {
-                        AccessSchemaManager.EnsureRequiredTables();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(
-                            $"Erro ao criar tabelas do banco:\n\n{ex.Message}",
-                            "Erro no Schema",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        return;
+                        // Database not configured - show database setup dialog
+                        ShowDatabaseSetupDialog(sqlConfig, dbManager);
                     }
 
-                    // Ensure Users table exists
-                    userStore.EnsureUsersTableAsync().Wait();
+                    // Ensure schema is created
+                    var schemaManager = new SqlServerSchemaManager(_sqlServerFactory);
+                    schemaManager.EnsureRequiredTables();
                     
-                    // Check if any users exist, create default admin if not
-                    var users = userStore.GetAllUsersAsync().Result;
-                    if (users == null || !users.Any())
-                    {
-                        var defaultAdmin = new User
-                        {
-                            Username = "admin",
-                            PasswordHash = User.HashPassword("L9l337643k#$"),
-                            FullName = "Administrador",
-                            Email = "admin@inventory.local",
-                            Role = UserRole.Admin,
-                            IsActive = true,
-                            CreatedAt = DateTime.Now,
-                            Provider = "Local"
-                        };
+                    InventoryLogger.Info("Program", "Banco de dados SQL Server inicializado com sucesso");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Erro ao inicializar banco de dados:\n\n{ex.Message}",
+                        "Erro de Banco de Dados",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
 
-                        userStore.AddUserAsync(defaultAdmin).Wait();
-                        
+                // Check if any users exist, create default admin if needed
+                try
+                {
+                    // Check for users (simplified check)
+                    var adminUser = _sqlServerUserStore.GetUser("admin");
+                    if (adminUser == null)
+                    {
+                        _sqlServerUserStore.CreateUser(
+                            "admin",
+                            "L9l337643k#$",
+                            "Administrador",
+                            true);
+
                         MessageBox.Show(
                             "Primeiro acesso detectado. Usuário padrão criado:\n\n" +
                             "Usuário: admin\n" +
@@ -89,28 +75,27 @@ namespace InventarioSistem.WinForms
                             MessageBoxIcon.Information);
                     }
                 }
-
-                // Show login form
-                using (var loginForm = new LoginForm(userStore))
+                catch (Exception ex)
                 {
-                    if (loginForm.ShowDialog() != DialogResult.OK)
-                    {
-                        return; // User cancelled login
-                    }
+                    InventoryLogger.Error("Program", $"Erro ao verificar/criar usuário padrão: {ex.Message}");
+                }
 
-                    var loggedInUser = LoginForm.LoggedInUser;
-                    if (loggedInUser != null)
-                    {
-                        Application.Run(new MainForm(loggedInUser));
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            "Falha ao obter informações do usuário logado.",
-                            "Erro",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                // Show login form (placeholder - needs migration of LoginForm)
+                // For now, create a main form with a default logged-in user
+                try
+                {
+                    // TODO: Create SqlServerLoginForm
+                    // For now, bypass login and use admin user
+                    var inventoryStore = new SqlServerInventoryStore(_sqlServerFactory);
+                    Application.Run(new MainForm(_sqlServerFactory, inventoryStore, _sqlServerUserStore));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Erro ao abrir formulário principal:\n\n{ex.Message}",
+                        "Erro",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
@@ -120,6 +105,27 @@ namespace InventarioSistem.WinForms
                     "Erro Fatal",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+            }
+        }
+
+        private static void ShowDatabaseSetupDialog(SqlServerConfig config, SqlServerDatabaseManager dbManager)
+        {
+            var result = MessageBox.Show(
+                "Banco de dados SQL Server não configurado.\n\n" +
+                "Deseja configurar agora?",
+                "Configuração de Banco de Dados",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                // TODO: Create database configuration dialog
+                MessageBox.Show(
+                    "Funcionalidade de configuração será adicionada em breve.\n\n" +
+                    "Por favor, configure a string de conexão manualmente no arquivo sqlserver.config.json",
+                    "Configuração Manual",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
         }
     }

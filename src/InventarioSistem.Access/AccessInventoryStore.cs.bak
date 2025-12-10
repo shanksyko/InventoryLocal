@@ -293,15 +293,3 @@ public partial class AccessInventoryStore
         return device;
     }
 }
-    
-    InvalidateCache();
-    
-    InvalidateCache();
-    // Cache por 5 minutos já que mudanças vêm invalidar
-    return await PerformanceHelper.CachedOrExecuteAsync(
-        "devices_count_by_type",
-        async () => await ExecuteCountByTypeAsync(),
-        TimeSpan.FromMinutes(5));
-
-    async Task<IDictionary<DeviceType, int>> ExecuteCountByTypeAsync()
-    {
