@@ -103,6 +103,7 @@ namespace InventarioSistem.WinForms
         private Label _lblDbPath = null!;
         private Button _btnSelecionarDb = null!;
         private Button _btnResumoDb = null!;
+        private Button _btnGerenciarUsuariosAvancado = null!;
 
         // Aba Log
         private TextBox _txtLog = null!;
@@ -1252,10 +1253,19 @@ namespace InventarioSistem.WinForms
             };
             _btnResumoDb.Click += (_, _) => MostrarResumoBanco();
 
+            _btnGerenciarUsuariosAvancado = new Button
+            {
+                Text = "Gerenciar usuários...",
+                AutoSize = true,
+                Location = new Point(10, 120),
+                Visible = _currentUser?.Role == UserRole.Admin
+            };
+            _btnGerenciarUsuariosAvancado.Click += (_, _) => AbrirGerenciadorUsuarios();
+
             var lblHint = new Label
             {
                 AutoSize = true,
-                Location = new Point(10, 120),
+                Location = new Point(10, 160),
                 Text = "O banco selecionado é salvo nas configurações do usuário.\n" +
                        "Ao abrir o aplicativo novamente, ele reconectará automaticamente\n" +
                        "ao mesmo banco, até que você escolha outro aqui."
@@ -1264,6 +1274,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_lblDbPath);
             page.Controls.Add(_btnSelecionarDb);
             page.Controls.Add(_btnResumoDb);
+            page.Controls.Add(_btnGerenciarUsuariosAvancado);
             page.Controls.Add(lblHint);
         }
 

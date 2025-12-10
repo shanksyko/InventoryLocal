@@ -28,6 +28,7 @@ public class UserStore
         using var conn = _factory.CreateConnection();
         await Task.Run(() => conn.Open());
 
+        bool tableCreated = false;
         try
         {
             using var cmd = conn.CreateCommand();
@@ -53,6 +54,34 @@ public class UserStore
                 )
             ";
             create.ExecuteNonQuery();
+            tableCreated = true;
+        }
+
+        // Se tabela foi criada agora, adicionar admin padrão
+        if (tableCreated)
+        {
+            using var checkCmd = conn.CreateCommand();
+            checkCmd.CommandText = "SELECT COUNT(*) FROM Users";
+            var count = Convert.ToInt32(checkCmd.ExecuteScalar());
+            
+            if (count == 0)
+            {
+                using var insertCmd = conn.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, Provider)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ";
+                insertCmd.Parameters.AddWithValue("@username", "admin");
+                insertCmd.Parameters.AddWithValue("@passwordHash", User.HashPassword("admin123"));
+                insertCmd.Parameters.AddWithValue("@role", "Admin");
+                insertCmd.Parameters.AddWithValue("@email", "admin@inventory.local");
+                insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
+                insertCmd.Parameters.AddWithValue("@isActive", true);
+                insertCmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
+                insertCmd.Parameters.AddWithValue("@provider", "Local");
+                
+                insertCmd.ExecuteNonQuery();
+            }
         }
 
         conn.Close();

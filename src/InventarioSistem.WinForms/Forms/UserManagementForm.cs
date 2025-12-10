@@ -104,6 +104,9 @@ public class UserManagementForm : Form
     {
         try
         {
+            // Garante que a tabela Users existe antes de carregar
+            await _userStore.EnsureUsersTableAsync();
+            
             var users = await _userStore.GetAllUsersAsync();
             _gridUsers.DataSource = new BindingSource { DataSource = users.ToList() };
         }
