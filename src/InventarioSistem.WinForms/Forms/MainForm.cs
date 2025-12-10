@@ -1997,26 +1997,30 @@ namespace InventarioSistem.WinForms
             if (confirm != DialogResult.Yes)
                 return;
 
-            // Usar BeginInvoke para evitar bloquear com GetAwaiter().GetResult()
-            var task = _store.DeleteAsync(selected.Id);
-            BeginInvoke(new Action(async () =>
+            // Executar exclusão de forma assíncrona sem bloquear a UI
+            ExcluirDeviceAsync(selected, reload);
+        }
+
+        private async void ExcluirDeviceAsync(Device selected, Action reload)
+        {
+            if (_store == null) return;
+
+            try
             {
-                try
-                {
-                    await task;
-                    reload();
-                    InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(this,
-                        "Erro ao excluir item:\n\n" + ex.Message,
-                        "Erro",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    reload();
-                }
-            }));
+                await _store.DeleteAsync(selected.Id);
+                reload();
+                InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
+                MessageBox.Show(this, "Item excluído com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this,
+                    "Erro ao excluir item:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                reload();
+            }
         }
 
         private static string GetResult(Dictionary<string, string> result, string key)

@@ -197,15 +197,26 @@ public class UserManagementForm : Form
         if (MessageBox.Show(this, $"Deseja realmente excluir '{selected.Username}'?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             return;
 
+        ExcluirUsuarioAsync(selected);
+    }
+
+    private async void ExcluirUsuarioAsync(User selected)
+    {
         try
         {
-            _userStore.DeleteUserAsync(selected.Id).GetAwaiter().GetResult();
+            _btnExcluirUsuario.Enabled = false;
+            await _userStore.DeleteUserAsync(selected.Id);
             AuditLog.LogUserDeletion(selected.Username, "admin");
+            MessageBox.Show(this, $"Usuário '{selected.Username}' excluído com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             LoadUsersAsync();
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, $"Erro ao excluir: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            _btnExcluirUsuario.Enabled = true;
         }
     }
 
