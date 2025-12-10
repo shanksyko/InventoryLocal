@@ -295,17 +295,6 @@ public class LoginForm : Form
             EnteredPassword = password;
             AuditLog.LogLogin(username, true);
             
-            // Verificar se é primeiro login e forçar troca de senha
-            if (user.IsFirstLogin)
-            {
-                var resetDialog = new PasswordResetDialog(user, _userStore!, true);
-                if (resetDialog.ShowDialog() == DialogResult.OK)
-                {
-                    MessageBox.Show("Senha alterada com sucesso! Por favor, faça login com a nova senha.", "Senha Alterada", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-            }
-            
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)

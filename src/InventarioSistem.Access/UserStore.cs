@@ -74,8 +74,8 @@ public class UserStore
             {
                 using var insertCmd = conn.CreateCommand();
                 insertCmd.CommandText = @"
-                    INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, Provider)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, Provider)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ";
                 insertCmd.Parameters.AddWithValue("@username", "admin");
                 insertCmd.Parameters.AddWithValue("@passwordHash", User.HashPassword("L9l337643k#$"));
@@ -83,7 +83,6 @@ public class UserStore
                 insertCmd.Parameters.AddWithValue("@email", "admin@inventory.local");
                 insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
                 insertCmd.Parameters.AddWithValue("@isActive", true);
-                insertCmd.Parameters.AddWithValue("@isFirstLogin", true);
                 insertCmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
                 insertCmd.Parameters.AddWithValue("@provider", "Local");
                 
@@ -245,9 +244,8 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE Users SET LastLogin = ?, IsFirstLogin = ? WHERE Id = ?";
+        cmd.CommandText = "UPDATE Users SET LastLogin = ? WHERE Id = ?";
         cmd.Parameters.AddWithValue("@lastLogin", DateTime.UtcNow);
-        cmd.Parameters.AddWithValue("@isFirstLogin", false);
         cmd.Parameters.AddWithValue("@id", userId);
 
         cmd.ExecuteNonQuery();
