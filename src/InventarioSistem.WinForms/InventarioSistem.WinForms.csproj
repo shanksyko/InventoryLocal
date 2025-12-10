@@ -8,6 +8,12 @@
     <Nullable>enable</Nullable>
     <AssemblyName>InventorySystem</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    
+    <!-- Configurações para executável único (self-contained) -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="icon.ico">
