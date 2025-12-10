@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Db;
 using InventarioSistem.Core.Entities;
 
 namespace InventarioSistem.WinForms.Forms;
@@ -15,11 +16,12 @@ public class LoginForm : Form
     private Button _btnLogin = null!;
     private Button _btnCancel = null!;
     private Label _lblMessage = null!;
-    private readonly UserStore _userStore;
+    private UserStore? _userStore;
 
     public User? LoggedInUser { get; private set; }
+    public string? EnteredPassword { get; private set; }
 
-    public LoginForm(UserStore userStore)
+        public LoginForm(UserStore? userStore)
     {
         _userStore = userStore;
         InitializeUI();
@@ -28,7 +30,7 @@ public class LoginForm : Form
     private void InitializeUI()
     {
         Text = "Login - Inventory System";
-        Size = new System.Drawing.Size(350, 250);
+        Size = new System.Drawing.Size(400, 260);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new System.Drawing.Font("Segoe UI", 9F);
         BackColor = System.Drawing.Color.FromArgb(245, 247, 250);
@@ -40,9 +42,10 @@ public class LoginForm : Form
         var lblTitle = new Label
         {
             Text = "Inventory System",
-            Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold),
+            Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold),
             AutoSize = true,
-            Location = new System.Drawing.Point(70, 20)
+            Location = new System.Drawing.Point(90, 12),
+            ForeColor = System.Drawing.Color.FromArgb(50, 100, 160)
         };
 
         // Username
@@ -50,13 +53,15 @@ public class LoginForm : Form
         {
             Text = "Usuário:",
             AutoSize = true,
-            Location = new System.Drawing.Point(30, 70)
+            Location = new System.Drawing.Point(30, 55)
         };
 
         _txtUsername = new TextBox
         {
-            Location = new System.Drawing.Point(30, 90),
-            Size = new System.Drawing.Size(290, 24)
+            Location = new System.Drawing.Point(30, 75),
+            Size = new System.Drawing.Size(340, 22),
+            BackColor = System.Drawing.Color.White,
+            BorderStyle = BorderStyle.FixedSingle
         };
 
         // Password
@@ -64,14 +69,16 @@ public class LoginForm : Form
         {
             Text = "Senha:",
             AutoSize = true,
-            Location = new System.Drawing.Point(30, 120)
+            Location = new System.Drawing.Point(30, 105)
         };
 
         _txtPassword = new TextBox
         {
-            Location = new System.Drawing.Point(30, 140),
-            Size = new System.Drawing.Size(290, 24),
-            UseSystemPasswordChar = true
+            Location = new System.Drawing.Point(30, 125),
+            Size = new System.Drawing.Size(340, 22),
+            UseSystemPasswordChar = true,
+            BackColor = System.Drawing.Color.White,
+            BorderStyle = BorderStyle.FixedSingle
         };
 
         // Message
@@ -80,15 +87,28 @@ public class LoginForm : Form
             Text = string.Empty,
             ForeColor = System.Drawing.Color.Red,
             AutoSize = true,
-            Location = new System.Drawing.Point(30, 170)
+            Location = new System.Drawing.Point(30, 155)
         };
+
+        // Select DB button
+        var _btnSelectDb = new Button
+        {
+            Text = "Selecionar Banco",
+            Size = new System.Drawing.Size(105, 28),
+            Location = new System.Drawing.Point(30, 175),
+            BackColor = System.Drawing.Color.FromArgb(240, 240, 240),
+            FlatStyle = FlatStyle.Flat,
+            Font = new System.Drawing.Font("Segoe UI", 9F)
+        };
+        _btnSelectDb.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(200, 200, 200);
+        _btnSelectDb.Click += (_, _) => SelectDatabase();
 
         // Buttons
         _btnLogin = new Button
         {
             Text = "Entrar",
-            Size = new System.Drawing.Size(100, 35),
-            Location = new System.Drawing.Point(140, 195),
+            Size = new System.Drawing.Size(85, 28),
+            Location = new System.Drawing.Point(175, 175),
             BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
             ForeColor = System.Drawing.Color.White,
             Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
@@ -98,10 +118,15 @@ public class LoginForm : Form
         _btnCancel = new Button
         {
             Text = "Cancelar",
-            Size = new System.Drawing.Size(100, 35),
-            Location = new System.Drawing.Point(220, 195)
+            Size = new System.Drawing.Size(85, 28),
+            Location = new System.Drawing.Point(285, 175),
+            BackColor = System.Drawing.Color.FromArgb(240, 240, 240),
+            FlatStyle = FlatStyle.Flat,
+            Font = new System.Drawing.Font("Segoe UI", 9F)
         };
+        _btnCancel.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(200, 200, 200);
         _btnCancel.Click += (_, _) => DialogResult = DialogResult.Cancel;
+
 
         Controls.Add(lblTitle);
         Controls.Add(lblUsername);
@@ -109,8 +134,61 @@ public class LoginForm : Form
         Controls.Add(lblPassword);
         Controls.Add(_txtPassword);
         Controls.Add(_lblMessage);
+        Controls.Add(_btnSelectDb);
         Controls.Add(_btnLogin);
         Controls.Add(_btnCancel);
+
+        // Focus on username field when form loads
+        Shown += (_, _) => _txtUsername.Focus();
+    }
+
+    private void SelectDatabase()
+    {
+        using (var ofd = new OpenFileDialog())
+        {
+            ofd.Filter = "Access Database (*.accdb)|*.accdb|Todos os arquivos (*.*)|*.*";
+            ofd.Title = "Selecionar arquivo de banco Access";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    AccessDatabaseManager.SetActiveDatabasePath(ofd.FileName);
+                    var factory = new AccessConnectionFactory();
+                    _userStore = new UserStore(factory);
+                    _lblMessage.ForeColor = System.Drawing.Color.Green;
+                    _lblMessage.Text = "Banco selecionado com sucesso.";
+                }
+                catch (Exception ex)
+                {
+                    _lblMessage.ForeColor = System.Drawing.Color.Red;
+                    _lblMessage.Text = $"Erro ao selecionar banco: {ex.Message}";
+                }
+            }
+        }
+    }
+
+    private void CreateDatabase()
+    {
+        var defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InventarioSistem.accdb");
+        try
+        {
+            AccessDatabaseManager.CreateNewDatabase(defaultPath);
+            AccessDatabaseManager.SetActiveDatabasePath(defaultPath);
+            var factory = new AccessConnectionFactory();
+            _userStore = new UserStore(factory);
+            _lblMessage.ForeColor = System.Drawing.Color.Green;
+            _lblMessage.Text = "Banco criado e selecionado com sucesso.";
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            _lblMessage.ForeColor = System.Drawing.Color.Red;
+            _lblMessage.Text = "Não foi possível criar o banco: driver Access ausente. Instale o Microsoft Access Database Engine ou selecione um .accdb existente.";
+        }
+        catch (Exception ex)
+        {
+            _lblMessage.ForeColor = System.Drawing.Color.Red;
+            _lblMessage.Text = $"Erro ao criar banco: {ex.Message}";
+        }
     }
 
     private async void LoginAsync()
@@ -124,7 +202,30 @@ public class LoginForm : Form
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                _lblMessage.Text = "Usuário e senha são obrigatórios.";
+                _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                return;
+            }
+
+            if (_userStore == null)
+            {
+                // Offline mode: accept default admin credentials
+                if (string.Equals(username, "admin", StringComparison.OrdinalIgnoreCase) && password == "admin123")
+                {
+                    LoggedInUser = new User
+                    {
+                        Username = "admin",
+                        FullName = "Administrador",
+                        Role = UserRole.Admin,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        Provider = "Local"
+                    };
+                    EnteredPassword = password;
+                    DialogResult = DialogResult.OK;
+                    return;
+                }
+
+                _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 return;
             }
 
@@ -132,13 +233,13 @@ public class LoginForm : Form
 
             if (user == null || !user.IsActive)
             {
-                _lblMessage.Text = "Usuário não encontrado ou inativo.";
+                _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 return;
             }
 
             if (!user.VerifyPassword(password))
             {
-                _lblMessage.Text = "Senha incorreta.";
+                _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 return;
             }
 
@@ -146,6 +247,7 @@ public class LoginForm : Form
             await _userStore.UpdateLastLoginAsync(user.Id);
 
             LoggedInUser = user;
+            EnteredPassword = password;
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)
