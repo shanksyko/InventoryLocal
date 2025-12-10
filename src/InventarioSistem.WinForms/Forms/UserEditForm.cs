@@ -33,7 +33,7 @@ public class UserEditForm : Form
     private void InitializeUI()
     {
         Text = _existingUser != null ? "Editar Usuário" : "Novo Usuário";
-        Size = new System.Drawing.Size(400, 350);
+        Size = new System.Drawing.Size(450, 380);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new System.Drawing.Font("Segoe UI", 9F);
         BackColor = System.Drawing.Color.FromArgb(245, 247, 250);

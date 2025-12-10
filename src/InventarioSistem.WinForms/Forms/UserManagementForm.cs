@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Core.Entities;
+using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.WinForms.Forms;
 
@@ -30,10 +31,12 @@ public class UserManagementForm : Form
     private void InitializeUI()
     {
         Text = "Gerenciar Usuários";
-        Size = new System.Drawing.Size(700, 500);
+        Size = new System.Drawing.Size(900, 550);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new System.Drawing.Font("Segoe UI", 9F);
         BackColor = System.Drawing.Color.FromArgb(245, 247, 250);
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MinimumSize = new System.Drawing.Size(700, 400);
 
         // Buttons
         _btnNovoUsuario = new Button
@@ -81,8 +84,9 @@ public class UserManagementForm : Form
         // Grid
         _gridUsers = new DataGridView
         {
-            Location = new System.Drawing.Point(10, 50),
-            Size = new System.Drawing.Size(680, 420),
+            Location = new System.Drawing.Point(10, 45),
+            Size = new System.Drawing.Size(880, 460),
+            Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
             ReadOnly = true,
             AllowUserToAddRows = false,
             AllowUserToDeleteRows = false,
@@ -166,6 +170,7 @@ public class UserManagementForm : Form
         try
         {
             _userStore.DeleteUserAsync(selected.Id).GetAwaiter().GetResult();
+            AuditLog.LogUserDeletion(selected.Username, "admin");
             LoadUsersAsync();
         }
         catch (Exception ex)
@@ -185,24 +190,29 @@ public class UserManagementForm : Form
         using var dialog = new PasswordResetDialog(selected.Username);
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
-            try
-            {
-                var novaSenha = dialog.NovaSenha;
-                if (string.IsNullOrWhiteSpace(novaSenha))
-                {
-                    MessageBox.Show(this, "Senha não pode ser vazia.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+            ResetarSenhaAsync(selected, dialog.NovaSenha);
+        }
+    }
 
-                var hash = User.HashPassword(novaSenha);
-                _userStore.UpdatePasswordAsync(selected.Id, hash).GetAwaiter().GetResult();
-                
-                MessageBox.Show(this, $"Senha do usuário '{selected.Username}' resetada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
+    private async void ResetarSenhaAsync(User selected, string novaSenha)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(novaSenha))
             {
-                MessageBox.Show(this, $"Erro ao resetar senha: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, "Senha não pode ser vazia.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+
+            var hash = User.HashPassword(novaSenha);
+            await _userStore.UpdatePasswordAsync(selected.Id, hash);
+            
+            AuditLog.LogPasswordChange(selected.Username, "admin");
+            MessageBox.Show(this, $"Senha do usuário '{selected.Username}' resetada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Erro ao resetar senha: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

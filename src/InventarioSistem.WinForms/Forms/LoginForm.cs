@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Core.Entities;
+using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.WinForms.Forms;
 
@@ -221,11 +222,13 @@ public class LoginForm : Form
                         Provider = "Local"
                     };
                     EnteredPassword = password;
+                    AuditLog.LogLogin("admin", true);
                     DialogResult = DialogResult.OK;
                     return;
                 }
 
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                AuditLog.LogLogin(username, false);
                 return;
             }
 
@@ -234,12 +237,14 @@ public class LoginForm : Form
             if (user == null || !user.IsActive)
             {
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                AuditLog.LogLogin(username, false);
                 return;
             }
 
             if (!user.VerifyPassword(password))
             {
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                AuditLog.LogLogin(username, false);
                 return;
             }
 
@@ -248,6 +253,7 @@ public class LoginForm : Form
 
             LoggedInUser = user;
             EnteredPassword = password;
+            AuditLog.LogLogin(username, true);
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)
