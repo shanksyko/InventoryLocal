@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
+using InventarioSistem.WinForms.Forms;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Entities;
@@ -280,6 +281,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirComputador.Click += (_, _) => ExcluirComputador();
 
+            var _btnExportComputadores = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportComputadores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Computer, this);
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Host/N/S/Proprietário/Departamento/Matrícula):",
@@ -365,6 +374,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoComputador);
             page.Controls.Add(_btnEditarComputador);
             page.Controls.Add(_btnExcluirComputador);
+            page.Controls.Add(_btnExportComputadores);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtComputersFilter);
             page.Controls.Add(btnClearFilter);
@@ -405,6 +415,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTablet.Click += (_, _) => ExcluirTablet();
 
+            var _btnExportTablets = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportTablets.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Tablet, this);
+
             var lblFiltroTablets = new Label
             {
                 Text = "Filtro (Host/Serial/Local/Responsável/IMEI):",
@@ -435,6 +453,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoTablet);
             page.Controls.Add(_btnEditarTablet);
             page.Controls.Add(_btnExcluirTablet);
+            page.Controls.Add(_btnExportTablets);
             page.Controls.Add(lblFiltroTablets);
             page.Controls.Add(_txtTabletsFilter);
             page.Controls.Add(btnClearFilterTablets);
@@ -475,6 +494,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirColetor.Click += (_, _) => ExcluirColetor();
 
+            var _btnExportColetores = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportColetores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.ColetorAndroid, this);
+
             var lblFiltroColetores = new Label
             {
                 Text = "Filtro (Host/Serial/MAC/IP/Local):",
@@ -505,6 +532,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoColetor);
             page.Controls.Add(_btnEditarColetor);
             page.Controls.Add(_btnExcluirColetor);
+            page.Controls.Add(_btnExportColetores);
             page.Controls.Add(lblFiltroColetores);
             page.Controls.Add(_txtColetoresFilter);
             page.Controls.Add(btnClearFilterColetores);
@@ -544,6 +572,14 @@ namespace InventarioSistem.WinForms
                 Location = new Point(310, 10)
             };
             _btnExcluirCelular.Click += (_, _) => ExcluirCelular();
+
+            var _btnExportCelulares = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportCelulares.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Celular, this);
 
             var lblFiltroCelulares = new Label
             {
@@ -589,6 +625,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoCelular);
             page.Controls.Add(_btnEditarCelular);
             page.Controls.Add(_btnExcluirCelular);
+            page.Controls.Add(_btnExportCelulares);
             page.Controls.Add(lblFiltroCelulares);
             page.Controls.Add(_txtCelularesFilter);
             page.Controls.Add(btnClearFilterCelulares);
@@ -628,6 +665,14 @@ namespace InventarioSistem.WinForms
                 Location = new Point(310, 10)
             };
             _btnExcluirImpressora.Click += (_, _) => ExcluirImpressora();
+
+            var _btnExportImpressoras = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportImpressoras.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Impressora, this);
 
             var lblFiltroImpressoras = new Label
             {
@@ -690,6 +735,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovaImpressora);
             page.Controls.Add(_btnEditarImpressora);
             page.Controls.Add(_btnExcluirImpressora);
+            page.Controls.Add(_btnExportImpressoras);
             page.Controls.Add(lblFiltroImpressoras);
             page.Controls.Add(_txtImpressorasFilter);
             page.Controls.Add(btnClearFilterImpressoras);
@@ -730,6 +776,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirDect.Click += (_, _) => ExcluirDect();
 
+            var _btnExportDects = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportDects.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Dect, this);
+
             var lblFiltroDects = new Label
             {
                 Text = "Filtro (Responsável/IPEI/MAC/Número/Local/Modelo):",
@@ -766,6 +820,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoDect);
             page.Controls.Add(_btnEditarDect);
             page.Controls.Add(_btnExcluirDect);
+            page.Controls.Add(_btnExportDects);
             page.Controls.Add(lblFiltroDects);
             page.Controls.Add(_txtDectsFilter);
             page.Controls.Add(btnClearFilterDects);
@@ -806,6 +861,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTelefoneCisco.Click += (_, _) => ExcluirTelefoneCisco();
 
+            var _btnExportTelefonesCisco = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportTelefonesCisco.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.TelefoneCisco, this);
+
             var lblFiltroCisco = new Label
             {
                 Text = "Filtro (Responsável/MAC/Número/Local/IP/Serial):",
@@ -841,6 +904,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoTelefoneCisco);
             page.Controls.Add(_btnEditarTelefoneCisco);
             page.Controls.Add(_btnExcluirTelefoneCisco);
+            page.Controls.Add(_btnExportTelefonesCisco);
             page.Controls.Add(lblFiltroCisco);
             page.Controls.Add(_txtCiscoFilter);
             page.Controls.Add(btnClearFilterCisco);
@@ -881,6 +945,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirTelevisor.Click += (_, _) => ExcluirTelevisor();
 
+            var _btnExportTelevisores = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportTelevisores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Televisor, this);
+
             var lblFiltroTvs = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local):",
@@ -915,6 +987,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoTelevisor);
             page.Controls.Add(_btnEditarTelevisor);
             page.Controls.Add(_btnExcluirTelevisor);
+            page.Controls.Add(_btnExportTelevisores);
             page.Controls.Add(lblFiltroTvs);
             page.Controls.Add(_txtTvsFilter);
             page.Controls.Add(btnClearFilterTvs);
@@ -955,6 +1028,14 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirRelogioPonto.Click += (_, _) => ExcluirRelogioPonto();
 
+            var _btnExportRelogiosPonto = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportRelogiosPonto.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.RelogioPonto, this);
+
             var lblFiltroRelogios = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local/IP):",
@@ -993,6 +1074,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoRelogioPonto);
             page.Controls.Add(_btnEditarRelogioPonto);
             page.Controls.Add(_btnExcluirRelogioPonto);
+            page.Controls.Add(_btnExportRelogiosPonto);
             page.Controls.Add(lblFiltroRelogios);
             page.Controls.Add(_txtRelogiosFilter);
             page.Controls.Add(btnClearFilterRelogios);
