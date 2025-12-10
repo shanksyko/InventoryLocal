@@ -132,20 +132,25 @@ public class TotalDashboardForm : Form
                 series.Points.AddXY(item.Key, item.Value);
             }
 
-            // Preencher grid
+            // Preencher grid com dados e total
             var dataSource = totals.Select(x => new { Type = x.Key, Count = x.Value }).ToList();
-            _gridTotals.DataSource = dataSource;
-
-            // Adicionar total
+            
+            // Adicionar linha de total
             if (dataSource.Count > 0)
             {
-                var totalRow = new DataGridViewRow();
-                totalRow.CreateCells(_gridTotals);
-                totalRow.Cells[0].Value = "TOTAL";
-                totalRow.Cells[1].Value = dataSource.Sum(x => x.Count);
-                totalRow.DefaultCellStyle.BackColor = Color.FromArgb(200, 220, 240);
-                totalRow.DefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-                _gridTotals.Rows.Add(totalRow);
+                dataSource.Add(new { Type = "TOTAL", Count = dataSource.Sum(x => x.Count) });
+            }
+            
+            // Usar BindingSource para permitir melhor controle
+            var bindingSource = new BindingSource { DataSource = dataSource };
+            _gridTotals.DataSource = bindingSource;
+            
+            // Destacar a linha de total
+            if (_gridTotals.Rows.Count > 0)
+            {
+                var lastRow = _gridTotals.Rows[_gridTotals.Rows.Count - 1];
+                lastRow.DefaultCellStyle.BackColor = Color.FromArgb(200, 220, 240);
+                lastRow.DefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             }
         }
         catch (Exception ex)
