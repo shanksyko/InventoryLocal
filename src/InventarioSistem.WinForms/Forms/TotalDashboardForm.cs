@@ -69,9 +69,20 @@ public class TotalDashboardForm : Form
         {
             ChartType = SeriesChartType.Pie,
             IsValueShownAsLabel = true,
-            LabelFormat = "#,##0"
+            Label = "#VALX: #VAL (#PERCENT{P0})",
+            LegendText = "#VALX (#VAL)",
+            Font = new Font("Segoe UI", 9F, FontStyle.Bold)
         };
         _chart.Series.Add(series);
+
+        // Adicionar legenda
+        var legend = new Legend("Legend")
+        {
+            Docking = Docking.Right,
+            Alignment = StringAlignment.Center,
+            Font = new Font("Segoe UI", 9F)
+        };
+        _chart.Legends.Add(legend);
 
         splitContainer.Panel1.Controls.Add(_chart);
 
