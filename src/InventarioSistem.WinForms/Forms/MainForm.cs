@@ -200,9 +200,9 @@ namespace InventarioSistem.WinForms
             _btnDashboard = new Button
             {
                 Text = "Dashboard",
-                AutoSize = true,
+                Size = new System.Drawing.Size(85, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(870, 20)
+                Location = new Point(900, 18)
             };
             _btnDashboard.Click += (_, _) => MostrarDashboard();
 
@@ -212,7 +212,7 @@ namespace InventarioSistem.WinForms
                 Appearance = Appearance.Button,
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(740, 20),
+                Location = new Point(750, 20),
                 BackColor = Color.Transparent
             };
             _chkUserMode.CheckedChanged += (_, _) => ApplyUserMode(_chkUserMode.Checked);
@@ -233,7 +233,7 @@ namespace InventarioSistem.WinForms
                     $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" : 
                     "",
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(380, 24),
+                Location = new Point(350, 24),
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(64, 64, 64)
             };
@@ -241,9 +241,9 @@ namespace InventarioSistem.WinForms
             _btnManageUsers = new Button
             {
                 Text = "Gerenciar Usuários",
-                AutoSize = true,
+                Size = new System.Drawing.Size(115, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(220, 20),
+                Location = new Point(210, 18),
                 Visible = _currentUser?.Role == UserRole.Admin
             };
             _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
@@ -251,9 +251,9 @@ namespace InventarioSistem.WinForms
             _btnTotalDashboard = new Button
             {
                 Text = "Dashboard Total",
-                AutoSize = true,
+                Size = new System.Drawing.Size(110, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(750, 20),
+                Location = new Point(795, 18),
                 BackColor = Color.FromArgb(50, 160, 120),
                 ForeColor = Color.White
             };
@@ -262,9 +262,9 @@ namespace InventarioSistem.WinForms
             _btnLogoff = new Button
             {
                 Text = "Sair",
-                AutoSize = true,
+                Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(1050, 20),
+                Location = new Point(1035, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White
             };
