@@ -222,9 +222,16 @@ public static class AccessSchemaManager
                 schemaCmd.CommandText = "SELECT * FROM Devices";
                 using var reader = schemaCmd.ExecuteReader(CommandBehavior.SchemaOnly);
                 var table = reader.GetSchemaTable();
-                foreach (DataRow row in table.Rows)
+                if (table != null)
                 {
-                    existing.Add(row["ColumnName"].ToString()!);
+                    foreach (DataRow row in table.Rows)
+                    {
+                        var colName = row["ColumnName"] as string;
+                        if (!string.IsNullOrWhiteSpace(colName))
+                        {
+                            existing.Add(colName);
+                        }
+                    }
                 }
             }
 
