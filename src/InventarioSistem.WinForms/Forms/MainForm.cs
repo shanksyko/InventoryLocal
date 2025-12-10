@@ -137,7 +137,8 @@ namespace InventarioSistem.WinForms
                     _lblDbPath.Text = $"Banco atual: {path}";
                     EnableDataTabs(true);
                     AccessSchemaManager.EnsureRequiredTables();
-                    LoadAllGrids();
+                    // Lazy-loading: não carrega todas as abas automaticamente
+                    // Dados serão carregados quando o usuário selecionar cada aba
                 }
                 else
                 {
@@ -300,11 +301,68 @@ namespace InventarioSistem.WinForms
             _tabs.TabPages.Add(tabAvancado);
             _tabs.TabPages.Add(tabLog);
 
+            // Implementar lazy-loading: carregar dados apenas quando a aba for selecionada
+            _tabs.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+
             Controls.Add(_tabs);
             Controls.Add(_headerPanel);
 
             // Set default user mode off
             ApplyUserMode(false);
+        }
+
+        private void TabControl_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            // Lazy-loading: carrega dados apenas quando a aba é selecionada
+            if (_store == null) return;
+
+            switch (_tabs.SelectedIndex)
+            {
+                case 0: // Computadores
+                    if (_gridComputadores.DataSource == null)
+                        LoadComputadores();
+                    break;
+                case 1: // Tablets
+                    if (_gridTablets.DataSource == null)
+                        LoadTablets();
+                    break;
+                case 2: // Coletores
+                    if (_gridColetores.DataSource == null)
+                        LoadColetores();
+                    break;
+                case 3: // Celulares
+                    if (_gridCelulares.DataSource == null)
+                        LoadCelulares();
+                    break;
+                case 4: // Impressoras
+                    if (_gridImpressoras.DataSource == null)
+                        LoadImpressoras();
+                    break;
+                case 5: // DECTs
+                    if (_gridDects.DataSource == null)
+                        LoadDects();
+                    break;
+                case 6: // Telefones Cisco
+                    if (_gridTelefonesCisco.DataSource == null)
+                        LoadTelefonesCisco();
+                    break;
+                case 7: // Televisores
+                    if (_gridTelevisores.DataSource == null)
+                        LoadTelevisores();
+                    break;
+                case 8: // Relógios Ponto
+                    if (_gridRelogiosPonto.DataSource == null)
+                        LoadRelogiosPonto();
+                    break;
+                case 9: // Monitores
+                    if (_gridMonitores.DataSource == null)
+                        LoadMonitores();
+                    break;
+                case 10: // Nobreaks
+                    if (_gridNobreaks.DataSource == null)
+                        LoadNobreaks();
+                    break;
+            }
         }
 
         private void ApplyUserMode(bool isUserMode)
@@ -1382,6 +1440,14 @@ namespace InventarioSistem.WinForms
             if (_txtLog == null) return;
 
             _txtLog.AppendText(line + Environment.NewLine);
+            
+            // Limita o tamanho do log a 100KB para evitar crescimento ilimitado
+            const int maxChars = 102400; // 100 KB
+            if (_txtLog.TextLength > maxChars)
+            {
+                _txtLog.Text = _txtLog.Text.Substring(_txtLog.TextLength - maxChars);
+            }
+            
             _txtLog.SelectionStart = _txtLog.TextLength;
             _txtLog.ScrollToCaret();
         }
@@ -1747,9 +1813,25 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = _store.ListAsync(type).GetAwaiter().GetResult();
-                grid.DataSource = new BindingList<Device>(list.ToList());
-                HideIdColumn(grid);
+                // Usar BeginInvoke para evitar bloquear a thread UI com GetAwaiter().GetResult()
+                var task = _store.ListAsync(type);
+                BeginInvoke(new Action(async () =>
+                {
+                    try
+                    {
+                        var list = await task;
+                        grid.DataSource = new BindingList<Device>(list.ToList());
+                        HideIdColumn(grid);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this,
+                            $"Erro ao carregar lista de {type}:\n\n" + ex.Message,
+                            "Erro",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+                }));
             }
             catch (Exception ex)
             {
@@ -1815,9 +1897,26 @@ namespace InventarioSistem.WinForms
             if (confirm != DialogResult.Yes)
                 return;
 
-            _store.DeleteAsync(selected.Id).GetAwaiter().GetResult();
-            reload();
-            InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
+            // Usar BeginInvoke para evitar bloquear com GetAwaiter().GetResult()
+            var task = _store.DeleteAsync(selected.Id);
+            BeginInvoke(new Action(async () =>
+            {
+                try
+                {
+                    await task;
+                    reload();
+                    InventoryLogger.Info("WinForms", $"{selected.Type} excluído via UI (Id={selected.Id})");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this,
+                        "Erro ao excluir item:\n\n" + ex.Message,
+                        "Erro",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    reload();
+                }
+            }));
         }
 
         private static string GetResult(Dictionary<string, string> result, string key)

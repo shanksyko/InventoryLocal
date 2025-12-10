@@ -32,6 +32,14 @@ namespace InventarioSistem.WinForms
         private TextBox _txtMonitoresFilter = null!;
         private TextBox _txtNobreaksFilter = null!;
 
+        // Método otimizado para busca sem alocar string toda vez
+        private bool FastContains(string? text, string? searchTerm)
+        {
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(searchTerm))
+                return false;
+            return text.IndexOf(searchTerm, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         private void ApplyComputersFilter()
         {
             if (_gridComputadores == null)
@@ -42,14 +50,13 @@ namespace InventarioSistem.WinForms
 
             if (!string.IsNullOrWhiteSpace(term))
             {
-                var normalized = term.ToLowerInvariant();
                 view = view
                     .Where(c =>
-                        (!string.IsNullOrEmpty(c.Host) && c.Host.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.SerialNumber) && c.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Proprietario) && c.Proprietario.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Departamento) && c.Departamento.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Matricula) && c.Matricula.ToLowerInvariant().Contains(normalized)))
+                        FastContains(c.Host, term) ||
+                        FastContains(c.SerialNumber, term) ||
+                        FastContains(c.Proprietario, term) ||
+                        FastContains(c.Departamento, term) ||
+                        FastContains(c.Matricula, term))
                     .ToList();
             }
 
@@ -67,14 +74,13 @@ namespace InventarioSistem.WinForms
 
             if (!string.IsNullOrWhiteSpace(term))
             {
-                var normalized = term.ToLowerInvariant();
                 view = view
                     .Where(t =>
-                        (!string.IsNullOrEmpty(t.Host) && t.Host.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(t.SerialNumber) && t.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(t.Local) && t.Local.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(t.Responsavel) && t.Responsavel.ToLowerInvariant().Contains(normalized)) ||
-                        (t.Imeis != null && t.Imeis.Any(i => i != null && i.ToLowerInvariant().Contains(normalized))))
+                        FastContains(t.Host, term) ||
+                        FastContains(t.SerialNumber, term) ||
+                        FastContains(t.Local, term) ||
+                        FastContains(t.Responsavel, term) ||
+                        (t.Imeis != null && t.Imeis.Any(i => FastContains(i, term))))
                     .ToList();
             }
 
@@ -92,14 +98,13 @@ namespace InventarioSistem.WinForms
 
             if (!string.IsNullOrWhiteSpace(term))
             {
-                var normalized = term.ToLowerInvariant();
                 view = view
                     .Where(c =>
-                        (!string.IsNullOrEmpty(c.Host) && c.Host.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.SerialNumber) && c.SerialNumber.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.MacAddress) && c.MacAddress.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.IpAddress) && c.IpAddress.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Local) && c.Local.ToLowerInvariant().Contains(normalized)))
+                        FastContains(c.Host, term) ||
+                        FastContains(c.SerialNumber, term) ||
+                        FastContains(c.MacAddress, term) ||
+                        FastContains(c.IpAddress, term) ||
+                        FastContains(c.Local, term))
                     .ToList();
             }
 
@@ -117,16 +122,15 @@ namespace InventarioSistem.WinForms
 
             if (!string.IsNullOrWhiteSpace(term))
             {
-                var normalized = term.ToLowerInvariant();
                 view = view
                     .Where(c =>
-                        (!string.IsNullOrEmpty(c.CellName) && c.CellName.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Imei1) && c.Imei1.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Imei2) && c.Imei2.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Modelo) && c.Modelo.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Numero) && c.Numero.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Usuario) && c.Usuario.ToLowerInvariant().Contains(normalized)) ||
-                        (!string.IsNullOrEmpty(c.Setor) && c.Setor.ToLowerInvariant().Contains(normalized)))
+                        FastContains(c.CellName, term) ||
+                        FastContains(c.Imei1, term) ||
+                        FastContains(c.Imei2, term) ||
+                        FastContains(c.Modelo, term) ||
+                        FastContains(c.Numero, term) ||
+                        FastContains(c.Usuario, term) ||
+                        FastContains(c.Setor, term))
                     .ToList();
             }
 
