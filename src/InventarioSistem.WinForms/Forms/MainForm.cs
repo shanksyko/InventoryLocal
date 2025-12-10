@@ -1450,7 +1450,7 @@ namespace InventarioSistem.WinForms
 
             _btnSelecionarDb = new Button
             {
-                Text = "Selecionar banco (.accdb)...",
+                Text = "Configurar SQL Server...",
                 AutoSize = true,
                 Location = new Point(10, 45)
             };
