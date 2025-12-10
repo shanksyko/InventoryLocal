@@ -1559,18 +1559,13 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        // Método de validação de permissão para edit/delete
+        // Método de validação de permissão para edit/delete (silencioso para visualizador)
         private bool IsUserAuthorizedForEdit()
         {
+            // Visualizador permanece read-only: apenas retorna false sem popup
             if (_currentUser?.Role == UserRole.Visualizador)
-            {
-                MessageBox.Show(this,
-                    "Usuários em modo Visualizador não podem alterar dados.",
-                    "Acesso Negado",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
                 return false;
-            }
+
             return true;
         }
 
