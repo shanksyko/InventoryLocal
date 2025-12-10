@@ -805,6 +805,8 @@ namespace InventarioSistem.WinForms
             _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.MacAddress), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IP", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.IpAddress), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.Local), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Aplicativos", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.AppsInstalados), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Sistema Operacional", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.SistemaOperacional), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.CreatedAt), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridColetores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridColetores.CellDoubleClick += (_, _) => EditarColetor();

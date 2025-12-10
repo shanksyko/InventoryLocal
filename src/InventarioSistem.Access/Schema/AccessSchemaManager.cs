@@ -396,7 +396,19 @@ public static class AccessSchemaManager
                 ("MacAddress", "MacAddress TEXT(50)"),
                 ("IpAddress", "IpAddress TEXT(50)"),
                 ("Local", "Local TEXT(100)"),
-                ("CreatedAt", "CreatedAt DATETIME")
+                ("CreatedAt", "CreatedAt DATETIME"),
+                ("AppGwsFg", "AppGwsFg YESNO"),
+                ("AppGwsRm", "AppGwsRm YESNO"),
+                ("AppInspection", "AppInspection YESNO"),
+                ("AppCuringTbr", "AppCuringTbr YESNO"),
+                ("AppCuringPcr", "AppCuringPcr YESNO"),
+                ("AppInspectionTbr", "AppInspectionTbr YESNO"),
+                ("AppQuimico", "AppQuimico YESNO"),
+                ("AppBuildingTbr", "AppBuildingTbr YESNO"),
+                ("AppBuildingPcr", "AppBuildingPcr YESNO"),
+                ("OsWinCe", "OsWinCe YESNO"),
+                ("OsAndroid81", "OsAndroid81 YESNO"),
+                ("OsAndroid10", "OsAndroid10 YESNO")
             });
         });
 

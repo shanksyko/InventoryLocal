@@ -227,8 +227,11 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO ColetoresAndroid
-            (Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt, 
+             AppGwsFg, AppGwsRm, AppInspection, AppCuringTbr, AppCuringPcr, 
+             AppInspectionTbr, AppQuimico, AppBuildingTbr, AppBuildingPcr, 
+             OsWinCe, OsAndroid81, OsAndroid10)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", coletor.Host);
@@ -237,6 +240,18 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "IpAddress", coletor.IpAddress);
         AddTextParameter(command, "Local", coletor.Local);
         command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = coletor.CreatedAt ?? DateTime.Now;
+        command.Parameters.Add("AppGwsFg", OdbcType.Bit).Value = coletor.AppGwsFg;
+        command.Parameters.Add("AppGwsRm", OdbcType.Bit).Value = coletor.AppGwsRm;
+        command.Parameters.Add("AppInspection", OdbcType.Bit).Value = coletor.AppInspection;
+        command.Parameters.Add("AppCuringTbr", OdbcType.Bit).Value = coletor.AppCuringTbr;
+        command.Parameters.Add("AppCuringPcr", OdbcType.Bit).Value = coletor.AppCuringPcr;
+        command.Parameters.Add("AppInspectionTbr", OdbcType.Bit).Value = coletor.AppInspectionTbr;
+        command.Parameters.Add("AppQuimico", OdbcType.Bit).Value = coletor.AppQuimico;
+        command.Parameters.Add("AppBuildingTbr", OdbcType.Bit).Value = coletor.AppBuildingTbr;
+        command.Parameters.Add("AppBuildingPcr", OdbcType.Bit).Value = coletor.AppBuildingPcr;
+        command.Parameters.Add("OsWinCe", OdbcType.Bit).Value = coletor.OsWinCe;
+        command.Parameters.Add("OsAndroid81", OdbcType.Bit).Value = coletor.OsAndroid81;
+        command.Parameters.Add("OsAndroid10", OdbcType.Bit).Value = coletor.OsAndroid10;
 
         command.ExecuteNonQuery();
 
@@ -252,7 +267,11 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt FROM ColetoresAndroid";
+        command.CommandText = @"SELECT Id, Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt, 
+                                AppGwsFg, AppGwsRm, AppInspection, AppCuringTbr, AppCuringPcr, 
+                                AppInspectionTbr, AppQuimico, AppBuildingTbr, AppBuildingPcr, 
+                                OsWinCe, OsAndroid81, OsAndroid10 
+                                FROM ColetoresAndroid";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -265,7 +284,19 @@ public partial class AccessInventoryStore
                 MacAddress = GetStringSafe(reader, 3),
                 IpAddress = GetStringSafe(reader, 4),
                 Local = GetStringSafe(reader, 5),
-                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                AppGwsFg = !reader.IsDBNull(7) && reader.GetBoolean(7),
+                AppGwsRm = !reader.IsDBNull(8) && reader.GetBoolean(8),
+                AppInspection = !reader.IsDBNull(9) && reader.GetBoolean(9),
+                AppCuringTbr = !reader.IsDBNull(10) && reader.GetBoolean(10),
+                AppCuringPcr = !reader.IsDBNull(11) && reader.GetBoolean(11),
+                AppInspectionTbr = !reader.IsDBNull(12) && reader.GetBoolean(12),
+                AppQuimico = !reader.IsDBNull(13) && reader.GetBoolean(13),
+                AppBuildingTbr = !reader.IsDBNull(14) && reader.GetBoolean(14),
+                AppBuildingPcr = !reader.IsDBNull(15) && reader.GetBoolean(15),
+                OsWinCe = !reader.IsDBNull(16) && reader.GetBoolean(16),
+                OsAndroid81 = !reader.IsDBNull(17) && reader.GetBoolean(17),
+                OsAndroid10 = !reader.IsDBNull(18) && reader.GetBoolean(18)
             });
         }
 
@@ -282,7 +313,10 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             UPDATE ColetoresAndroid
-            SET Host = ?, SerialNumber = ?, MacAddress = ?, IpAddress = ?, Local = ?
+            SET Host = ?, SerialNumber = ?, MacAddress = ?, IpAddress = ?, Local = ?,
+                AppGwsFg = ?, AppGwsRm = ?, AppInspection = ?, AppCuringTbr = ?, AppCuringPcr = ?, 
+                AppInspectionTbr = ?, AppQuimico = ?, AppBuildingTbr = ?, AppBuildingPcr = ?, 
+                OsWinCe = ?, OsAndroid81 = ?, OsAndroid10 = ?
             WHERE Id = ?
         ";
 
@@ -291,6 +325,18 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "MacAddress", coletor.MacAddress);
         AddTextParameter(command, "IpAddress", coletor.IpAddress);
         AddTextParameter(command, "Local", coletor.Local);
+        command.Parameters.Add("AppGwsFg", OdbcType.Bit).Value = coletor.AppGwsFg;
+        command.Parameters.Add("AppGwsRm", OdbcType.Bit).Value = coletor.AppGwsRm;
+        command.Parameters.Add("AppInspection", OdbcType.Bit).Value = coletor.AppInspection;
+        command.Parameters.Add("AppCuringTbr", OdbcType.Bit).Value = coletor.AppCuringTbr;
+        command.Parameters.Add("AppCuringPcr", OdbcType.Bit).Value = coletor.AppCuringPcr;
+        command.Parameters.Add("AppInspectionTbr", OdbcType.Bit).Value = coletor.AppInspectionTbr;
+        command.Parameters.Add("AppQuimico", OdbcType.Bit).Value = coletor.AppQuimico;
+        command.Parameters.Add("AppBuildingTbr", OdbcType.Bit).Value = coletor.AppBuildingTbr;
+        command.Parameters.Add("AppBuildingPcr", OdbcType.Bit).Value = coletor.AppBuildingPcr;
+        command.Parameters.Add("OsWinCe", OdbcType.Bit).Value = coletor.OsWinCe;
+        command.Parameters.Add("OsAndroid81", OdbcType.Bit).Value = coletor.OsAndroid81;
+        command.Parameters.Add("OsAndroid10", OdbcType.Bit).Value = coletor.OsAndroid10;
         command.Parameters.Add("Id", OdbcType.Int).Value = coletor.Id;
 
         command.ExecuteNonQuery();

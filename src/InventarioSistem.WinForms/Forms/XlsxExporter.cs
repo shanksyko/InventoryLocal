@@ -165,7 +165,9 @@ public static class XlsxExporter
         ws.Cell(1, 3).Value = "MAC Address";
         ws.Cell(1, 4).Value = "IP Address";
         ws.Cell(1, 5).Value = "Local";
-        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Cell(1, 6).Value = "Aplicativos";
+        ws.Cell(1, 7).Value = "Sistema Operacional";
+        ws.Cell(1, 8).Value = "Cadastrado em";
         ws.Row(1).Style.Font.Bold = true;
 
         int row = 2;
@@ -176,7 +178,9 @@ public static class XlsxExporter
             ws.Cell(row, 3).Value = item.MacAddress;
             ws.Cell(row, 4).Value = item.IpAddress;
             ws.Cell(row, 5).Value = item.Local;
-            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            ws.Cell(row, 6).Value = item.AppsInstalados;
+            ws.Cell(row, 7).Value = item.SistemaOperacional;
+            ws.Cell(row, 8).Value = item.CreatedAt?.ToString("g") ?? "";
             row++;
         }
     }
