@@ -1489,12 +1489,22 @@ namespace InventarioSistem.WinForms
                        "ao mesmo banco, até que você escolha outro aqui."
             };
 
+            var lblDeveloper = new Label
+            {
+                AutoSize = true,
+                Location = new Point(10, 280),
+                Text = "Desenvolvido por Giancarlo Conrado Romualdo",
+                Font = new Font("Segoe UI", 9F, FontStyle.Italic),
+                ForeColor = Color.FromArgb(100, 100, 100)
+            };
+
             page.Controls.Add(_lblDbPath);
             page.Controls.Add(_btnSelecionarDb);
             page.Controls.Add(_btnResumoDb);
             page.Controls.Add(_btnGerenciarUsuariosAvancado);
             page.Controls.Add(btnLogoff);
             page.Controls.Add(lblHint);
+            page.Controls.Add(lblDeveloper);
         }
 
         private void InitializeLogTab(TabPage page)
