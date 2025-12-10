@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using DeviceEntity = InventarioSistem.Core.Entities.Device;
-using DeviceType = InventarioSistem.Core.Models.DeviceType;
+using DeviceType = InventarioSistem.Core.Entities.DeviceType;
 
 namespace InventarioSistem.WinForms.Forms;
 
@@ -122,17 +122,15 @@ public class DeviceListForm : Form
         _typeFilter.Items.Add("Todos");
         _typeFilter.Items.AddRange(new object[]
         {
-            DeviceType.Computador,
+            DeviceType.Computer,
             DeviceType.Tablet,
-            DeviceType.Coletor,
+            DeviceType.ColetorAndroid,
             DeviceType.Celular,
             DeviceType.Impressora,
             DeviceType.Dect,
-            DeviceType.Cisco,
+            DeviceType.TelefoneCisco,
             DeviceType.Televisor,
-            DeviceType.RelogioPonto,
-            DeviceType.Monitor,
-            DeviceType.Nobreak
+            DeviceType.RelogioPonto
         });
 
         _typeFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
@@ -145,9 +143,13 @@ public class DeviceListForm : Form
     {
         IEnumerable<DeviceEntity> query = _allDevices;
 
-        if (_typeFilter.SelectedItem is string selectedType && selectedType != "Todos")
+        if (_typeFilter.SelectedItem is string selectedText && selectedText == "Todos")
         {
-            query = query.Where(d => string.Equals(d.Tipo, selectedType, StringComparison.OrdinalIgnoreCase));
+            // no filter
+        }
+        else if (_typeFilter.SelectedItem is DeviceType selectedEnum)
+        {
+            query = query.Where(d => string.Equals(d.Type.ToString(), selectedEnum.ToString(), StringComparison.OrdinalIgnoreCase));
         }
 
         var term = _searchBox.Text?.Trim();
@@ -155,27 +157,14 @@ public class DeviceListForm : Form
         {
             var normalized = term.ToLowerInvariant();
             query = query.Where(d =>
-                Contains(d.Hostname, normalized) ||
+                Contains(d.Patrimonio, normalized) ||
+                Contains(d.Marca, normalized) ||
                 Contains(d.Modelo, normalized) ||
-                Contains(d.SerialNumber, normalized) ||
-                Contains(d.Local, normalized) ||
+                Contains(d.NumeroSerie, normalized) ||
+                Contains(d.Imei, normalized) ||
                 Contains(d.Responsavel, normalized) ||
-                Contains(d.TipoModelo, normalized) ||
-                Contains(d.LocalizacaoAtual, normalized) ||
-                Contains(d.LocalizacaoAnterior, normalized) ||
-                Contains(d.Numero, normalized) ||
-                Contains(d.MacAddress, normalized) ||
-                Contains(d.IPEI, normalized) ||
-                Contains(d.IP, normalized) ||
-                Contains(d.IMEI1, normalized) ||
-                Contains(d.IMEI2, normalized) ||
-                Contains(d.Usuario, normalized) ||
-                Contains(d.Matricula, normalized) ||
-                Contains(d.Cargo, normalized) ||
-                Contains(d.Setor, normalized) ||
-                Contains(d.Email, normalized) ||
-                Contains(d.ComputadorVinculado, normalized) ||
-                Contains(d.Status, normalized));
+                Contains(d.Localizacao, normalized) ||
+                Contains(d.Observacoes, normalized));
         }
 
         _binding.DataSource = query.ToList();

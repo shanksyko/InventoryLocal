@@ -1103,7 +1103,7 @@ public partial class AccessInventoryStore
         InventoryLogger.Info("AccessInventoryStore", $"Nobreak excluído (Id={id}).");
     }
 
-    private static Device ReadDevice(OdbcDataReader reader)
+    private static Device ReadDevice(System.Data.Common.DbDataReader reader)
     {
         Device d = new();
 
@@ -1312,7 +1312,7 @@ public partial class AccessInventoryStore
         parameter.Value = value.HasValue ? value.Value : (object)DBNull.Value;
     }
 
-    private static string GetStringSafe(OdbcDataReader reader, int ordinal)
+    private static string GetStringSafe(System.Data.Common.DbDataReader reader, int ordinal)
         => reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
 
     private static object NormalizeToDbValue(string? value)

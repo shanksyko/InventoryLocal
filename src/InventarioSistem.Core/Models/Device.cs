@@ -22,6 +22,7 @@ namespace InventarioSistem.Core.Models
         public string Numero { get; set; } = string.Empty;
         public string MacAddress { get; set; } = string.Empty;
         public string IPEI { get; set; } = string.Empty;
+        public string IP { get; set; } = string.Empty;
 
         public string IMEI1 { get; set; } = string.Empty;
         public string IMEI2 { get; set; } = string.Empty;
