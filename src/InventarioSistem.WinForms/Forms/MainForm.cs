@@ -254,9 +254,10 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 100, 18),
+                Location = new Point(ClientSize.Width - 150, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
-                ForeColor = Color.White
+                ForeColor = Color.White,
+                TabIndex = 1000
             };
             _btnLogoff.Click += (_, _) => RealizarLogoff();
 
@@ -268,9 +269,6 @@ namespace InventarioSistem.WinForms
             _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnTotalDashboard);
             _headerPanel.Controls.Add(_btnLogoff);
-            
-            // Garantir que o botão Logoff fica à frente de outros controles
-            _headerPanel.Controls.SetChildIndex(_btnLogoff, _headerPanel.Controls.Count - 1);
 
             _tabs = new TabControl
             {
@@ -2771,8 +2769,6 @@ namespace InventarioSistem.WinForms
 
         private void RealizarLogoff()
         {
-            _btnLogoff.BringToFront();
-            
             var result = MessageBox.Show(this,
                 "Deseja realmente sair da conta?",
                 "Confirmação",
@@ -2782,7 +2778,11 @@ namespace InventarioSistem.WinForms
             if (result != DialogResult.Yes)
                 return;
 
-            AuditLog.LogLogoff(_currentUser?.Username ?? "Unknown");
+            try
+            {
+                AuditLog.LogLogoff(_currentUser?.Username ?? "Unknown");
+            }
+            catch { }
             
             // Fechar a janela principal
             this.Close();
