@@ -46,7 +46,7 @@ while (true)
     Console.WriteLine("3 - Cadastrar Coletor Android");
     Console.WriteLine("4 - Cadastrar Celular");
     Console.WriteLine("5 - Listar tudo");
-    Console.WriteLine("9 - Selecionar banco Access existente");
+    Console.WriteLine("9 - Configurar SQL Server");
     Console.WriteLine("0 - Sair");
     Console.Write("Opção: ");
 
@@ -72,7 +72,7 @@ while (true)
                 ListarTudo(store);
                 break;
             case "9":
-                SelecionarBancoAccessCli();
+                ConfigurarSqlServer();
                 break;
             case "0":
                 return;
@@ -274,12 +274,12 @@ static void ListarTudo(SqlServerInventoryStore store)
     Pausar();
 }
 
-static void SelecionarBancoAccessCli()
+static void ConfigurarSqlServer()
 {
     Console.Clear();
     Console.WriteLine("=== Configurar SQL Server ===");
     Console.WriteLine("Informe a connection string SQL Server.");
-    Console.WriteLine("Exemplo: Server=localhost;Database=InventarioLocal;Integrated Security=true;");
+    Console.WriteLine("Exemplo: Server=localhost\\SQLEXPRESS;Database=InventoryDB;Integrated Security=true;TrustServerCertificate=true;");
     Console.WriteLine();
     Console.Write("Connection String: ");
 

@@ -211,7 +211,7 @@ if (user.IsFirstLogin)
 
 4. **Validação de Complexidade de Senha**
 5. **Timeout de Sessão por Inatividade**
-6. **Criptografia do Banco de Dados Access**
+6. **Criptografia da Connection String SQL Server**
 7. **Logs de Acesso Centralizado**
 
 ### **PRIORIDADE BAIXA**
@@ -269,7 +269,7 @@ if (user.IsFirstLogin)
 
 ### Fase 3 (Melhorias - 1 mês)
 - [ ] Logs centralizados
-- [ ] Criptografia do banco
+- [ ] Criptografia da connection string
 - [ ] Auditoria detalhada
 
 ---
@@ -281,7 +281,7 @@ O sistema possui uma base de segurança **razoável** para uso interno, mas **N�
 **Para uso em ambiente corporativo:**
 1. Implementar **TODAS** as recomendações de PRIORIDADE ALTA
 2. Considerar integração com Active Directory
-3. Backup criptografado do banco de dados
+3. Backup criptografado do banco de dados SQL Server
 4. Política de rotação de senhas
 
 **Desenvolvido por:** Giancarlo Conrado Romualdo  
