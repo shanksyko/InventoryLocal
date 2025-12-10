@@ -25,7 +25,6 @@ namespace InventarioSistem.WinForms
         private Panel _headerPanel = null!;
         private Label _lblTitle = null!;
         private Label _lblSubtitle = null!;
-        private Button _btnDashboard = null!;
         private CheckBox _chkUserMode = null!;
         private Label _lblMode = null!;
         private Label _lblUserInfo = null!;
@@ -197,15 +196,6 @@ namespace InventarioSistem.WinForms
                 Location = new Point(12, 40)
             };
 
-            _btnDashboard = new Button
-            {
-                Text = "Dashboard",
-                Size = new System.Drawing.Size(85, 28),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 200, 18)
-            };
-            _btnDashboard.Click += (_, _) => MostrarDashboard();
-
             _chkUserMode = new CheckBox
             {
                 Text = "Modo Usuário",
@@ -253,7 +243,7 @@ namespace InventarioSistem.WinForms
                 Text = "Dashboard Total",
                 Size = new System.Drawing.Size(110, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 305, 18),
+                Location = new Point(ClientSize.Width - 220, 18),
                 BackColor = Color.FromArgb(50, 160, 120),
                 ForeColor = Color.White
             };
@@ -264,7 +254,7 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 110, 18),
+                Location = new Point(ClientSize.Width - 100, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White
             };
@@ -276,7 +266,6 @@ namespace InventarioSistem.WinForms
             _headerPanel.Controls.Add(_btnManageUsers);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
-            _headerPanel.Controls.Add(_btnDashboard);
             _headerPanel.Controls.Add(_btnTotalDashboard);
             _headerPanel.Controls.Add(_btnLogoff);
 
