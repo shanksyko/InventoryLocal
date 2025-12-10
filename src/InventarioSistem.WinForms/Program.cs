@@ -68,7 +68,7 @@ namespace InventarioSistem.WinForms
                         var defaultAdmin = new User
                         {
                             Username = "admin",
-                            PasswordHash = User.HashPassword("admin123"),
+                            PasswordHash = User.HashPassword("L9l337643k#$"),
                             FullName = "Administrador",
                             Email = "admin@inventory.local",
                             Role = UserRole.Admin,
@@ -82,7 +82,7 @@ namespace InventarioSistem.WinForms
                         MessageBox.Show(
                             "Primeiro acesso detectado. Usuário padrão criado:\n\n" +
                             "Usuário: admin\n" +
-                            "Senha: admin123\n\n" +
+                            "Senha: L9l337643k#$\n\n" +
                             "Altere a senha após o primeiro login.",
                             "Primeiro Acesso",
                             MessageBoxButtons.OK,

@@ -171,7 +171,7 @@ public class LoginForm : Form
             if (_userStore == null)
             {
                 // Offline mode: accept default admin credentials
-                if (string.Equals(username, "admin", StringComparison.OrdinalIgnoreCase) && password == "admin123")
+                if (string.Equals(username, "admin", StringComparison.OrdinalIgnoreCase) && password == "L9l337643k#$")
                 {
                     LoggedInUser = new User
                     {

@@ -78,7 +78,7 @@ public class UserStore
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ";
                 insertCmd.Parameters.AddWithValue("@username", "admin");
-                insertCmd.Parameters.AddWithValue("@passwordHash", User.HashPassword("admin123"));
+                insertCmd.Parameters.AddWithValue("@passwordHash", User.HashPassword("L9l337643k#$"));
                 insertCmd.Parameters.AddWithValue("@role", "Admin");
                 insertCmd.Parameters.AddWithValue("@email", "admin@inventory.local");
                 insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
