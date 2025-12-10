@@ -42,8 +42,8 @@ public class UserStore
             create.CommandText = @"
                 CREATE TABLE Users (
                     Id AUTOINCREMENT PRIMARY KEY,
-                    Username TEXT(100) NOT NULL UNIQUE,
-                    PasswordHash TEXT(500),
+                    Username TEXT(100) NOT NULL,
+                    PasswordHash TEXT(255),
                     Role TEXT(50) NOT NULL,
                     Email TEXT(255),
                     FullName TEXT(255),
@@ -54,6 +54,12 @@ public class UserStore
                 )
             ";
             create.ExecuteNonQuery();
+            
+            // Criar índice único no Username
+            using var createIndex = conn.CreateCommand();
+            createIndex.CommandText = "CREATE UNIQUE INDEX idx_username ON Users(Username)";
+            try { createIndex.ExecuteNonQuery(); } catch { /* índice já existe */ }
+            
             tableCreated = true;
         }
 
