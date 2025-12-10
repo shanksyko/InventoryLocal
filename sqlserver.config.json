@@ -1,0 +1,3 @@
+{
+  "connectionString": "Server=(localdb)\\mssqllocaldb;Database=InventarioLocal;Integrated Security=true;Encrypt=false;"
+}

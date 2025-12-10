@@ -80,22 +80,30 @@ namespace InventarioSistem.WinForms
                     InventoryLogger.Error("Program", $"Erro ao verificar/criar usuário padrão: {ex.Message}");
                 }
 
-                // Show login form (placeholder - needs migration of LoginForm)
-                // For now, create a main form with a default logged-in user
-                try
+                // Initialize inventory store
+                var inventoryStore = new SqlServerInventoryStore(_sqlServerFactory);
+
+                // Show login form
+                using (var loginForm = new LoginForm(_sqlServerFactory, _sqlServerUserStore))
                 {
-                    // TODO: Create SqlServerLoginForm
-                    // For now, bypass login and use admin user
-                    var inventoryStore = new SqlServerInventoryStore(_sqlServerFactory);
-                    Application.Run(new MainForm(_sqlServerFactory, inventoryStore, _sqlServerUserStore));
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Erro ao abrir formulário principal:\n\n{ex.Message}",
-                        "Erro",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
+                    if (loginForm.ShowDialog() != DialogResult.OK)
+                    {
+                        return; // User cancelled login
+                    }
+
+                    var loggedInUser = LoginForm.LoggedInUser;
+                    if (loggedInUser != null)
+                    {
+                        Application.Run(new MainForm(_sqlServerFactory, inventoryStore, _sqlServerUserStore));
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "Falha ao obter informações do usuário logado.",
+                            "Erro",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
                 }
             }
             catch (Exception ex)

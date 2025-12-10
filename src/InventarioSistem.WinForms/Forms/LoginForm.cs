@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using InventarioSistem.Access;
-using InventarioSistem.Access.Db;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.WinForms.Forms;
 
 /// <summary>
-/// Formulário de login do sistema
+/// Formulário de login para SQL Server
 /// </summary>
 public class LoginForm : Form
 {
@@ -18,7 +17,8 @@ public class LoginForm : Form
     private Button _btnLogin = null!;
     private Button _btnCancel = null!;
     private Label _lblMessage = null!;
-    private UserStore? _userStore;
+    private SqlServerUserStore? _userStore;
+    private SqlServerConnectionFactory? _sqlFactory;
 
     // Rate limiting
     private static Dictionary<string, (int attempts, DateTime blockedUntil)> _loginAttempts = new();
@@ -77,8 +77,9 @@ public class LoginForm : Form
         }
     }
 
-        public LoginForm(UserStore? userStore)
+    public LoginForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerUserStore? userStore = null)
     {
+        _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(new SqlServerConfig());
         _userStore = userStore;
         InitializeUI();
     }
@@ -195,30 +196,6 @@ public class LoginForm : Form
         Shown += (_, _) => _txtUsername.Focus();
     }
 
-    private void CreateDatabase()
-    {
-        var defaultPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InventarioSistem.accdb");
-        try
-        {
-            AccessDatabaseManager.CreateNewDatabase(defaultPath);
-            AccessDatabaseManager.SetActiveDatabasePath(defaultPath);
-            var factory = new AccessConnectionFactory();
-            _userStore = new UserStore(factory);
-            _lblMessage.ForeColor = System.Drawing.Color.Green;
-            _lblMessage.Text = "Banco criado e selecionado com sucesso.";
-        }
-        catch (System.Runtime.InteropServices.COMException)
-        {
-            _lblMessage.ForeColor = System.Drawing.Color.Red;
-            _lblMessage.Text = "Não foi possível criar o banco: driver Access ausente. Instale o Microsoft Access Database Engine ou selecione um .accdb existente.";
-        }
-        catch (Exception ex)
-        {
-            _lblMessage.ForeColor = System.Drawing.Color.Red;
-            _lblMessage.Text = $"Erro ao criar banco: {ex.Message}";
-        }
-    }
-
     private async void LoginAsync()
     {
         _btnLogin.Enabled = false;
@@ -231,6 +208,7 @@ public class LoginForm : Form
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                RegisterFailedAttempt(username);
                 return;
             }
 
@@ -238,7 +216,7 @@ public class LoginForm : Form
             if (IsRateLimited(username, out int remainingMinutes))
             {
                 _lblMessage.Text = $"Conta bloqueada por {remainingMinutes} minutos devido a múltiplas tentativas falhadas.";
-                AuditLog.LogLogin(username, false, "BLOQUEADO - Rate Limit");
+                InventoryLogger.Warning("LoginForm", $"Login bloqueado por rate limit: {username}");
                 return;
             }
 
@@ -258,48 +236,67 @@ public class LoginForm : Form
                     };
                     EnteredPassword = password;
                     ResetLoginAttempts(username);
-                    AuditLog.LogLogin("admin", true);
+                    InventoryLogger.Info("LoginForm", $"Login bem-sucedido (offline): {username}");
                     DialogResult = DialogResult.OK;
                     return;
                 }
 
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                AuditLog.LogLogin(username, false);
+                InventoryLogger.Warning("LoginForm", $"Falha de login (offline, credenciais inválidas): {username}");
                 return;
             }
 
-            var user = await _userStore.GetUserByUsernameAsync(username);
-
-            if (user == null || !user.IsActive)
+            // Validate against SQL Server
+            var user = await _userStore.GetUserAsync(username);
+            if (user == null)
             {
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                AuditLog.LogLogin(username, false);
+                InventoryLogger.Warning("LoginForm", $"Falha de login (usuário não encontrado): {username}");
                 return;
             }
 
-            if (!user.VerifyPassword(password))
+            if (!user.Value.IsActive)
             {
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                AuditLog.LogLogin(username, false);
+                InventoryLogger.Warning("LoginForm", $"Falha de login (usuário inativo): {username}");
+                return;
+            }
+
+            // Verify password
+            bool passwordValid = await _userStore.ValidateUserAsync(username, password);
+            if (!passwordValid)
+            {
+                RegisterFailedAttempt(username);
+                _lblMessage.Text = "Usuário e/ou senha incorreto.";
+                InventoryLogger.Warning("LoginForm", $"Falha de login (senha incorreta): {username}");
                 return;
             }
 
             // Login bem-sucedido
             ResetLoginAttempts(username);
-            await _userStore.UpdateLastLoginAsync(user.Id);
 
-            LoggedInUser = user;
+            LoggedInUser = new User
+            {
+                Id = user.Value.Id,
+                Username = user.Value.Username,
+                FullName = user.Value.FullName,
+                IsActive = user.Value.IsActive,
+                CreatedAt = DateTime.Now,
+                Role = UserRole.Admin,
+                Provider = "SqlServer"
+            };
             EnteredPassword = password;
-            AuditLog.LogLogin(username, true);
+            InventoryLogger.Info("LoginForm", $"Login bem-sucedido: {username}");
             
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)
         {
             _lblMessage.Text = $"Erro: {ex.Message}";
+            InventoryLogger.Error("LoginForm", $"Erro durante login: {ex.Message}");
         }
         finally
         {
