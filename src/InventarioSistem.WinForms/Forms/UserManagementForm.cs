@@ -14,6 +14,8 @@ namespace InventarioSistem.WinForms.Forms;
 public class UserManagementForm : Form
 {
     private readonly UserStore _userStore;
+    private readonly User? _currentUser;
+    private readonly bool _isVisualizer;
     private DataGridView _gridUsers = null!;
     private Button _btnNovoUsuario = null!;
     private Button _btnEditarUsuario = null!;
@@ -21,9 +23,11 @@ public class UserManagementForm : Form
     private Button _btnResetSenha = null!;
     private Button _btnFechar = null!;
 
-    public UserManagementForm(UserStore userStore)
+    public UserManagementForm(UserStore userStore, User? currentUser = null)
     {
         _userStore = userStore;
+        _currentUser = currentUser;
+        _isVisualizer = _currentUser?.Role == UserRole.Visualizador;
         InitializeUI();
         LoadUsersAsync();
     }
@@ -38,28 +42,25 @@ public class UserManagementForm : Form
         FormBorderStyle = FormBorderStyle.Sizable;
         MinimumSize = new System.Drawing.Size(700, 400);
 
-        // Buttons
+        // Buttons (organizados em FlowLayout para evitar sobreposição)
         _btnNovoUsuario = new Button
         {
             Text = "Novo Usuário",
-            AutoSize = true,
-            Location = new System.Drawing.Point(10, 10)
+            AutoSize = true
         };
         _btnNovoUsuario.Click += (_, _) => NovoUsuario();
 
         _btnEditarUsuario = new Button
         {
             Text = "Editar Selecionado",
-            AutoSize = true,
-            Location = new System.Drawing.Point(120, 10)
+            AutoSize = true
         };
         _btnEditarUsuario.Click += (_, _) => EditarUsuario();
 
         _btnExcluirUsuario = new Button
         {
             Text = "Excluir",
-            AutoSize = true,
-            Location = new System.Drawing.Point(270, 10)
+            AutoSize = true
         };
         _btnExcluirUsuario.Click += (_, _) => ExcluirUsuario();
 
@@ -67,7 +68,6 @@ public class UserManagementForm : Form
         {
             Text = "Reset de Senha",
             AutoSize = true,
-            Location = new System.Drawing.Point(350, 10),
             BackColor = System.Drawing.Color.FromArgb(220, 140, 40),
             ForeColor = System.Drawing.Color.White
         };
@@ -76,17 +76,32 @@ public class UserManagementForm : Form
         _btnFechar = new Button
         {
             Text = "Fechar",
-            AutoSize = true,
-            Location = new System.Drawing.Point(600, 10)
+            AutoSize = true
         };
         _btnFechar.Click += (_, _) => Close();
+
+        var buttonsPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Padding = new Padding(10, 10, 10, 5),
+            WrapContents = false,
+            FlowDirection = FlowDirection.LeftToRight
+        };
+        buttonsPanel.Controls.AddRange(new Control[]
+        {
+            _btnNovoUsuario,
+            _btnEditarUsuario,
+            _btnExcluirUsuario,
+            _btnResetSenha,
+            _btnFechar
+        });
 
         // Grid
         _gridUsers = new DataGridView
         {
-            Location = new System.Drawing.Point(10, 45),
-            Size = new System.Drawing.Size(880, 460),
-            Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+            Dock = DockStyle.Fill,
             ReadOnly = true,
             AllowUserToAddRows = false,
             AllowUserToDeleteRows = false,
@@ -108,12 +123,27 @@ public class UserManagementForm : Form
             new DataGridViewTextBoxColumn { HeaderText = "Último Login", DataPropertyName = "LastLogin", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells }
         });
 
-        Controls.Add(_btnNovoUsuario);
-        Controls.Add(_btnEditarUsuario);
-        Controls.Add(_btnExcluirUsuario);
-        Controls.Add(_btnResetSenha);
-        Controls.Add(_btnFechar);
-        Controls.Add(_gridUsers);
+        var mainPanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            RowCount = 2,
+            ColumnCount = 1
+        };
+        mainPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        mainPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        mainPanel.Controls.Add(buttonsPanel, 0, 0);
+        mainPanel.Controls.Add(_gridUsers, 0, 1);
+
+        Controls.Add(mainPanel);
+
+        // Visualizador: deixa botões visíveis porém desabilitados (read-only)
+        if (_isVisualizer)
+        {
+            _btnNovoUsuario.Enabled = false;
+            _btnEditarUsuario.Enabled = false;
+            _btnExcluirUsuario.Enabled = false;
+            _btnResetSenha.Enabled = false;
+        }
     }
 
     private async void LoadUsersAsync()

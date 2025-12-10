@@ -2538,7 +2538,7 @@ namespace InventarioSistem.WinForms
                 return;
             }
 
-            using var form = new UserManagementForm(_userStore);
+            using var form = new UserManagementForm(_userStore, _currentUser);
             form.ShowDialog(this);
         }
 
