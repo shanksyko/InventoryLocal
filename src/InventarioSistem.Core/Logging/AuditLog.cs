@@ -27,6 +27,11 @@ public static class AuditLog
         LogUserAction(username, $"LOGIN ({status})", "");
     }
 
+    public static void LogLogoff(string username)
+    {
+        LogUserAction(username, "LOGOFF", "Usuário saiu do sistema");
+    }
+
     public static void LogPasswordChange(string username, string changedBy)
     {
         LogUserAction(changedBy, "RESET_SENHA", $"Usuário: {username}");

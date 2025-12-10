@@ -30,6 +30,8 @@ namespace InventarioSistem.WinForms
         private Label _lblMode = null!;
         private Label _lblUserInfo = null!;
         private Button _btnManageUsers = null!;
+        private Button _btnLogoff = null!;
+        private Button _btnTotalDashboard = null!;
 
         private TabControl _tabs = null!;
 
@@ -246,12 +248,36 @@ namespace InventarioSistem.WinForms
             };
             _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
 
+            _btnTotalDashboard = new Button
+            {
+                Text = "Dashboard Total",
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(470, 45),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnTotalDashboard.Click += (_, _) => MostrarDashboardTotal();
+
+            _btnLogoff = new Button
+            {
+                Text = "Sair",
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(1010, 45),
+                BackColor = Color.FromArgb(220, 60, 60),
+                ForeColor = Color.White
+            };
+            _btnLogoff.Click += (_, _) => RealizarLogoff();
+
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
             _headerPanel.Controls.Add(_lblUserInfo);
             _headerPanel.Controls.Add(_btnManageUsers);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
+            _headerPanel.Controls.Add(_btnTotalDashboard);
+            _headerPanel.Controls.Add(_btnLogoff);
             _headerPanel.Controls.Add(_btnDashboard);
 
             _tabs = new TabControl
@@ -2632,6 +2658,47 @@ namespace InventarioSistem.WinForms
 
             using var dashboard = new Forms.DashboardForm(_store);
             dashboard.ShowDialog(this);
+        }
+
+        private void MostrarDashboardTotal()
+        {
+            if (_store == null)
+            {
+                MessageBox.Show(this,
+                    "Configure o banco antes de abrir o dashboard.",
+                    "Dashboard Total",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            using var dashboardTotal = new TotalDashboardForm(_store);
+            dashboardTotal.ShowDialog(this);
+        }
+
+        private void RealizarLogoff()
+        {
+            var result = MessageBox.Show(this,
+                "Deseja realmente sair da conta?",
+                "Confirmação",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result != DialogResult.Yes)
+                return;
+
+            AuditLog.LogLogoff(_currentUser?.Username ?? "Unknown");
+            
+            // Fechar a janela principal
+            this.Close();
+            
+            // Abrir novamente o formulário de login
+            var loginForm = new LoginForm(_userStore);
+            loginForm.ShowDialog();
+            
+            // Se não fez login, fecha a aplicação
+            if (loginForm.LoggedInUser == null)
+                Application.Exit();
         }
     }
 }
