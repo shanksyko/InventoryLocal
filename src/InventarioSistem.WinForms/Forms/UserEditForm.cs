@@ -206,7 +206,6 @@ public class UserEditForm : Form
                     Email = string.IsNullOrWhiteSpace(email) ? null : email,
                     Role = role,
                     IsActive = isActive,
-                    IsFirstLogin = true, // Novo usuário deve trocar senha no primeiro login
                     Provider = "Local"
                 };
 
