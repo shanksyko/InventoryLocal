@@ -17,6 +17,7 @@ public class UserManagementForm : Form
     private Button _btnNovoUsuario = null!;
     private Button _btnEditarUsuario = null!;
     private Button _btnExcluirUsuario = null!;
+    private Button _btnResetSenha = null!;
     private Button _btnFechar = null!;
 
     public UserManagementForm(UserStore userStore)
@@ -59,6 +60,16 @@ public class UserManagementForm : Form
         };
         _btnExcluirUsuario.Click += (_, _) => ExcluirUsuario();
 
+        _btnResetSenha = new Button
+        {
+            Text = "Reset de Senha",
+            AutoSize = true,
+            Location = new System.Drawing.Point(350, 10),
+            BackColor = System.Drawing.Color.FromArgb(220, 140, 40),
+            ForeColor = System.Drawing.Color.White
+        };
+        _btnResetSenha.Click += (_, _) => ResetarSenha();
+
         _btnFechar = new Button
         {
             Text = "Fechar",
@@ -96,6 +107,7 @@ public class UserManagementForm : Form
         Controls.Add(_btnNovoUsuario);
         Controls.Add(_btnEditarUsuario);
         Controls.Add(_btnExcluirUsuario);
+        Controls.Add(_btnResetSenha);
         Controls.Add(_btnFechar);
         Controls.Add(_gridUsers);
     }
@@ -159,6 +171,38 @@ public class UserManagementForm : Form
         catch (Exception ex)
         {
             MessageBox.Show(this, $"Erro ao excluir: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void ResetarSenha()
+    {
+        if (_gridUsers.CurrentRow?.DataBoundItem is not User selected)
+        {
+            MessageBox.Show(this, "Selecione um usuário para resetar a senha.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        using var dialog = new PasswordResetDialog(selected.Username);
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+            try
+            {
+                var novaSenha = dialog.NovaSenha;
+                if (string.IsNullOrWhiteSpace(novaSenha))
+                {
+                    MessageBox.Show(this, "Senha não pode ser vazia.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var hash = User.HashPassword(novaSenha);
+                _userStore.UpdatePasswordAsync(selected.Id, hash).GetAwaiter().GetResult();
+                
+                MessageBox.Show(this, $"Senha do usuário '{selected.Username}' resetada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Erro ao resetar senha: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

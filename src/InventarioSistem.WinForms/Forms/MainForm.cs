@@ -361,6 +361,14 @@ namespace InventarioSistem.WinForms
             _btnEditarRelogioPonto.Enabled = enable;
             _btnExcluirRelogioPonto.Enabled = enable;
 
+            _btnNovoMonitor.Enabled = enable;
+            _btnEditarMonitor.Enabled = enable;
+            _btnExcluirMonitor.Enabled = enable;
+
+            _btnNovoNobreak.Enabled = enable;
+            _btnEditarNobreak.Enabled = enable;
+            _btnExcluirNobreak.Enabled = enable;
+
             // Advanced controls
             _btnSelecionarDb.Enabled = enable;
             _btnResumoDb.Enabled = enable;
