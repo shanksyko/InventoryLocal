@@ -18,6 +18,8 @@ namespace InventarioSistem.WinForms
     public partial class MainForm : Form
     {
         private readonly AccessInventoryStore? _store;
+        private readonly UserStore? _userStore;
+        private User? _currentUser;
 
         // Cabeçalho visual
         private Panel _headerPanel = null!;
@@ -26,6 +28,8 @@ namespace InventarioSistem.WinForms
         private Button _btnDashboard = null!;
         private CheckBox _chkUserMode = null!;
         private Label _lblMode = null!;
+        private Label _lblUserInfo = null!;
+        private Button _btnManageUsers = null!;
 
         private TabControl _tabs = null!;
 
@@ -103,7 +107,7 @@ namespace InventarioSistem.WinForms
         // Aba Log
         private TextBox _txtLog = null!;
 
-        public MainForm()
+        public MainForm(User? user = null)
         {
             Text = "Inventory System";
             StartPosition = FormStartPosition.CenterScreen;
@@ -114,12 +118,16 @@ namespace InventarioSistem.WinForms
             Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             BackColor = Color.FromArgb(245, 247, 250);
 
+            // Initialize user system
+            _currentUser = user;
+            var factory = new AccessConnectionFactory();
+            _userStore = new UserStore(factory);
+
             InitializeLayout();
 
             try
             {
                 // Tenta usar o banco já salvo em config
-                var factory = new AccessConnectionFactory();
                 _store = new AccessInventoryStore(factory);
 
                 var path = AccessDatabaseManager.ResolveActiveDatabasePath();
@@ -214,8 +222,32 @@ namespace InventarioSistem.WinForms
                 Font = new Font("Segoe UI", 9F, FontStyle.Italic, GraphicsUnit.Point)
             };
 
+            _lblUserInfo = new Label
+            {
+                AutoSize = true,
+                Text = _currentUser != null ? 
+                    $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" : 
+                    "",
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(470, 24),
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point),
+                ForeColor = Color.FromArgb(64, 64, 64)
+            };
+
+            _btnManageUsers = new Button
+            {
+                Text = "Gerenciar Usuários",
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(310, 20),
+                Visible = _currentUser?.Role == UserRole.Admin
+            };
+            _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
+
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
+            _headerPanel.Controls.Add(_lblUserInfo);
+            _headerPanel.Controls.Add(_btnManageUsers);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnDashboard);
@@ -288,8 +320,9 @@ namespace InventarioSistem.WinForms
                 _lblMode.Text = string.Empty;
             }
 
-            // Disable editing controls when in user mode
-            var enable = !isUserMode;
+            // Disable editing controls when in user mode OR when user is Visualizador
+            var isVisualizer = _currentUser?.Role == UserRole.Visualizador;
+            var enable = !isUserMode && !isVisualizer;
 
             _btnNovoComputador.Enabled = enable;
             _btnEditarComputador.Enabled = enable;
@@ -2336,6 +2369,22 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void AbrirGerenciadorUsuarios()
+        {
+            if (_userStore == null || _currentUser?.Role != UserRole.Admin)
+            {
+                MessageBox.Show(this,
+                    "Apenas administradores podem acessar o gerenciador de usuários.",
+                    "Acesso negado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            using var form = new UserManagementForm(_userStore);
+            form.ShowDialog(this);
         }
 
         private void MostrarDashboard()
