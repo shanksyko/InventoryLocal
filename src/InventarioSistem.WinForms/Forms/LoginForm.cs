@@ -91,25 +91,12 @@ public class LoginForm : Form
             Location = new System.Drawing.Point(30, 155)
         };
 
-        // Select DB button
-        var _btnSelectDb = new Button
-        {
-            Text = "Selecionar Banco",
-            Size = new System.Drawing.Size(105, 28),
-            Location = new System.Drawing.Point(30, 175),
-            BackColor = System.Drawing.Color.FromArgb(240, 240, 240),
-            FlatStyle = FlatStyle.Flat,
-            Font = new System.Drawing.Font("Segoe UI", 9F)
-        };
-        _btnSelectDb.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(200, 200, 200);
-        _btnSelectDb.Click += (_, _) => SelectDatabase();
-
         // Buttons
         _btnLogin = new Button
         {
             Text = "Entrar",
             Size = new System.Drawing.Size(85, 28),
-            Location = new System.Drawing.Point(175, 175),
+            Location = new System.Drawing.Point(30, 175),
             BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
             ForeColor = System.Drawing.Color.White,
             Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
@@ -120,7 +107,7 @@ public class LoginForm : Form
         {
             Text = "Cancelar",
             Size = new System.Drawing.Size(85, 28),
-            Location = new System.Drawing.Point(285, 175),
+            Location = new System.Drawing.Point(140, 175),
             BackColor = System.Drawing.Color.FromArgb(240, 240, 240),
             FlatStyle = FlatStyle.Flat,
             Font = new System.Drawing.Font("Segoe UI", 9F)
@@ -135,37 +122,11 @@ public class LoginForm : Form
         Controls.Add(lblPassword);
         Controls.Add(_txtPassword);
         Controls.Add(_lblMessage);
-        Controls.Add(_btnSelectDb);
         Controls.Add(_btnLogin);
         Controls.Add(_btnCancel);
 
         // Focus on username field when form loads
         Shown += (_, _) => _txtUsername.Focus();
-    }
-
-    private void SelectDatabase()
-    {
-        using (var ofd = new OpenFileDialog())
-        {
-            ofd.Filter = "Access Database (*.accdb)|*.accdb|Todos os arquivos (*.*)|*.*";
-            ofd.Title = "Selecionar arquivo de banco Access";
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    AccessDatabaseManager.SetActiveDatabasePath(ofd.FileName);
-                    var factory = new AccessConnectionFactory();
-                    _userStore = new UserStore(factory);
-                    _lblMessage.ForeColor = System.Drawing.Color.Green;
-                    _lblMessage.Text = "Banco selecionado com sucesso.";
-                }
-                catch (Exception ex)
-                {
-                    _lblMessage.ForeColor = System.Drawing.Color.Red;
-                    _lblMessage.Text = $"Erro ao selecionar banco: {ex.Message}";
-                }
-            }
-        }
     }
 
     private void CreateDatabase()
