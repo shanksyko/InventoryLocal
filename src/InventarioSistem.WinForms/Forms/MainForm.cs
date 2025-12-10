@@ -268,6 +268,9 @@ namespace InventarioSistem.WinForms
             _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnTotalDashboard);
             _headerPanel.Controls.Add(_btnLogoff);
+            
+            // Garantir que o botão Logoff fica à frente de outros controles
+            _headerPanel.Controls.SetChildIndex(_btnLogoff, _headerPanel.Controls.Count - 1);
 
             _tabs = new TabControl
             {
@@ -2768,6 +2771,8 @@ namespace InventarioSistem.WinForms
 
         private void RealizarLogoff()
         {
+            _btnLogoff.BringToFront();
+            
             var result = MessageBox.Show(this,
                 "Deseja realmente sair da conta?",
                 "Confirmação",
