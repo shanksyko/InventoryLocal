@@ -24,6 +24,8 @@ namespace InventarioSistem.WinForms
         private Label _lblTitle = null!;
         private Label _lblSubtitle = null!;
         private Button _btnDashboard = null!;
+        private CheckBox _chkUserMode = null!;
+        private Label _lblMode = null!;
 
         private TabControl _tabs = null!;
 
@@ -192,8 +194,30 @@ namespace InventarioSistem.WinForms
             };
             _btnDashboard.Click += (_, _) => MostrarDashboard();
 
+            _chkUserMode = new CheckBox
+            {
+                Text = "Modo Usuário",
+                Appearance = Appearance.Button,
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(820, 20),
+                BackColor = Color.Transparent
+            };
+            _chkUserMode.CheckedChanged += (_, _) => ApplyUserMode(_chkUserMode.Checked);
+
+            _lblMode = new Label
+            {
+                AutoSize = true,
+                Text = string.Empty,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Location = new Point(740, 24),
+                Font = new Font("Segoe UI", 9F, FontStyle.Italic, GraphicsUnit.Point)
+            };
+
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
+            _headerPanel.Controls.Add(_lblMode);
+            _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnDashboard);
 
             _tabs = new TabControl
@@ -245,6 +269,67 @@ namespace InventarioSistem.WinForms
 
             Controls.Add(_tabs);
             Controls.Add(_headerPanel);
+
+            // Set default user mode off
+            ApplyUserMode(false);
+        }
+
+        private void ApplyUserMode(bool isUserMode)
+        {
+            // Update header visuals
+            if (isUserMode)
+            {
+                _headerPanel.BackColor = Color.FromArgb(245, 250, 245);
+                _lblMode.Text = "Modo: Usuário";
+            }
+            else
+            {
+                _headerPanel.BackColor = Color.FromArgb(230, 236, 245);
+                _lblMode.Text = string.Empty;
+            }
+
+            // Disable editing controls when in user mode
+            var enable = !isUserMode;
+
+            _btnNovoComputador.Enabled = enable;
+            _btnEditarComputador.Enabled = enable;
+            _btnExcluirComputador.Enabled = enable;
+
+            _btnNovoTablet.Enabled = enable;
+            _btnEditarTablet.Enabled = enable;
+            _btnExcluirTablet.Enabled = enable;
+
+            _btnNovoColetor.Enabled = enable;
+            _btnEditarColetor.Enabled = enable;
+            _btnExcluirColetor.Enabled = enable;
+
+            _btnNovoCelular.Enabled = enable;
+            _btnEditarCelular.Enabled = enable;
+            _btnExcluirCelular.Enabled = enable;
+
+            _btnNovaImpressora.Enabled = enable;
+            _btnEditarImpressora.Enabled = enable;
+            _btnExcluirImpressora.Enabled = enable;
+
+            _btnNovoDect.Enabled = enable;
+            _btnEditarDect.Enabled = enable;
+            _btnExcluirDect.Enabled = enable;
+
+            _btnNovoTelefoneCisco.Enabled = enable;
+            _btnEditarTelefoneCisco.Enabled = enable;
+            _btnExcluirTelefoneCisco.Enabled = enable;
+
+            _btnNovoTelevisor.Enabled = enable;
+            _btnEditarTelevisor.Enabled = enable;
+            _btnExcluirTelevisor.Enabled = enable;
+
+            _btnNovoRelogioPonto.Enabled = enable;
+            _btnEditarRelogioPonto.Enabled = enable;
+            _btnExcluirRelogioPonto.Enabled = enable;
+
+            // Advanced controls
+            _btnSelecionarDb.Enabled = enable;
+            _btnResumoDb.Enabled = enable;
         }
 
         private void InitializeComputadoresTab(TabPage page)
