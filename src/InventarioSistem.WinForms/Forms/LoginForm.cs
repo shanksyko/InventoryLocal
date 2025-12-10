@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Config;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
 
@@ -77,10 +78,11 @@ public class LoginForm : Form
         }
     }
 
-    public LoginForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerUserStore? userStore = null)
+    public LoginForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerUserStore? SqlServerUserStore = null)
     {
-        _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(new SqlServerConfig());
-        _userStore = userStore;
+        var config = new SqlServerConfig();
+        _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(config.ConnectionString);
+        _userStore = SqlServerUserStore;
         InitializeUI();
     }
 
@@ -216,7 +218,7 @@ public class LoginForm : Form
             if (IsRateLimited(username, out int remainingMinutes))
             {
                 _lblMessage.Text = $"Conta bloqueada por {remainingMinutes} minutos devido a múltiplas tentativas falhadas.";
-                InventoryLogger.Warning("LoginForm", $"Login bloqueado por rate limit: {username}");
+                InventoryLogger.Info("LoginForm", $"Login bloqueado por rate limit: {username}");
                 return;
             }
 
@@ -243,7 +245,7 @@ public class LoginForm : Form
 
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                InventoryLogger.Warning("LoginForm", $"Falha de login (offline, credenciais inválidas): {username}");
+                InventoryLogger.Info("LoginForm", $"Falha de login (offline, credenciais inválidas): {username}");
                 return;
             }
 
@@ -253,7 +255,7 @@ public class LoginForm : Form
             {
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                InventoryLogger.Warning("LoginForm", $"Falha de login (usuário não encontrado): {username}");
+                InventoryLogger.Info("LoginForm", $"Falha de login (usuário não encontrado): {username}");
                 return;
             }
 
@@ -261,7 +263,7 @@ public class LoginForm : Form
             {
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                InventoryLogger.Warning("LoginForm", $"Falha de login (usuário inativo): {username}");
+                InventoryLogger.Info("LoginForm", $"Falha de login (usuário inativo): {username}");
                 return;
             }
 
@@ -271,7 +273,7 @@ public class LoginForm : Form
             {
                 RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
-                InventoryLogger.Warning("LoginForm", $"Falha de login (senha incorreta): {username}");
+                InventoryLogger.Info("LoginForm", $"Falha de login (senha incorreta): {username}");
                 return;
             }
 

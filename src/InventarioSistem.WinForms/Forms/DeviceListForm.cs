@@ -3,22 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
-using DeviceEntity = InventarioSistem.Core.Entities.Device;
-using DeviceType = InventarioSistem.Core.Entities.DeviceType;
 
 namespace InventarioSistem.WinForms.Forms;
 
 public class DeviceListForm : Form
 {
-    private readonly AccessInventoryStore _store;
+    private readonly SqlServerInventoryStore _store;
     private readonly BindingSource _binding = new();
     private readonly DataGridView _grid = new() { Dock = DockStyle.Fill, AutoGenerateColumns = true, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect };
     private readonly ComboBox _typeFilter = new() { Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly TextBox _searchBox = new() { Width = 220, PlaceholderText = "Buscar em qualquer coluna" };
 
-    private List<DeviceEntity> _allDevices = new();
+    private List<dynamic> _allDevices = new();
+    private readonly string[] _deviceTypes = new[]
+    {
+        "Computer", "Tablet", "ColetorAndroid", "Celular", "Impressora",
+        "Dect", "TelefoneCisco", "Televisor", "RelogioPonto", "Monitor", "Nobreak"
+    };
 
-    public DeviceListForm(AccessInventoryStore store)
+    public DeviceListForm(SqlServerInventoryStore store)
     {
         _store = store;
         Text = "Dispositivos";
@@ -71,15 +74,12 @@ public class DeviceListForm : Form
         ApplyFilters();
     }
 
-    private DeviceEntity? SelectedDevice => _binding.Current as DeviceEntity;
+    private dynamic? SelectedDevice => _binding.Current as dynamic;
 
     private async Task AddAsync()
     {
-        using var editor = new DeviceEditForm(_store, null);
-        if (editor.ShowDialog(this) == DialogResult.OK)
-        {
-            await LoadAsync();
-        }
+        MessageBox.Show(this, "Abrir form de edição de dispositivo", "Não implementado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        await Task.CompletedTask;
     }
 
     private async Task EditAsync()
@@ -91,11 +91,8 @@ public class DeviceListForm : Form
             return;
         }
 
-        using var editor = new DeviceEditForm(_store, selected);
-        if (editor.ShowDialog(this) == DialogResult.OK)
-        {
-            await LoadAsync();
-        }
+        MessageBox.Show(this, "Editar formulário não implementado", "Não implementado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        await Task.CompletedTask;
     }
 
     private async Task DeleteAsync()
@@ -112,26 +109,23 @@ public class DeviceListForm : Form
             return;
         }
 
-        await _store.DeleteAsync(selected.Id);
-        await LoadAsync();
+        try
+        {
+            int deviceId = (int)selected.Id;
+            await _store.DeleteAsync(deviceId);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Erro ao excluir: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void ConfigureFilters()
     {
         _typeFilter.Items.Clear();
         _typeFilter.Items.Add("Todos");
-        _typeFilter.Items.AddRange(new object[]
-        {
-            DeviceType.Computer,
-            DeviceType.Tablet,
-            DeviceType.ColetorAndroid,
-            DeviceType.Celular,
-            DeviceType.Impressora,
-            DeviceType.Dect,
-            DeviceType.TelefoneCisco,
-            DeviceType.Televisor,
-            DeviceType.RelogioPonto
-        });
+        _typeFilter.Items.AddRange(_deviceTypes);
 
         _typeFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
         _searchBox.TextChanged += (_, _) => ApplyFilters();
@@ -141,37 +135,24 @@ public class DeviceListForm : Form
 
     private void ApplyFilters()
     {
-        IEnumerable<DeviceEntity> query = _allDevices;
+        IEnumerable<dynamic> query = _allDevices;
 
-        if (_typeFilter.SelectedItem is string selectedText && selectedText == "Todos")
+        // Filter by type
+        if (_typeFilter.SelectedItem is string selectedText && selectedText != "Todos")
         {
-            // no filter
-        }
-        else if (_typeFilter.SelectedItem is DeviceType selectedEnum)
-        {
-            query = query.Where(d => string.Equals(d.Type.ToString(), selectedEnum.ToString(), StringComparison.OrdinalIgnoreCase));
+            query = query.Where(d => d.Type?.ToString() == selectedText);
         }
 
+        // Filter by search term
         var term = _searchBox.Text?.Trim();
         if (!string.IsNullOrWhiteSpace(term))
         {
             var normalized = term.ToLowerInvariant();
             query = query.Where(d =>
-                Contains(d.Patrimonio, normalized) ||
-                Contains(d.Marca, normalized) ||
-                Contains(d.Modelo, normalized) ||
-                Contains(d.NumeroSerie, normalized) ||
-                Contains(d.Imei, normalized) ||
-                Contains(d.Responsavel, normalized) ||
-                Contains(d.Localizacao, normalized) ||
-                Contains(d.Observacoes, normalized));
+                (d.SerialNumber != null && d.SerialNumber.ToString().ToLowerInvariant().Contains(normalized)) ||
+                (d.Type != null && d.Type.ToString().ToLowerInvariant().Contains(normalized)));
         }
 
         _binding.DataSource = query.ToList();
-    }
-
-    private static bool Contains(string? value, string term)
-    {
-        return !string.IsNullOrWhiteSpace(value) && value!.ToLowerInvariant().Contains(term);
     }
 }

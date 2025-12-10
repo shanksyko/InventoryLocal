@@ -9,10 +9,10 @@ namespace InventarioSistem.WinForms.Forms;
 
 public class DashboardForm : Form
 {
-    private readonly AccessInventoryStore _store;
+    private readonly SqlServerInventoryStore _store;
     private readonly Chart _chart = new() { Dock = DockStyle.Fill };
 
-    public DashboardForm(AccessInventoryStore store)
+    public DashboardForm(SqlServerInventoryStore store)
     {
         _store = store;
         Text = "Dashboard";

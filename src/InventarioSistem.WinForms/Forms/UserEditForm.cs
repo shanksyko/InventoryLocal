@@ -11,7 +11,7 @@ namespace InventarioSistem.WinForms.Forms;
 /// </summary>
 public class UserEditForm : Form
 {
-    private readonly UserStore _userStore;
+    private readonly SqlServerUserStore _userStore;
     private readonly User? _existingUser;
     private TextBox _txtUsername = null!;
     private TextBox _txtPassword = null!;
@@ -23,9 +23,9 @@ public class UserEditForm : Form
     private Button _btnCancel = null!;
     private Label _lblPasswordHint = null!;
 
-    public UserEditForm(UserStore userStore, User? existingUser)
+    public UserEditForm(SqlServerUserStore SqlServerUserStore, User? existingUser)
     {
-        _userStore = userStore;
+        _userStore = SqlServerUserStore;
         _existingUser = existingUser;
         InitializeUI();
         PopulateFields();
@@ -209,7 +209,7 @@ public class UserEditForm : Form
                     Provider = "Local"
                 };
 
-                await _userStore.AddUserAsync(newUser);
+                await _userStore.AddUserAsync(username, password, fullName ?? "", isActive);
                 MessageBox.Show(this, "Usuário criado com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
@@ -230,10 +230,10 @@ public class UserEditForm : Form
                         return;
                     }
 
-                    await _userStore.UpdatePasswordAsync(_existingUser.Id, User.HashPassword(password));
+                    await _userStore.UpdatePasswordAsync(_existingUser.Id.ToString(), User.HashPassword(password));
                 }
 
-                await _userStore.UpdateUserAsync(_existingUser);
+                await _userStore.UpdateUserAsync(_existingUser.Id.ToString(), username, fullName ?? "", isActive);
                 MessageBox.Show(this, "Usuário atualizado com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 

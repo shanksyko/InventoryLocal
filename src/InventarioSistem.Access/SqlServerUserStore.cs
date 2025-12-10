@@ -211,4 +211,148 @@ public class SqlServerUserStore
 
     public bool DeactivateUser(string username) =>
         DeactivateUserAsync(username).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Ensures the Users table exists (no-op for SQL Server - table created by SqlServerSchemaManager).
+    /// </summary>
+    public async Task EnsureUsersTableAsync(CancellationToken cancellationToken = default)
+    {
+        // Table creation handled by SqlServerSchemaManager.EnsureRequiredTables
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Gets all users from the database.
+    /// </summary>
+    public async Task<List<(int Id, string Username, string FullName, bool IsActive)>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var users = new List<(int Id, string Username, string FullName, bool IsActive)>();
+
+        try
+        {
+            await using var connection = _factory.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT [Id], [Username], [FullName], [IsActive] FROM [Users] ORDER BY [Username]";
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                users.Add((
+                    reader.GetInt32(0),
+                    reader.GetString(1),
+                    reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    reader.GetBoolean(3)
+                ));
+            }
+        }
+        catch (Exception ex)
+        {
+            InventoryLogger.Error("SqlServerUserStore", $"Erro ao listar usuários: {ex.Message}");
+        }
+
+        return users;
+    }
+
+    /// <summary>
+    /// Adds a new user (alias for CreateUserAsync).
+    /// </summary>
+    public async Task AddUserAsync(string username, string password, string fullName, bool isActive = true, CancellationToken cancellationToken = default)
+    {
+        await CreateUserAsync(username, password, fullName, isActive, cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates a user's information.
+    /// </summary>
+    public async Task UpdateUserAsync(string userId, string username, string fullName, bool isActive, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("User ID is required", nameof(userId));
+
+        try
+        {
+            await using var connection = _factory.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE [Users]
+                SET [Username] = @Username, [FullName] = @FullName, [IsActive] = @IsActive
+                WHERE [Id] = @Id";
+
+            command.Parameters.AddWithValue("@Username", username ?? "");
+            command.Parameters.AddWithValue("@FullName", fullName ?? "");
+            command.Parameters.AddWithValue("@IsActive", isActive);
+            command.Parameters.AddWithValue("@Id", int.Parse(userId));
+
+            await command.ExecuteNonQueryAsync(cancellationToken);
+            InventoryLogger.Info("SqlServerUserStore", $"Usuário {username} atualizado");
+        }
+        catch (Exception ex)
+        {
+            InventoryLogger.Error("SqlServerUserStore", $"Erro ao atualizar usuário: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates a user's password by user ID.
+    /// </summary>
+    public async Task UpdateUserPasswordAsync(string userId, string newPassword, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(newPassword))
+            throw new ArgumentException("User ID and password are required");
+
+        try
+        {
+            await using var connection = _factory.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = @"
+                UPDATE [Users]
+                SET [Password] = @Password
+                WHERE [Id] = @Id";
+
+            command.Parameters.AddWithValue("@Password", newPassword);
+            command.Parameters.AddWithValue("@Id", int.Parse(userId));
+
+            await command.ExecuteNonQueryAsync(cancellationToken);
+            InventoryLogger.Info("SqlServerUserStore", $"Senha do usuário ID={userId} atualizada");
+        }
+        catch (Exception ex)
+        {
+            InventoryLogger.Error("SqlServerUserStore", $"Erro ao atualizar senha: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a user by user ID.
+    /// </summary>
+    public async Task DeleteUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("User ID is required", nameof(userId));
+
+        try
+        {
+            await using var connection = _factory.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM [Users] WHERE [Id] = @Id";
+            command.Parameters.AddWithValue("@Id", int.Parse(userId));
+
+            await command.ExecuteNonQueryAsync(cancellationToken);
+            InventoryLogger.Info("SqlServerUserStore", $"Usuário ID={userId} deletado");
+        }
+        catch (Exception ex)
+        {
+            InventoryLogger.Error("SqlServerUserStore", $"Erro ao deletar usuário: {ex.Message}");
+            throw;
+        }
+    }
 }

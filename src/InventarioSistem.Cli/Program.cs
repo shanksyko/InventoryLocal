@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
 using InventarioSistem.Core.Devices;
@@ -9,36 +10,32 @@ using InventarioSistem.Core.Logging;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-// Valida banco previamente salvo
-string? savedDb = null;
+// Inicializa SQL Server infrastructure
+var config = new SqlServerConfig();
+var factory = new SqlServerConnectionFactory(config.ConnectionString);
+var store = new SqlServerInventoryStore(factory);
 
 try
 {
-    savedDb = AccessDatabaseManager.ResolveActiveDatabasePath();
-}
-catch (FileNotFoundException)
-{
-    // Ignora para permitir que o usuário selecione um banco válido na opção 9
+    var connectionString = config.ConnectionString;
+    if (!string.IsNullOrWhiteSpace(connectionString))
+    {
+        Console.WriteLine($"Conectado ao SQL Server");
+        InventoryLogger.Info("CLI", $"SQL Server configurado");
+        
+        // Ensure schema
+        SqlServerSchemaManager.EnsureRequiredTables(factory);
+    }
+    else
+    {
+        Console.WriteLine("Nenhuma conexão SQL Server configurada.");
+        Console.WriteLine("Edite sqlserver.config.json para configurar.");
+    }
 }
 catch (Exception ex)
 {
-    Console.WriteLine("Aviso: erro ao resolver banco salvo: " + ex.Message);
+    Console.WriteLine($"Aviso: erro ao conectar SQL Server: {ex.Message}");
 }
-
-if (!string.IsNullOrWhiteSpace(savedDb) && File.Exists(savedDb))
-{
-    Console.WriteLine($"Conectado automaticamente ao banco: {savedDb}");
-    InventoryLogger.Info("CLI", $"Conectado automaticamente ao banco: {savedDb}");
-}
-else
-{
-    Console.WriteLine("Nenhum banco válido encontrado nas configurações.");
-    Console.WriteLine("Use a opção 9 para selecionar um arquivo .accdb.");
-}
-
-// Inicializa factory + store conforme a assinatura atual
-var factory = new AccessConnectionFactory();
-var store = new AccessInventoryStore(factory);
 
 while (true)
 {
@@ -88,7 +85,7 @@ while (true)
     catch (FileNotFoundException ex)
     {
         Console.WriteLine("Erro de banco: " + ex.Message);
-        Console.WriteLine("Dica: use a opção 9 para selecionar um arquivo .accdb válido.");
+        Console.WriteLine("Dica: use a opção 9 para configurar conexão SQL Server.");
         Pausar();
     }
     catch (Exception ex)
@@ -98,7 +95,7 @@ while (true)
     }
 }
 
-static void CadastrarComputador(AccessInventoryStore store)
+static void CadastrarComputador(SqlServerInventoryStore store)
 {
     Console.Clear();
     Console.WriteLine("=== Novo Computador ===");
@@ -135,7 +132,7 @@ static void CadastrarComputador(AccessInventoryStore store)
     Pausar();
 }
 
-static void CadastrarTablet(AccessInventoryStore store)
+static void CadastrarTablet(SqlServerInventoryStore store)
 {
     Console.Clear();
     Console.WriteLine("=== Novo Tablet ===");
@@ -175,7 +172,7 @@ static void CadastrarTablet(AccessInventoryStore store)
     Pausar();
 }
 
-static void CadastrarColetor(AccessInventoryStore store)
+static void CadastrarColetor(SqlServerInventoryStore store)
 {
     Console.Clear();
     Console.WriteLine("=== Novo Coletor Android ===");
@@ -212,7 +209,7 @@ static void CadastrarColetor(AccessInventoryStore store)
     Pausar();
 }
 
-static void CadastrarCelular(AccessInventoryStore store)
+static void CadastrarCelular(SqlServerInventoryStore store)
 {
     Console.Clear();
     Console.WriteLine("=== Novo Celular ===");
@@ -253,7 +250,7 @@ static void CadastrarCelular(AccessInventoryStore store)
     Pausar();
 }
 
-static void ListarTudo(AccessInventoryStore store)
+static void ListarTudo(SqlServerInventoryStore store)
 {
     Console.Clear();
     Console.WriteLine("=== Inventário Geral ===");
@@ -280,79 +277,62 @@ static void ListarTudo(AccessInventoryStore store)
 static void SelecionarBancoAccessCli()
 {
     Console.Clear();
-    Console.WriteLine("=== Selecionar banco Access existente ===");
-    Console.WriteLine("Crie antes um arquivo .accdb pelo Access ou use um já existente.");
+    Console.WriteLine("=== Configurar SQL Server ===");
+    Console.WriteLine("Informe a connection string SQL Server.");
+    Console.WriteLine("Exemplo: Server=localhost;Database=InventarioLocal;Integrated Security=true;");
     Console.WriteLine();
-    Console.Write("Informe o caminho completo do arquivo .accdb: ");
+    Console.Write("Connection String: ");
 
-    var path = Console.ReadLine()?.Trim();
+    var connStr = Console.ReadLine()?.Trim();
 
-    if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+    if (string.IsNullOrWhiteSpace(connStr))
     {
-        Console.WriteLine("Caminho inválido ou arquivo inexistente.");
+        Console.WriteLine("Connection string inválida.");
         Pausar();
         return;
     }
 
-    // Define o banco ativo
-    AccessDatabaseManager.SetActiveDatabasePath(path);
-    Console.WriteLine($"Banco definido: {path}");
-    InventoryLogger.Info("CLI", $"Banco definido via CLI: {path}");
-    Console.WriteLine();
-    Console.WriteLine("✔ Este banco agora está salvo nas configurações.");
-    Console.WriteLine("✔ Ao abrir o app novamente, ele já iniciará conectado neste mesmo banco.");
-    Console.WriteLine("✔ Use a opção 9 novamente somente se quiser trocar de banco.");
+    // Salva configuração
+    var config = new SqlServerConfig();
+    config.ConnectionString = connStr;
+    config.Save();
 
-    bool hasAllTables;
+    Console.WriteLine("✔ Configuração salva em sqlserver.config.json");
+    InventoryLogger.Info("CLI", $"SQL Server configurado via CLI");
+
+    // Testa conexão
+    var factory = new SqlServerConnectionFactory(config.ConnectionString);
     try
     {
-        hasAllTables = AccessSchemaManager.HasAllRequiredTables();
+        using var conn = factory.CreateConnection();
+        conn.Open();
+        Console.WriteLine("✔ Conexão SQL Server testada com sucesso.");
+        conn.Close();
     }
     catch (Exception ex)
     {
-        Console.WriteLine("Erro ao verificar estrutura do banco: " + ex.Message);
+        Console.WriteLine($"✖ Erro ao conectar: {ex.Message}");
         Pausar();
         return;
     }
 
-    if (!hasAllTables)
-    {
-        Console.WriteLine();
-        Console.WriteLine("Este banco não possui todas as tabelas padrão do InventarioSistem.");
-        Console.Write("Deseja criá-las agora? (S/N): ");
-        var respCreate = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
-
-        if (respCreate == "S")
-        {
-            try
-            {
-                AccessSchemaManager.EnsureRequiredTables();
-                Console.WriteLine("Tabelas criadas/ajustadas com sucesso.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Erro ao criar tabelas: " + ex.Message);
-                Pausar();
-                return;
-            }
-        }
-    }
-
+    // Verifica tabelas
     Console.WriteLine();
-    Console.Write("Deseja exibir um resumo deste banco agora? (S/N): ");
-    var resp = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
+    Console.Write("Deseja criar/verificar tabelas agora? (S/N): ");
+    var respCreate = (Console.ReadLine() ?? "").Trim().ToUpperInvariant();
 
-    if (resp == "S")
+    if (respCreate == "S")
     {
         try
         {
-            var summary = AccessDatabaseManager.GetDatabaseSummary(path);
-            Console.WriteLine();
-            Console.WriteLine(summary);
+            SqlServerSchemaManager.EnsureRequiredTables(factory);
+            Console.WriteLine("✔ Tabelas criadas/verificadas com sucesso.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Erro ao obter resumo do banco: " + ex.Message);
+            Console.WriteLine($"✖ Erro ao criar tabelas: {ex.Message}");
+            Pausar();
+            return;
         }
     }
 

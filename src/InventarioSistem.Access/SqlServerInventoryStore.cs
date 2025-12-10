@@ -408,6 +408,186 @@ public partial class SqlServerInventoryStore : IDisposable
     public void UpdateColetor(ColetorAndroid coletor) => UpdateColetorAsync(coletor).GetAwaiter().GetResult();
     public void DeleteColetor(int id) => DeleteColetorAsync(id).GetAwaiter().GetResult();
 
+    // ===== UTILITY METHODS =====
+    
+    /// <summary>
+    /// List all devices (generic method for cross-type queries)
+    /// </summary>
+    public async Task<List<dynamic>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new List<dynamic>();
+        
+        // Get all device types and return as dynamic list
+        var computers = await GetAllComputersAsync(cancellationToken);
+        foreach (var c in computers)
+        {
+            result.Add(new { c.Id, Type = "Computer", c.Host, c.SerialNumber, c.CreatedAt });
+        }
+
+        var tablets = await GetAllTabletsAsync(cancellationToken);
+        foreach (var t in tablets)
+        {
+            result.Add(new { t.Id, Type = "Tablet", t.Host, t.SerialNumber, t.CreatedAt });
+        }
+
+        var coletores = await GetAllColetoresAsync(cancellationToken);
+        foreach (var c in coletores)
+        {
+            result.Add(new { c.Id, Type = "ColetorAndroid", SerialNumber = (string?)null, c.CreatedAt });
+        }
+
+        var celulares = await GetAllCelularesAsync(cancellationToken);
+        foreach (var c in celulares)
+        {
+            result.Add(new { c.Id, Type = "Celular", SerialNumber = (string?)null, c.CreatedAt });
+        }
+
+        var impressoras = await GetAllImpressorasAsync(cancellationToken);
+        foreach (var i in impressoras)
+        {
+            result.Add(new { i.Id, Type = "Impressora", SerialNumber = (string?)null, i.CreatedAt });
+        }
+
+        var dects = await GetAllDectsAsync(cancellationToken);
+        foreach (var d in dects)
+        {
+            result.Add(new { d.Id, Type = "Dect", SerialNumber = (string?)null, d.CreatedAt });
+        }
+
+        var ciscos = await GetAllTelefonesCiscoAsync(cancellationToken);
+        foreach (var t in ciscos)
+        {
+            result.Add(new { t.Id, Type = "TelefoneCisco", SerialNumber = (string?)null, t.CreatedAt });
+        }
+
+        var televisores = await GetAllTelevisoresAsync(cancellationToken);
+        foreach (var t in televisores)
+        {
+            result.Add(new { t.Id, Type = "Televisor", SerialNumber = (string?)null, t.CreatedAt });
+        }
+
+        var relogios = await GetAllRelogiosPontoAsync(cancellationToken);
+        foreach (var r in relogios)
+        {
+            result.Add(new { r.Id, Type = "RelogioPonto", SerialNumber = (string?)null, r.CreatedAt });
+        }
+
+        var monitores = await GetAllMonitoresAsync(cancellationToken);
+        foreach (var m in monitores)
+        {
+            result.Add(new { m.Id, Type = "Monitor", SerialNumber = (string?)null, m.CreatedAt });
+        }
+
+        var nobreaks = await GetAllNobreaksAsync(cancellationToken);
+        foreach (var n in nobreaks)
+        {
+            result.Add(new { n.Id, Type = "Nobreak", n.SerialNumber, n.CreatedAt });
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Count devices grouped by type
+    /// </summary>
+    public async Task<Dictionary<string, int>> CountByTypeAsync(CancellationToken cancellationToken = default)
+    {
+        var counts = new Dictionary<string, int>();
+
+        await using var connection = _factory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        async Task<int> CountTable(string tableName)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT COUNT(*) FROM [{tableName}]";
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return Convert.ToInt32(result ?? 0);
+        }
+
+        counts["Computadores"] = await CountTable("Computadores");
+        counts["Tablets"] = await CountTable("Tablets");
+        counts["ColetoresAndroid"] = await CountTable("ColetoresAndroid");
+        counts["Celulares"] = await CountTable("Celulares");
+        counts["Impressoras"] = await CountTable("Impressoras");
+        counts["Dects"] = await CountTable("Dects");
+        counts["TelefonesCisco"] = await CountTable("TelefonesCisco");
+        counts["Televisores"] = await CountTable("Televisores");
+        counts["RelogiosPonto"] = await CountTable("RelogiosPonto");
+        counts["Monitores"] = await CountTable("Monitores");
+        counts["Nobreaks"] = await CountTable("Nobreaks");
+
+        return counts;
+    }
+
+    /// <summary>
+    /// Delete device by ID (searches all tables)
+    /// </summary>
+    public async Task DeleteAsync(int deviceId, CancellationToken cancellationToken = default)
+    {
+        string[] tables = { "Computadores", "Tablets", "ColetoresAndroid", "Celulares", "Impressoras", 
+                          "Dects", "TelefonesCisco", "Televisores", "RelogiosPonto", "Monitores", "Nobreaks" };
+
+        await using var connection = _factory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        foreach (var table in tables)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"DELETE FROM [{table}] WHERE [Id] = @Id";
+            command.Parameters.AddWithValue("@Id", deviceId);
+            var affected = await command.ExecuteNonQueryAsync(cancellationToken);
+            
+            if (affected > 0)
+            {
+                InvalidateCache();
+                InventoryLogger.Info("SqlServerInventoryStore", $"Dispositivo deletado: Id={deviceId}");
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Get devices missing IMEI
+    /// </summary>
+    public async Task<List<dynamic>> DevicesMissingImeiAsync(CancellationToken cancellationToken = default)
+    {
+        var result = new List<dynamic>();
+        var celulares = await GetAllCelularesAsync(cancellationToken);
+        
+        foreach (var c in celulares)
+        {
+            if (string.IsNullOrWhiteSpace(c.Numero))
+            {
+                result.Add(new { c.Id, Type = "Celular", Numero = (string?)null, c.CreatedAt });
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Group devices by location
+    /// </summary>
+    public async Task<Dictionary<string, int>> DevicesByLocationAsync(CancellationToken cancellationToken = default)
+    {
+        var all = await ListAsync(cancellationToken);
+        var groups = new Dictionary<string, int>();
+
+        foreach (var device in all)
+        {
+            string? location = (string?)device.Location ?? (string?)device.Local;
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                if (!groups.ContainsKey(location))
+                    groups[location] = 0;
+                groups[location]++;
+            }
+        }
+
+        return groups;
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);

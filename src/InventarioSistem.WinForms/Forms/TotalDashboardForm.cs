@@ -14,11 +14,11 @@ namespace InventarioSistem.WinForms.Forms;
 /// </summary>
 public class TotalDashboardForm : Form
 {
-    private readonly AccessInventoryStore _store;
+    private readonly SqlServerInventoryStore _store;
     private Chart _chart = null!;
     private DataGridView _gridTotals = null!;
 
-    public TotalDashboardForm(AccessInventoryStore store)
+    public TotalDashboardForm(SqlServerInventoryStore store)
     {
         _store = store;
         InitializeUI();

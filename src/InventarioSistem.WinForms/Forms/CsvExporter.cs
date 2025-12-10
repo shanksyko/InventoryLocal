@@ -1,13 +1,12 @@
 using System.Text;
 using System.Windows.Forms;
 using InventarioSistem.Access;
-using InventarioSistem.Core.Entities;
 
 namespace InventarioSistem.WinForms.Forms;
 
 public static class CsvExporter
 {
-    public static void ExportWithDialog(AccessInventoryStore store, IWin32Window owner)
+    public static void ExportWithDialog(SqlServerInventoryStore store, IWin32Window owner)
     {
         using var dialog = new SaveFileDialog
         {
@@ -22,36 +21,36 @@ public static class CsvExporter
         }
     }
 
-    public static void ExportToFile(AccessInventoryStore store, string path)
+    public static void ExportToFile(SqlServerInventoryStore store, string path)
     {
         var devices = store.ListAsync().GetAwaiter().GetResult();
         var csv = BuildCsv(devices);
         File.WriteAllText(path, csv, Encoding.UTF8);
     }
 
-    private static string BuildCsv(IEnumerable<Device> devices)
+    private static string BuildCsv(IEnumerable<dynamic> devices)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Id;Tipo;Patrimonio;Marca;Modelo;NumeroSerie;Imei;Responsavel;Localizacao;Observacoes");
+        builder.AppendLine("Id;Tipo;SerialNumber;CreatedAt");
         foreach (var device in devices)
         {
             builder.AppendLine(string.Join(';', new[]
             {
                 device.Id.ToString(),
                 device.Type.ToString(),
-                Escape(device.Patrimonio),
-                Escape(device.Marca),
-                Escape(device.Modelo),
-                Escape(device.NumeroSerie),
-                Escape(device.Imei ?? string.Empty),
-                Escape(device.Responsavel),
-                Escape(device.Localizacao),
-                Escape(device.Observacoes ?? string.Empty)
+                (device.SerialNumber ?? "").ToString(),
+                (device.CreatedAt ?? DateTime.Now).ToString("yyyy-MM-dd HH:mm")
             }));
         }
 
         return builder.ToString();
     }
 
-    private static string Escape(string value) => value.Replace(";", ",");
+    private static string Escape(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "";
+        if (value.Contains(';') || value.Contains('"') || value.Contains('\n'))
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        return value;
+    }
 }

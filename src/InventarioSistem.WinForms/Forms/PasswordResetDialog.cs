@@ -19,15 +19,15 @@ public class PasswordResetDialog : Form
     private Label _lblRequisitos = null!;
 
     private readonly User _user;
-    private readonly UserStore _userStore;
+    private readonly SqlServerUserStore _userStore;
     private readonly bool _isFirstLogin;
 
     public string NovaSenha { get; private set; } = string.Empty;
 
-    public PasswordResetDialog(User user, UserStore userStore, bool isFirstLogin = false)
+    public PasswordResetDialog(User user, SqlServerUserStore SqlServerUserStore, bool isFirstLogin = false)
     {
         _user = user;
-        _userStore = userStore;
+        _userStore = SqlServerUserStore;
         _isFirstLogin = isFirstLogin;
         InitializeUI();
     }
@@ -175,7 +175,7 @@ public class PasswordResetDialog : Form
 
             // Atualizar senha no banco
             _user.PasswordHash = User.HashPassword(novaSenha);
-            await _userStore.UpdatePasswordAsync(_user.Id, _user.PasswordHash);
+            await _userStore.UpdatePasswordAsync(_user.Id.ToString(), _user.PasswordHash);
 
             NovaSenha = novaSenha;
             DialogResult = DialogResult.OK;

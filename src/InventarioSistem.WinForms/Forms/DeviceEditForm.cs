@@ -19,7 +19,7 @@ namespace InventarioSistem.WinForms
     /// </summary>
     public class DeviceEditForm : Form
     {
-        private readonly AccessInventoryStore? _store;
+        private readonly SqlServerInventoryStore? _store;
         private readonly Device? _device;
 
         private readonly Dictionary<string, TextBox> _fields = new();
@@ -47,7 +47,7 @@ namespace InventarioSistem.WinForms
         /// Construtor usado quando só temos o store.
         /// Compatível com chamadas: new DeviceEditForm(_store)
         /// </summary>
-        public DeviceEditForm(AccessInventoryStore store)
+        public DeviceEditForm(SqlServerInventoryStore store)
             : this("Editar dispositivo", new Dictionary<string, string>())
         {
             _store = store;
@@ -57,7 +57,7 @@ namespace InventarioSistem.WinForms
         /// Construtor usado quando temos o store e um Device.
         /// Compatível com chamadas: new DeviceEditForm(_store, device)
         /// </summary>
-        public DeviceEditForm(AccessInventoryStore store, Device? device)
+        public DeviceEditForm(SqlServerInventoryStore store, Device? device)
             : this("Editar dispositivo", BuildInitialValues(device))
         {
             _store = store;

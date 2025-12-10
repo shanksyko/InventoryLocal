@@ -12,7 +12,7 @@ namespace InventarioSistem.WinForms.Forms;
 
 public static class XlsxExporter
 {
-    public static void ExportWithDialog(AccessInventoryStore store, DeviceType type, IWin32Window owner)
+    public static void ExportWithDialog(SqlServerInventoryStore store, DeviceType type, IWin32Window owner)
     {
         using var dialog = new SaveFileDialog
         {
@@ -34,7 +34,7 @@ public static class XlsxExporter
         }
     }
 
-    public static void ExportToFile(AccessInventoryStore store, DeviceType type, string path)
+    public static void ExportToFile(SqlServerInventoryStore store, DeviceType type, string path)
     {
         // Criar workbook
         using var wb = new XLWorkbook();

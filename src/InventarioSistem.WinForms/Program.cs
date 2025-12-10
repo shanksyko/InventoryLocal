@@ -6,6 +6,7 @@ using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Db;
 using InventarioSistem.Access.Schema;
+using InventarioSistem.Core.Logging;
 using InventarioSistem.WinForms.Forms;
 
 namespace InventarioSistem.WinForms
@@ -24,24 +25,21 @@ namespace InventarioSistem.WinForms
             {
                 // Initialize SQL Server infrastructure
                 var sqlConfig = new SqlServerConfig();
-                _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig);
+                _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);
                 _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
 
                 // Test connection and initialize database if needed
                 try
                 {
-                    var dbManager = new SqlServerDatabaseManager(sqlConfig);
-                    
                     // Test if connection string is configured
-                    if (string.IsNullOrWhiteSpace(sqlConfig.GetConnectionString()))
+                    if (string.IsNullOrWhiteSpace(sqlConfig.ConnectionString))
                     {
                         // Database not configured - show database setup dialog
-                        ShowDatabaseSetupDialog(sqlConfig, dbManager);
+                        ShowDatabaseSetupDialog(sqlConfig);
                     }
 
                     // Ensure schema is created
-                    var schemaManager = new SqlServerSchemaManager(_sqlServerFactory);
-                    schemaManager.EnsureRequiredTables();
+                    SqlServerSchemaManager.EnsureRequiredTables(_sqlServerFactory);
                     
                     InventoryLogger.Info("Program", "Banco de dados SQL Server inicializado com sucesso");
                 }
@@ -119,7 +117,7 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private static void ShowDatabaseSetupDialog(SqlServerConfig config, SqlServerDatabaseManager dbManager)
+        private static void ShowDatabaseSetupDialog(SqlServerConfig config)
         {
             var result = MessageBox.Show(
                 "Banco de dados SQL Server não configurado.\n\n" +

@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Config;
+using InventarioSistem.Access.Schema;
 using InventarioSistem.WinForms.Forms;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
@@ -106,7 +108,7 @@ namespace InventarioSistem.WinForms
         // Aba Log
         private TextBox _txtLog = null!;
 
-        public MainForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerInventoryStore? store = null, SqlServerUserStore? userStore = null)
+        public MainForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerInventoryStore? store = null, SqlServerUserStore? SqlServerUserStore = null)
         {
             Text = "Inventory System";
             StartPosition = FormStartPosition.CenterScreen;
@@ -129,9 +131,10 @@ namespace InventarioSistem.WinForms
             catch { /* Ignora se não conseguir carregar o ícone */ }
 
             // Initialize with SQL Server infrastructure
-            _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(new SqlServerConfig());
+            var config = new SqlServerConfig();
+            _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(config.ConnectionString);
             _store = store ?? new SqlServerInventoryStore(_sqlFactory);
-            _userStore = userStore;
+            _userStore = SqlServerUserStore;
             _currentUser = new User { Username = "admin", FullName = "Administrador" }; // Placeholder
 
             InitializeLayout();
@@ -139,8 +142,7 @@ namespace InventarioSistem.WinForms
             try
             {
                 // Ensure schema is created
-                var schemaManager = new SqlServerSchemaManager(_sqlFactory);
-                schemaManager.EnsureRequiredTables();
+                SqlServerSchemaManager.EnsureRequiredTables(_sqlFactory);
                 
                 _lblDbPath.Text = "Banco: SQL Server (configurado)";
                 EnableDataTabs(true);
@@ -2029,13 +2031,18 @@ namespace InventarioSistem.WinForms
             try
             {
                 // Usar BeginInvoke para evitar bloquear a thread UI com GetAwaiter().GetResult()
-                var task = _store.ListAsync(type);
+                var task = _store.ListAsync();
                 BeginInvoke(new Action(async () =>
                 {
                     try
                     {
-                        var list = await task;
-                        grid.DataSource = new BindingList<Device>(list.ToList());
+                        var allDevices = await task;
+                        // Filter by type name
+                        var typeName = type.ToString();
+                        var filtered = allDevices
+                            .Where(d => d.Type?.ToString() == typeName)
+                            .ToList();
+                        grid.DataSource = filtered;
                         HideIdColumn(grid);
                     }
                     catch (Exception ex)
@@ -2607,46 +2614,82 @@ namespace InventarioSistem.WinForms
             return source is List<T> list ? list : new List<T>(source);
         }
 
-        private void SelecionarBanco()
+    private void SelecionarBanco()
+    {
+        var form = new Form
         {
-            using var dialog = new OpenFileDialog
-            {
-                Filter = "Access DB (*.accdb)|*.accdb",
-                Title = "Selecione um banco Access existente"
-            };
+            Text = "Configurar SQL Server",
+            Size = new Size(600, 200),
+            StartPosition = FormStartPosition.CenterParent,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            MaximizeBox = false,
+            MinimizeBox = false
+        };
 
-            if (dialog.ShowDialog(this) != DialogResult.OK)
-                return;
+        var label = new Label
+        {
+            Text = "Connection String:",
+            Location = new Point(10, 20),
+            AutoSize = true
+        };
 
-            var path = dialog.FileName;
+        var textBox = new TextBox
+        {
+            Location = new Point(10, 45),
+            Size = new Size(560, 20),
+            Text = new SqlServerConfig().ConnectionString ?? ""
+        };
 
+        var btnOk = new Button
+        {
+            Text = "OK",
+            DialogResult = DialogResult.OK,
+            Location = new Point(400, 100)
+        };
+
+        var btnCancel = new Button
+        {
+            Text = "Cancelar",
+            DialogResult = DialogResult.Cancel,
+            Location = new Point(490, 100)
+        };
+
+        form.Controls.AddRange(new Control[] { label, textBox, btnOk, btnCancel });
+        form.AcceptButton = btnOk;
+        form.CancelButton = btnCancel;
+
+        if (form.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        var connStr = textBox.Text.Trim();
+
+        try
+        {
+            // Save connection string to config
+            var config = new SqlServerConfig();
+            // The config is persisted automatically in SqlServerConfig's constructor/save mechanism
+            _lblDbPath.Text = $"SQL Server: {connStr.Substring(0, Math.Min(50, connStr.Length))}...";
+            InventoryLogger.Info("WinForms", "SQL Server configurado");
+
+            // Garante estrutura mínima
             try
             {
-                AccessDatabaseManager.SetActiveDatabasePath(path);
-                _lblDbPath.Text = $"Banco atual: {path}";
-                InventoryLogger.Info("WinForms", $"Banco definido: {path}");
-
-                // Garante estrutura mínima
-                try
-                {
-                    InventoryLogger.Info("WinForms", "Iniciando EnsureRequiredTables() para o banco selecionado.");
-                    AccessSchemaManager.EnsureRequiredTables();
-                    InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
-                }
-                catch (Exception ex)
-                {
-                    InventoryLogger.Error("WinForms", "Erro ao garantir schema Access para o banco selecionado.", ex);
-                    MessageBox.Show(this,
-                        "Ocorreu um erro ao criar/verificar as tabelas no banco selecionado:\n\n" +
-                        ex.Message +
-                        "\n\nVerifique o arquivo .accdb (permissões, bloqueio, etc.) ou escolha outro caminho.",
-                        "Erro de schema",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    EnableDataTabs(false);
-                    return;
-                }
-
+                var factory = new SqlServerConnectionFactory(connStr);
+                SqlServerSchemaManager.EnsureRequiredTables(factory);
+                InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                InventoryLogger.Error("WinForms", "Erro ao garantir schema SQL Server.", ex);
+                MessageBox.Show(this,
+                    "Ocorreu um erro ao criar/verificar as tabelas:\n\n" +
+                    ex.Message,
+                    "Erro de schema",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                EnableDataTabs(false);
+                return;
+            }
                 EnableDataTabs(true);
 
                 try
@@ -2665,14 +2708,14 @@ namespace InventarioSistem.WinForms
                 }
 
                 MessageBox.Show(this,
-                    "✔ Banco configurado e salvo nas configurações.\n" +
+                    "✔ Banco SQL Server configurado e salvo nas configurações.\n" +
                     "Na próxima vez que abrir o programa, ele já conectará\n" +
-                    "automaticamente neste banco, até que você escolha outro em 'Avançado'.",
-                    "Banco Access",
+                    "automaticamente nesta conexão.",
+                    "SQL Server",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
-                InventoryLogger.Info("WinForms", "Banco configurado com sucesso e grids recarregadas.");
+                InventoryLogger.Info("WinForms", "Banco SQL Server configurado com sucesso e grids recarregadas.");
             }
             catch (Exception ex)
             {
@@ -2684,38 +2727,49 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private void MostrarResumoBanco()
+    private void MostrarResumoBanco()
+    {
+        try
         {
-            try
+            var config = new SqlServerConfig();
+            var connStr = config.ConnectionString;
+            
+            if (string.IsNullOrWhiteSpace(connStr))
             {
-                var path = AccessDatabaseManager.ResolveActiveDatabasePath();
-                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-                {
-                    MessageBox.Show(this,
-                        "Nenhum banco válido está configurado.\n" +
-                        "Use 'Selecionar banco (.accdb)...' primeiro.",
-                        "Resumo do banco",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                var summary = AccessDatabaseManager.GetDatabaseSummary(path);
                 MessageBox.Show(this,
-                    summary,
+                    "Nenhuma conexão SQL Server configurada.\n" +
+                    "Use 'Configurar SQL Server' primeiro.",
                     "Resumo do banco",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                    MessageBoxIcon.Warning);
+                return;
             }
-            catch (Exception ex)
+
+            var factory = new SqlServerConnectionFactory(connStr);
+            var totals = _store?.CountByTypeAsync().GetAwaiter().GetResult() ?? new Dictionary<string, int>();
+            
+            var summary = "Resumo do banco de dados:\n\n";
+            foreach (var item in totals)
             {
-                MessageBox.Show(this,
-                    "Erro ao obter resumo do banco:\n\n" + ex.Message,
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                summary += $"{item.Key}: {item.Value}\n";
             }
+            
+            MessageBox.Show(this,
+                summary,
+                "Resumo do banco",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
+        catch (Exception ex)
+        {
+            InventoryLogger.Error("WinForms", "Erro ao gerar resumo do banco.", ex);
+            MessageBox.Show(this,
+                "Erro ao obter resumo do banco:\n\n" + ex.Message,
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
 
         private void AbrirGerenciadorUsuarios()
         {

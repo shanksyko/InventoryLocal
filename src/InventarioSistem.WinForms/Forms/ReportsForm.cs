@@ -7,13 +7,13 @@ namespace InventarioSistem.WinForms.Forms;
 
 public class ReportsForm : Form
 {
-    private readonly AccessInventoryStore _store;
+    private readonly SqlServerInventoryStore _store;
     private readonly ListView _totals = new() { Dock = DockStyle.Top, Height = 150, View = View.Details, FullRowSelect = true };
     private readonly ListBox _missingImei = new() { Dock = DockStyle.Fill };
     private readonly TextBox _locationFilter = new() { PlaceholderText = "Localização" };
     private readonly Label _locationCount = new() { Dock = DockStyle.Bottom, Height = 30, TextAlign = ContentAlignment.MiddleLeft };
 
-    public ReportsForm(AccessInventoryStore store)
+    public ReportsForm(SqlServerInventoryStore store)
     {
         _store = store;
         Text = "Relatórios";
@@ -57,26 +57,39 @@ public class ReportsForm : Form
         _totals.Items.Clear();
         foreach (var item in totals)
         {
-            _totals.Items.Add(new ListViewItem(new[] { item.Key.ToString(), item.Value.ToString() }));
+            var key = item.Key ?? "Unknown";
+            var value = item.Value.ToString();
+            _totals.Items.Add(new ListViewItem(new[] { key, value }));
         }
 
         var missing = await _store.DevicesMissingImeiAsync();
         _missingImei.Items.Clear();
         foreach (var device in missing)
         {
-            _missingImei.Items.Add(device.ToString());
+            string id = device.Id?.ToString() ?? "";
+            string serialNumber = device.SerialNumber?.ToString() ?? "";
+            _missingImei.Items.Add(new ListViewItem(new[] { id, serialNumber }));
         }
     }
 
     private async Task LoadLocationAsync()
     {
-        if (string.IsNullOrWhiteSpace(_locationFilter.Text))
+        var devices = await _store.DevicesByLocationAsync();
+        var filtered = devices.Where(d => d.Value > 0).ToList();
+        
+        if (!string.IsNullOrWhiteSpace(_locationFilter.Text))
         {
-            _locationCount.Text = "Informe um local para filtrar.";
+            var term = _locationFilter.Text.ToLowerInvariant();
+            filtered = filtered.Where(d => d.Key.ToLowerInvariant().Contains(term)).ToList();
+        }
+        
+        if (filtered.Count == 0)
+        {
+            _locationCount.Text = "Nenhum local encontrado.";
             return;
         }
 
-        var devices = await _store.DevicesByLocationAsync(_locationFilter.Text);
-        _locationCount.Text = $"Total no local: {devices.Count}";
+        var total = filtered.Sum(d => d.Value);
+        _locationCount.Text = $"Total no(s) local(is) selecionado(s): {total}";
     }
 }

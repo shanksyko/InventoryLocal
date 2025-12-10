@@ -13,7 +13,7 @@ namespace InventarioSistem.WinForms.Forms;
 /// </summary>
 public class UserManagementForm : Form
 {
-    private readonly UserStore _userStore;
+    private readonly SqlServerUserStore _userStore;
     private readonly User? _currentUser;
     private readonly bool _isVisualizer;
     private DataGridView _gridUsers = null!;
@@ -23,9 +23,9 @@ public class UserManagementForm : Form
     private Button _btnResetSenha = null!;
     private Button _btnFechar = null!;
 
-    public UserManagementForm(UserStore userStore, User? currentUser = null)
+    public UserManagementForm(SqlServerUserStore SqlServerUserStore, User? currentUser = null)
     {
-        _userStore = userStore;
+        _userStore = SqlServerUserStore;
         _currentUser = currentUser;
         _isVisualizer = _currentUser?.Role == UserRole.Visualizador;
         InitializeUI();
@@ -216,7 +216,7 @@ public class UserManagementForm : Form
         try
         {
             _btnExcluirUsuario.Enabled = false;
-            await _userStore.DeleteUserAsync(selected.Id);
+            await _userStore.DeleteUserAsync(selected.Id.ToString());
             AuditLog.LogUserDeletion(selected.Username, "admin");
             MessageBox.Show(this, $"Usuário '{selected.Username}' excluído com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             LoadUsersAsync();
@@ -258,7 +258,7 @@ public class UserManagementForm : Form
             }
 
             var hash = User.HashPassword(novaSenha);
-            await _userStore.UpdatePasswordAsync(selected.Id, hash);
+            await _userStore.UpdatePasswordAsync(selected.Id.ToString(), hash);
             
             AuditLog.LogPasswordChange(selected.Username, "admin");
             MessageBox.Show(this, $"Senha do usuário '{selected.Username}' resetada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
