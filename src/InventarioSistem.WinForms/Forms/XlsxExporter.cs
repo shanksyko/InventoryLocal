@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,40 +36,69 @@ public static class XlsxExporter
 
     public static void ExportToFile(AccessInventoryStore store, DeviceType type, string path)
     {
-        // Usar Task.Run para executar de forma assíncrona mas aguardar o resultado
-        var devices = Task.Run(async () => await store.ListAsync(type)).GetAwaiter().GetResult();
-
-        if (devices == null || devices.Count == 0)
-        {
-            throw new Exception($"Nenhum item encontrado do tipo {type}");
-        }
-
+        // Criar workbook
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add("Itens");
 
-        // Headers
-        var headers = new[] { "Id", "Tipo", "Patrimonio", "Marca", "Modelo", "NumeroSerie", "Imei", "Localizacao", "Responsavel", "Observacoes", "AtualizadoEm" };
-        for (int i = 0; i < headers.Length; i++)
+        // Usar os métodos específicos e exportar de acordo com o tipo
+        switch (type)
         {
-            ws.Cell(1, i + 1).Value = headers[i];
-            ws.Cell(1, i + 1).Style.Font.Bold = true;
-        }
-
-        var row = 2;
-        foreach (var d in devices.OrderBy(x => x.Id))
-        {
-            ws.Cell(row, 1).Value = d.Id;
-            ws.Cell(row, 2).Value = d.Type.ToString();
-            ws.Cell(row, 3).Value = d.Patrimonio;
-            ws.Cell(row, 4).Value = d.Marca;
-            ws.Cell(row, 5).Value = d.Modelo;
-            ws.Cell(row, 6).Value = d.NumeroSerie;
-            ws.Cell(row, 7).Value = d.Imei ?? string.Empty;
-            ws.Cell(row, 8).Value = d.Localizacao ?? string.Empty;
-            ws.Cell(row, 9).Value = d.Responsavel ?? string.Empty;
-            ws.Cell(row, 10).Value = d.Observacoes ?? string.Empty;
-            ws.Cell(row, 11).Value = d.AtualizadoEm.ToString("s");
-            row++;
+            case DeviceType.Computer:
+                {
+                    var items = store.GetAllComputers();
+                    ExportComputers(ws, items);
+                    break;
+                }
+            case DeviceType.Tablet:
+                {
+                    var items = store.GetAllTablets();
+                    ExportTablets(ws, items);
+                    break;
+                }
+            case DeviceType.ColetorAndroid:
+                {
+                    var items = store.GetAllColetores();
+                    ExportColetores(ws, items);
+                    break;
+                }
+            case DeviceType.Celular:
+                {
+                    var items = store.GetAllCelulares();
+                    ExportCelulares(ws, items);
+                    break;
+                }
+            case DeviceType.Impressora:
+                {
+                    var items = store.GetAllImpressoras();
+                    ExportImpressoras(ws, items);
+                    break;
+                }
+            case DeviceType.Dect:
+                {
+                    var items = store.GetAllDects();
+                    ExportDects(ws, items);
+                    break;
+                }
+            case DeviceType.TelefoneCisco:
+                {
+                    var items = store.GetAllTelefonesCisco();
+                    ExportTelefonesCisco(ws, items);
+                    break;
+                }
+            case DeviceType.Televisor:
+                {
+                    var items = store.GetAllTelevisores();
+                    ExportTelevisores(ws, items);
+                    break;
+                }
+            case DeviceType.RelogioPonto:
+                {
+                    var items = store.GetAllRelogiosPonto();
+                    ExportRelogiosPonto(ws, items);
+                    break;
+                }
+            default:
+                throw new Exception($"Tipo {type} não suportado para exportação");
         }
 
         ws.Columns().AdjustToContents();
@@ -79,5 +109,219 @@ public static class XlsxExporter
             Directory.CreateDirectory(dir);
 
         wb.SaveAs(path);
+    }
+
+    private static void ExportComputers(IXLWorksheet ws, List<Core.Devices.Computer> items)
+    {
+        // Headers
+        ws.Cell(1, 1).Value = "Host";
+        ws.Cell(1, 2).Value = "SerialNumber";
+        ws.Cell(1, 3).Value = "Proprietário";
+        ws.Cell(1, 4).Value = "Departamento";
+        ws.Cell(1, 5).Value = "Matrícula";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Host))
+        {
+            ws.Cell(row, 1).Value = item.Host;
+            ws.Cell(row, 2).Value = item.SerialNumber;
+            ws.Cell(row, 3).Value = item.Proprietario;
+            ws.Cell(row, 4).Value = item.Departamento;
+            ws.Cell(row, 5).Value = item.Matricula;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportTablets(IXLWorksheet ws, List<Core.Devices.Tablet> items)
+    {
+        ws.Cell(1, 1).Value = "Host";
+        ws.Cell(1, 2).Value = "SerialNumber";
+        ws.Cell(1, 3).Value = "Local";
+        ws.Cell(1, 4).Value = "Responsável";
+        ws.Cell(1, 5).Value = "IMEIs";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Host))
+        {
+            ws.Cell(row, 1).Value = item.Host;
+            ws.Cell(row, 2).Value = item.SerialNumber;
+            ws.Cell(row, 3).Value = item.Local;
+            ws.Cell(row, 4).Value = item.Responsavel;
+            ws.Cell(row, 5).Value = item.ImeisJoined;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportColetores(IXLWorksheet ws, List<Core.Devices.ColetorAndroid> items)
+    {
+        ws.Cell(1, 1).Value = "Host";
+        ws.Cell(1, 2).Value = "SerialNumber";
+        ws.Cell(1, 3).Value = "MAC Address";
+        ws.Cell(1, 4).Value = "IP Address";
+        ws.Cell(1, 5).Value = "Local";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Host))
+        {
+            ws.Cell(row, 1).Value = item.Host;
+            ws.Cell(row, 2).Value = item.SerialNumber;
+            ws.Cell(row, 3).Value = item.MacAddress;
+            ws.Cell(row, 4).Value = item.IpAddress;
+            ws.Cell(row, 5).Value = item.Local;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportCelulares(IXLWorksheet ws, List<Core.Devices.Celular> items)
+    {
+        ws.Cell(1, 1).Value = "CellName";
+        ws.Cell(1, 2).Value = "IMEI1";
+        ws.Cell(1, 3).Value = "IMEI2";
+        ws.Cell(1, 4).Value = "Modelo";
+        ws.Cell(1, 5).Value = "Número";
+        ws.Cell(1, 6).Value = "Usuário";
+        ws.Cell(1, 7).Value = "Matrícula";
+        ws.Cell(1, 8).Value = "Cargo";
+        ws.Cell(1, 9).Value = "Setor";
+        ws.Cell(1, 10).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.CellName))
+        {
+            ws.Cell(row, 1).Value = item.CellName;
+            ws.Cell(row, 2).Value = item.Imei1;
+            ws.Cell(row, 3).Value = item.Imei2;
+            ws.Cell(row, 4).Value = item.Modelo;
+            ws.Cell(row, 5).Value = item.Numero;
+            ws.Cell(row, 6).Value = item.Usuario;
+            ws.Cell(row, 7).Value = item.Matricula;
+            ws.Cell(row, 8).Value = item.Cargo;
+            ws.Cell(row, 9).Value = item.Setor;
+            ws.Cell(row, 10).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportImpressoras(IXLWorksheet ws, List<Core.Devices.Impressora> items)
+    {
+        ws.Cell(1, 1).Value = "Nome";
+        ws.Cell(1, 2).Value = "Tipo/Modelo";
+        ws.Cell(1, 3).Value = "SerialNumber";
+        ws.Cell(1, 4).Value = "Local Atual";
+        ws.Cell(1, 5).Value = "Local Anterior";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Nome))
+        {
+            ws.Cell(row, 1).Value = item.Nome;
+            ws.Cell(row, 2).Value = item.TipoModelo;
+            ws.Cell(row, 3).Value = item.SerialNumber;
+            ws.Cell(row, 4).Value = item.LocalAtual;
+            ws.Cell(row, 5).Value = item.LocalAnterior;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportDects(IXLWorksheet ws, List<Core.Devices.DectPhone> items)
+    {
+        ws.Cell(1, 1).Value = "Número";
+        ws.Cell(1, 2).Value = "Responsável";
+        ws.Cell(1, 3).Value = "Local";
+        ws.Cell(1, 4).Value = "IPEI";
+        ws.Cell(1, 5).Value = "MAC Address";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Numero))
+        {
+            ws.Cell(row, 1).Value = item.Numero;
+            ws.Cell(row, 2).Value = item.Responsavel;
+            ws.Cell(row, 3).Value = item.Local;
+            ws.Cell(row, 4).Value = item.Ipei;
+            ws.Cell(row, 5).Value = item.MacAddress;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportTelefonesCisco(IXLWorksheet ws, List<Core.Devices.CiscoPhone> items)
+    {
+        ws.Cell(1, 1).Value = "Responsável";
+        ws.Cell(1, 2).Value = "MAC Address";
+        ws.Cell(1, 3).Value = "Número";
+        ws.Cell(1, 4).Value = "Local";
+        ws.Cell(1, 5).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Numero))
+        {
+            ws.Cell(row, 1).Value = item.Responsavel;
+            ws.Cell(row, 2).Value = item.MacAddress;
+            ws.Cell(row, 3).Value = item.Numero;
+            ws.Cell(row, 4).Value = item.Local;
+            ws.Cell(row, 5).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportTelevisores(IXLWorksheet ws, List<Core.Devices.Televisor> items)
+    {
+        ws.Cell(1, 1).Value = "Local";
+        ws.Cell(1, 2).Value = "Modelo";
+        ws.Cell(1, 3).Value = "SerialNumber";
+        ws.Cell(1, 4).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Local))
+        {
+            ws.Cell(row, 1).Value = item.Local;
+            ws.Cell(row, 2).Value = item.Modelo;
+            ws.Cell(row, 3).Value = item.SerialNumber;
+            ws.Cell(row, 4).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportRelogiosPonto(IXLWorksheet ws, List<Core.Devices.RelogioPonto> items)
+    {
+        ws.Cell(1, 1).Value = "Local";
+        ws.Cell(1, 2).Value = "IP";
+        ws.Cell(1, 3).Value = "Modelo";
+        ws.Cell(1, 4).Value = "SerialNumber";
+        ws.Cell(1, 5).Value = "Data Bateria";
+        ws.Cell(1, 6).Value = "Data Nobreak";
+        ws.Cell(1, 7).Value = "Próximas Verificações";
+        ws.Cell(1, 8).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Local))
+        {
+            ws.Cell(row, 1).Value = item.Local;
+            ws.Cell(row, 2).Value = item.Ip;
+            ws.Cell(row, 3).Value = item.Modelo;
+            ws.Cell(row, 4).Value = item.SerialNumber;
+            ws.Cell(row, 5).Value = item.DataBateria?.ToString("g") ?? "";
+            ws.Cell(row, 6).Value = item.DataNobreak?.ToString("g") ?? "";
+            ws.Cell(row, 7).Value = item.ProximasVerificacoes?.ToString("g") ?? "";
+            ws.Cell(row, 8).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
     }
 }
