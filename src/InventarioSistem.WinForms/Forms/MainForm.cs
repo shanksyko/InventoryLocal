@@ -202,7 +202,7 @@ namespace InventarioSistem.WinForms
                 Text = "Dashboard",
                 Size = new System.Drawing.Size(85, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(900, 18)
+                Location = new Point(ClientSize.Width - 200, 18)
             };
             _btnDashboard.Click += (_, _) => MostrarDashboard();
 
@@ -212,7 +212,7 @@ namespace InventarioSistem.WinForms
                 Appearance = Appearance.Button,
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(750, 20),
+                Location = new Point(ClientSize.Width - 350, 20),
                 BackColor = Color.Transparent
             };
             _chkUserMode.CheckedChanged += (_, _) => ApplyUserMode(_chkUserMode.Checked);
@@ -222,7 +222,7 @@ namespace InventarioSistem.WinForms
                 AutoSize = true,
                 Text = string.Empty,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(660, 24),
+                Location = new Point(ClientSize.Width - 440, 24),
                 Font = new Font("Segoe UI", 9F, FontStyle.Italic, GraphicsUnit.Point)
             };
 
@@ -233,7 +233,7 @@ namespace InventarioSistem.WinForms
                     $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" : 
                     "",
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(350, 24),
+                Location = new Point(ClientSize.Width - 750, 24),
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(64, 64, 64)
             };
@@ -243,7 +243,7 @@ namespace InventarioSistem.WinForms
                 Text = "Gerenciar Usuários",
                 Size = new System.Drawing.Size(115, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(210, 18),
+                Location = new Point(ClientSize.Width - 890, 18),
                 Visible = _currentUser?.Role == UserRole.Admin
             };
             _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
@@ -253,7 +253,7 @@ namespace InventarioSistem.WinForms
                 Text = "Dashboard Total",
                 Size = new System.Drawing.Size(110, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(795, 18),
+                Location = new Point(ClientSize.Width - 305, 18),
                 BackColor = Color.FromArgb(50, 160, 120),
                 ForeColor = Color.White
             };
@@ -264,7 +264,7 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 Size = new System.Drawing.Size(60, 28),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(990, 18),
+                Location = new Point(ClientSize.Width - 110, 18),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White
             };
