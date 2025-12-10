@@ -21,14 +21,27 @@ public static class XlsxExporter
 
         if (dialog.ShowDialog(owner) == DialogResult.OK)
         {
-            ExportToFile(store, type, dialog.FileName);
-            MessageBox.Show(owner, "Exportação concluída", "Inventário", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                ExportToFile(store, type, dialog.FileName);
+                MessageBox.Show(owner, $"Exportação concluída!\n\nArquivo: {dialog.FileName}", "Inventário", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(owner, $"Erro ao exportar: {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 
     public static void ExportToFile(AccessInventoryStore store, DeviceType type, string path)
     {
-        var devices = store.ListAsync(type).GetAwaiter().GetResult();
+        // Usar Task.Run para executar de forma assíncrona mas aguardar o resultado
+        var devices = Task.Run(async () => await store.ListAsync(type)).GetAwaiter().GetResult();
+
+        if (devices == null || devices.Count == 0)
+        {
+            throw new Exception($"Nenhum item encontrado do tipo {type}");
+        }
 
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add("Itens");
