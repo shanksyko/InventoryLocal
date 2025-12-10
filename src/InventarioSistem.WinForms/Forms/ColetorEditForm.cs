@@ -158,6 +158,11 @@ namespace InventarioSistem.WinForms
             _chkOsAndroid81 = new CheckBox { Text = "Android 8.1", Location = new Point(10, 50), AutoSize = true };
             _chkOsAndroid10 = new CheckBox { Text = "Android 10.0", Location = new Point(10, 75), AutoSize = true };
 
+            // Garantir que apenas um SO seja selecionado por vez
+            _chkOsWinCe.CheckedChanged += (s, e) => { if (_chkOsWinCe.Checked) { _chkOsAndroid81.Checked = false; _chkOsAndroid10.Checked = false; } };
+            _chkOsAndroid81.CheckedChanged += (s, e) => { if (_chkOsAndroid81.Checked) { _chkOsWinCe.Checked = false; _chkOsAndroid10.Checked = false; } };
+            _chkOsAndroid10.CheckedChanged += (s, e) => { if (_chkOsAndroid10.Checked) { _chkOsWinCe.Checked = false; _chkOsAndroid81.Checked = false; } };
+
             grpOS.Controls.AddRange(new Control[]
             {
                 _chkOsWinCe, _chkOsAndroid81, _chkOsAndroid10
