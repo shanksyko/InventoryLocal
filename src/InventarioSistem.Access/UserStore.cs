@@ -103,7 +103,8 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users WHERE Username = ?";
+        // Tenta com IsFirstLogin primeiro, se falhar tenta sem
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users WHERE Username = ?";
         cmd.Parameters.AddWithValue("@username", username);
 
         using var reader = cmd.ExecuteReader();
@@ -124,7 +125,7 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users WHERE Id = ?";
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users WHERE Id = ?";
         cmd.Parameters.AddWithValue("@id", id);
 
         using var reader = cmd.ExecuteReader();
@@ -145,7 +146,7 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users ORDER BY CreatedAt DESC";
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users ORDER BY CreatedAt DESC";
 
         var users = new List<User>();
         using var reader = cmd.ExecuteReader();
@@ -167,8 +168,8 @@ public class UserStore
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
         cmd.Parameters.AddWithValue("@username", user.Username ?? string.Empty);
         cmd.Parameters.AddWithValue("@passwordHash", user.PasswordHash ?? (object)DBNull.Value);
@@ -176,7 +177,6 @@ public class UserStore
         cmd.Parameters.AddWithValue("@email", user.Email ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@fullName", user.FullName ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@isActive", user.IsActive);
-        cmd.Parameters.AddWithValue("@isFirstLogin", user.IsFirstLogin);
         cmd.Parameters.AddWithValue("@createdAt", user.CreatedAt);
         cmd.Parameters.AddWithValue("@lastLogin", user.LastLogin ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@provider", user.Provider ?? "Local");
@@ -270,6 +270,18 @@ public class UserStore
 
     private static User MapUser(IDataReader reader)
     {
+        // Tentar ler IsFirstLogin, se não existir, assumir false
+        bool isFirstLogin = false;
+        try
+        {
+            var value = reader["IsFirstLogin"];
+            isFirstLogin = value is DBNull ? false : Convert.ToBoolean(value);
+        }
+        catch
+        {
+            // Coluna não existe, deixar como false
+        }
+
         return new User
         {
             Id = Convert.ToInt32(reader["Id"]),
@@ -279,7 +291,7 @@ public class UserStore
             Email = reader["Email"] is DBNull ? null : reader["Email"]?.ToString(),
             FullName = reader["FullName"] is DBNull ? null : reader["FullName"]?.ToString(),
             IsActive = Convert.ToBoolean(reader["IsActive"]),
-            IsFirstLogin = reader["IsFirstLogin"] is DBNull ? false : Convert.ToBoolean(reader["IsFirstLogin"]),
+            IsFirstLogin = isFirstLogin,
             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
             LastLogin = reader["LastLogin"] is DBNull ? null : Convert.ToDateTime(reader["LastLogin"]),
             Provider = reader["Provider"]?.ToString() ?? "Local"
