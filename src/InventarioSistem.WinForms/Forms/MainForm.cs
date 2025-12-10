@@ -2774,9 +2774,9 @@ namespace InventarioSistem.WinForms
                 InventoryLogger.Error("MainForm", $"Erro ao registrar logoff: {ex.Message}");
             }
             
-            // Fechar a janela principal
-            this.DialogResult = DialogResult.Cancel;
-            this.Close();
+            // Reiniciar a aplicação para voltar ao login
+            Application.Restart();
+            Environment.Exit(0);
         }
     }
 }
