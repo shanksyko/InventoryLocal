@@ -74,8 +74,8 @@ public class UserStore
             {
                 using var insertCmd = conn.CreateCommand();
                 insertCmd.CommandText = @"
-                    INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, Provider)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, Provider)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ";
                 insertCmd.Parameters.AddWithValue("@username", "admin");
                 insertCmd.Parameters.AddWithValue("@passwordHash", User.HashPassword("L9l337643k#$"));
@@ -83,6 +83,7 @@ public class UserStore
                 insertCmd.Parameters.AddWithValue("@email", "admin@inventory.local");
                 insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
                 insertCmd.Parameters.AddWithValue("@isActive", true);
+                insertCmd.Parameters.AddWithValue("@isFirstLogin", true);
                 insertCmd.Parameters.AddWithValue("@createdAt", DateTime.Now);
                 insertCmd.Parameters.AddWithValue("@provider", "Local");
                 
@@ -102,7 +103,7 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users WHERE Username = ?";
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users WHERE Username = ?";
         cmd.Parameters.AddWithValue("@username", username);
 
         using var reader = cmd.ExecuteReader();
@@ -123,7 +124,7 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users WHERE Id = ?";
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users WHERE Id = ?";
         cmd.Parameters.AddWithValue("@id", id);
 
         using var reader = cmd.ExecuteReader();
@@ -144,7 +145,7 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider FROM Users ORDER BY CreatedAt DESC";
+        cmd.CommandText = "SELECT Id, Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider FROM Users ORDER BY CreatedAt DESC";
 
         var users = new List<User>();
         using var reader = cmd.ExecuteReader();
@@ -166,8 +167,8 @@ public class UserStore
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, CreatedAt, LastLogin, Provider)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Users (Username, PasswordHash, Role, Email, FullName, IsActive, IsFirstLogin, CreatedAt, LastLogin, Provider)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
         cmd.Parameters.AddWithValue("@username", user.Username ?? string.Empty);
         cmd.Parameters.AddWithValue("@passwordHash", user.PasswordHash ?? (object)DBNull.Value);
@@ -175,6 +176,7 @@ public class UserStore
         cmd.Parameters.AddWithValue("@email", user.Email ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@fullName", user.FullName ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@isActive", user.IsActive);
+        cmd.Parameters.AddWithValue("@isFirstLogin", user.IsFirstLogin);
         cmd.Parameters.AddWithValue("@createdAt", user.CreatedAt);
         cmd.Parameters.AddWithValue("@lastLogin", user.LastLogin ?? (object)DBNull.Value);
         cmd.Parameters.AddWithValue("@provider", user.Provider ?? "Local");
@@ -243,8 +245,9 @@ public class UserStore
         await Task.Run(() => conn.Open());
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = "UPDATE Users SET LastLogin = ? WHERE Id = ?";
+        cmd.CommandText = "UPDATE Users SET LastLogin = ?, IsFirstLogin = ? WHERE Id = ?";
         cmd.Parameters.AddWithValue("@lastLogin", DateTime.UtcNow);
+        cmd.Parameters.AddWithValue("@isFirstLogin", false);
         cmd.Parameters.AddWithValue("@id", userId);
 
         cmd.ExecuteNonQuery();
@@ -276,6 +279,7 @@ public class UserStore
             Email = reader["Email"] is DBNull ? null : reader["Email"]?.ToString(),
             FullName = reader["FullName"] is DBNull ? null : reader["FullName"]?.ToString(),
             IsActive = Convert.ToBoolean(reader["IsActive"]),
+            IsFirstLogin = reader["IsFirstLogin"] is DBNull ? false : Convert.ToBoolean(reader["IsFirstLogin"]),
             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
             LastLogin = reader["LastLogin"] is DBNull ? null : Convert.ToDateTime(reader["LastLogin"]),
             Provider = reader["Provider"]?.ToString() ?? "Local"

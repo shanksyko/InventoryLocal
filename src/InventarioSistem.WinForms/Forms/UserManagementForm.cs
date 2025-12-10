@@ -42,6 +42,17 @@ public class UserManagementForm : Form
         FormBorderStyle = FormBorderStyle.Sizable;
         MinimumSize = new System.Drawing.Size(700, 400);
 
+        // Ícone do formulário
+        try
+        {
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                Icon = new System.Drawing.Icon(iconPath);
+            }
+        }
+        catch { /* Ignora se não conseguir carregar o ícone */ }
+
         // Buttons (organizados em FlowLayout para evitar sobreposição)
         _btnNovoUsuario = new Button
         {
@@ -228,10 +239,11 @@ public class UserManagementForm : Form
             return;
         }
 
-        using var dialog = new PasswordResetDialog(selected.Username);
+        using var dialog = new PasswordResetDialog(selected, _userStore);
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
-            ResetarSenhaAsync(selected, dialog.NovaSenha);
+            AuditLog.LogPasswordChange(selected.Username, LoginForm.LoggedInUser?.Username ?? "admin");
+            MessageBox.Show(this, $"Senha do usuário '{selected.Username}' resetada com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 

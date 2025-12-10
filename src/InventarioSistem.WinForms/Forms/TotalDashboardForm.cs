@@ -33,6 +33,17 @@ public class TotalDashboardForm : Form
         Font = new Font("Segoe UI", 9F);
         BackColor = Color.FromArgb(245, 247, 250);
 
+        // Ícone do formulário
+        try
+        {
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                Icon = new System.Drawing.Icon(iconPath);
+            }
+        }
+        catch { /* Ignora se não conseguir carregar o ícone */ }
+
         // Painel superior com título
         var lblTitle = new Label
         {

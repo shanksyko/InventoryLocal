@@ -21,6 +21,17 @@ public class ReportsForm : Form
         Height = 520;
         StartPosition = FormStartPosition.CenterParent;
 
+        // Ícone do formulário
+        try
+        {
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                Icon = new System.Drawing.Icon(iconPath);
+            }
+        }
+        catch { /* Ignora se não conseguir carregar o ícone */ }
+
         _totals.Columns.Add("Tipo", 200);
         _totals.Columns.Add("Total", 80);
 

@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Core.Entities;
+using InventarioSistem.Core.Utilities;
 
 namespace InventarioSistem.WinForms.Forms;
 
@@ -189,6 +190,14 @@ public class UserEditForm : Form
                     return;
                 }
 
+                // Validar complexidade da senha
+                var (isValid, errorMessage) = PasswordValidator.ValidatePassword(password);
+                if (!isValid)
+                {
+                    MessageBox.Show(this, errorMessage, "Validação de Senha", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 var newUser = new User
                 {
                     Username = username,
@@ -197,6 +206,7 @@ public class UserEditForm : Form
                     Email = string.IsNullOrWhiteSpace(email) ? null : email,
                     Role = role,
                     IsActive = isActive,
+                    IsFirstLogin = true, // Novo usuário deve trocar senha no primeiro login
                     Provider = "Local"
                 };
 
@@ -213,6 +223,14 @@ public class UserEditForm : Form
 
                 if (!string.IsNullOrWhiteSpace(password))
                 {
+                    // Validar complexidade da nova senha
+                    var (isValid, errorMessage) = PasswordValidator.ValidatePassword(password);
+                    if (!isValid)
+                    {
+                        MessageBox.Show(this, errorMessage, "Validação de Senha", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     await _userStore.UpdatePasswordAsync(_existingUser.Id, User.HashPassword(password));
                 }
 

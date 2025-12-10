@@ -1,6 +1,4 @@
 using System;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace InventarioSistem.Core.Entities;
 
@@ -16,20 +14,17 @@ public class User
     public string? Email { get; set; }
     public string? FullName { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsFirstLogin { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLogin { get; set; }
     public string? Provider { get; set; } = "Local"; // "Local", "ActiveDirectory", etc.
 
     /// <summary>
-    /// Hash uma senha usando SHA256
+    /// Hash uma senha usando BCrypt (seguro com salt automático)
     /// </summary>
     public static string HashPassword(string password)
     {
-        using (var sha256 = SHA256.Create())
-        {
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
+        return BCrypt.Net.BCrypt.HashPassword(password, BCrypt.Net.BCrypt.GenerateSalt(12));
     }
 
     /// <summary>
@@ -40,7 +35,13 @@ public class User
         if (string.IsNullOrWhiteSpace(PasswordHash))
             return false;
 
-        var hash = HashPassword(password);
-        return hash == PasswordHash;
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(password, PasswordHash);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

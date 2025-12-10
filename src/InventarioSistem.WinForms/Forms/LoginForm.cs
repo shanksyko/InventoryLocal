@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
@@ -19,8 +20,62 @@ public class LoginForm : Form
     private Label _lblMessage = null!;
     private UserStore? _userStore;
 
-    public User? LoggedInUser { get; private set; }
-    public string? EnteredPassword { get; private set; }
+    // Rate limiting
+    private static Dictionary<string, (int attempts, DateTime blockedUntil)> _loginAttempts = new();
+    private const int MAX_ATTEMPTS = 5;
+    private const int BLOCK_MINUTES = 15;
+
+    public static User? LoggedInUser { get; set; }
+    public static string? EnteredPassword { get; set; }
+
+    private bool IsRateLimited(string username, out int remainingMinutes)
+    {
+        remainingMinutes = 0;
+        
+        if (_loginAttempts.TryGetValue(username, out var attempt))
+        {
+            if (DateTime.Now < attempt.blockedUntil)
+            {
+                remainingMinutes = (int)Math.Ceiling((attempt.blockedUntil - DateTime.Now).TotalMinutes);
+                return true;
+            }
+            
+            // Bloqueio expirado, limpar
+            if (DateTime.Now >= attempt.blockedUntil && attempt.attempts >= MAX_ATTEMPTS)
+            {
+                _loginAttempts.Remove(username);
+            }
+        }
+        
+        return false;
+    }
+
+    private void RegisterFailedAttempt(string username)
+    {
+        if (_loginAttempts.TryGetValue(username, out var attempt))
+        {
+            attempt.attempts++;
+            
+            if (attempt.attempts >= MAX_ATTEMPTS)
+            {
+                attempt.blockedUntil = DateTime.Now.AddMinutes(BLOCK_MINUTES);
+            }
+            
+            _loginAttempts[username] = attempt;
+        }
+        else
+        {
+            _loginAttempts[username] = (1, DateTime.MinValue);
+        }
+    }
+
+    private void ResetLoginAttempts(string username)
+    {
+        if (_loginAttempts.ContainsKey(username))
+        {
+            _loginAttempts.Remove(username);
+        }
+    }
 
         public LoginForm(UserStore? userStore)
     {
@@ -38,6 +93,17 @@ public class LoginForm : Form
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;
+
+        // Ícone do formulário
+        try
+        {
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                Icon = new System.Drawing.Icon(iconPath);
+            }
+        }
+        catch { /* Ignora se não conseguir carregar o ícone */ }
 
         // Título
         var lblTitle = new Label
@@ -168,6 +234,14 @@ public class LoginForm : Form
                 return;
             }
 
+            // Verificar rate limiting
+            if (IsRateLimited(username, out int remainingMinutes))
+            {
+                _lblMessage.Text = $"Conta bloqueada por {remainingMinutes} minutos devido a múltiplas tentativas falhadas.";
+                AuditLog.LogLogin(username, false, "BLOQUEADO - Rate Limit");
+                return;
+            }
+
             if (_userStore == null)
             {
                 // Offline mode: accept default admin credentials
@@ -183,11 +257,13 @@ public class LoginForm : Form
                         Provider = "Local"
                     };
                     EnteredPassword = password;
+                    ResetLoginAttempts(username);
                     AuditLog.LogLogin("admin", true);
                     DialogResult = DialogResult.OK;
                     return;
                 }
 
+                RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 AuditLog.LogLogin(username, false);
                 return;
@@ -197,6 +273,7 @@ public class LoginForm : Form
 
             if (user == null || !user.IsActive)
             {
+                RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 AuditLog.LogLogin(username, false);
                 return;
@@ -204,17 +281,31 @@ public class LoginForm : Form
 
             if (!user.VerifyPassword(password))
             {
+                RegisterFailedAttempt(username);
                 _lblMessage.Text = "Usuário e/ou senha incorreto.";
                 AuditLog.LogLogin(username, false);
                 return;
             }
 
-            // Atualiza último login
+            // Login bem-sucedido
+            ResetLoginAttempts(username);
             await _userStore.UpdateLastLoginAsync(user.Id);
 
             LoggedInUser = user;
             EnteredPassword = password;
             AuditLog.LogLogin(username, true);
+            
+            // Verificar se é primeiro login e forçar troca de senha
+            if (user.IsFirstLogin)
+            {
+                var resetDialog = new PasswordResetDialog(user, _userStore!, true);
+                if (resetDialog.ShowDialog() == DialogResult.OK)
+                {
+                    MessageBox.Show("Senha alterada com sucesso! Por favor, faça login com a nova senha.", "Senha Alterada", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)

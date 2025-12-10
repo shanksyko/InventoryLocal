@@ -21,10 +21,10 @@ public static class AuditLog
         InventoryLogger.Info("Auditoria", logMessage);
     }
 
-    public static void LogLogin(string username, bool success)
+    public static void LogLogin(string username, bool success, string details = "")
     {
         var status = success ? "SUCESSO" : "FALHA";
-        LogUserAction(username, $"LOGIN ({status})", "");
+        LogUserAction(username, $"LOGIN ({status})", details);
     }
 
     public static void LogLogoff(string username)

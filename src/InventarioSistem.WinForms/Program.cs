@@ -98,7 +98,7 @@ namespace InventarioSistem.WinForms
                         return; // User cancelled login
                     }
 
-                    var loggedInUser = loginForm.LoggedInUser;
+                    var loggedInUser = LoginForm.LoggedInUser;
                     if (loggedInUser != null)
                     {
                         Application.Run(new MainForm(loggedInUser));
