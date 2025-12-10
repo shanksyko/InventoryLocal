@@ -3,6 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Access;
+using InventarioSistem.Access.Config;
+using InventarioSistem.Access.Db;
+using InventarioSistem.Access.Schema;
 using InventarioSistem.WinForms.Forms;
 
 namespace InventarioSistem.WinForms
