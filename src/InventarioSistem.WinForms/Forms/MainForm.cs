@@ -202,7 +202,7 @@ namespace InventarioSistem.WinForms
                 Text = "Dashboard",
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(950, 20)
+                Location = new Point(870, 20)
             };
             _btnDashboard.Click += (_, _) => MostrarDashboard();
 
@@ -212,7 +212,7 @@ namespace InventarioSistem.WinForms
                 Appearance = Appearance.Button,
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(820, 20),
+                Location = new Point(740, 20),
                 BackColor = Color.Transparent
             };
             _chkUserMode.CheckedChanged += (_, _) => ApplyUserMode(_chkUserMode.Checked);
@@ -222,7 +222,7 @@ namespace InventarioSistem.WinForms
                 AutoSize = true,
                 Text = string.Empty,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(740, 24),
+                Location = new Point(660, 24),
                 Font = new Font("Segoe UI", 9F, FontStyle.Italic, GraphicsUnit.Point)
             };
 
@@ -233,7 +233,7 @@ namespace InventarioSistem.WinForms
                     $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" : 
                     "",
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(470, 24),
+                Location = new Point(380, 24),
                 Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(64, 64, 64)
             };
@@ -243,7 +243,7 @@ namespace InventarioSistem.WinForms
                 Text = "Gerenciar Usuários",
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(310, 20),
+                Location = new Point(220, 20),
                 Visible = _currentUser?.Role == UserRole.Admin
             };
             _btnManageUsers.Click += (_, _) => AbrirGerenciadorUsuarios();
@@ -253,7 +253,7 @@ namespace InventarioSistem.WinForms
                 Text = "Dashboard Total",
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(470, 45),
+                Location = new Point(750, 20),
                 BackColor = Color.FromArgb(50, 160, 120),
                 ForeColor = Color.White
             };
@@ -264,7 +264,7 @@ namespace InventarioSistem.WinForms
                 Text = "Sair",
                 AutoSize = true,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(1010, 45),
+                Location = new Point(1050, 20),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White
             };
@@ -276,9 +276,9 @@ namespace InventarioSistem.WinForms
             _headerPanel.Controls.Add(_btnManageUsers);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
+            _headerPanel.Controls.Add(_btnDashboard);
             _headerPanel.Controls.Add(_btnTotalDashboard);
             _headerPanel.Controls.Add(_btnLogoff);
-            _headerPanel.Controls.Add(_btnDashboard);
 
             _tabs = new TabControl
             {
@@ -515,6 +515,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportComputadores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Computer, this);
 
+            var _btnDashboardComputadores = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardComputadores.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Host/N/S/Proprietário/Departamento/Matrícula):",
@@ -608,6 +618,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarComputador);
             page.Controls.Add(_btnExcluirComputador);
             page.Controls.Add(_btnExportComputadores);
+            page.Controls.Add(_btnDashboardComputadores);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtComputersFilter);
             page.Controls.Add(btnClearFilter);
@@ -656,6 +667,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportTablets.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Tablet, this);
 
+            var _btnDashboardTablets = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardTablets.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroTablets = new Label
             {
                 Text = "Filtro (Host/Serial/Local/Responsável/IMEI):",
@@ -695,6 +716,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarTablet);
             page.Controls.Add(_btnExcluirTablet);
             page.Controls.Add(_btnExportTablets);
+            page.Controls.Add(_btnDashboardTablets);
             page.Controls.Add(lblFiltroTablets);
             page.Controls.Add(_txtTabletsFilter);
             page.Controls.Add(btnClearFilterTablets);
@@ -743,6 +765,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportColetores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.ColetorAndroid, this);
 
+            var _btnDashboardColetores = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardColetores.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroColetores = new Label
             {
                 Text = "Filtro (Host/Serial/MAC/IP/Local):",
@@ -782,6 +814,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarColetor);
             page.Controls.Add(_btnExcluirColetor);
             page.Controls.Add(_btnExportColetores);
+            page.Controls.Add(_btnDashboardColetores);
             page.Controls.Add(lblFiltroColetores);
             page.Controls.Add(_txtColetoresFilter);
             page.Controls.Add(btnClearFilterColetores);
@@ -830,6 +863,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportCelulares.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Celular, this);
 
+            var _btnDashboardCelulares = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardCelulares.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroCelulares = new Label
             {
                 Text = "Filtro (CellName / IMEI / Modelo / Número / Usuário / Setor):",
@@ -876,6 +919,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarCelular);
             page.Controls.Add(_btnExcluirCelular);
             page.Controls.Add(_btnExportCelulares);
+            page.Controls.Add(_btnDashboardCelulares);
             page.Controls.Add(lblFiltroCelulares);
             page.Controls.Add(_txtCelularesFilter);
             page.Controls.Add(btnClearFilterCelulares);
@@ -923,6 +967,16 @@ namespace InventarioSistem.WinForms
                 Location = new Point(400, 10)
             };
             _btnExportImpressoras.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Impressora, this);
+
+            var _btnDashboardImpressoras = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardImpressoras.Click += (_, _) => MostrarDashboardTotal();
 
             var lblFiltroImpressoras = new Label
             {
@@ -993,6 +1047,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarImpressora);
             page.Controls.Add(_btnExcluirImpressora);
             page.Controls.Add(_btnExportImpressoras);
+            page.Controls.Add(_btnDashboardImpressoras);
             page.Controls.Add(lblFiltroImpressoras);
             page.Controls.Add(_txtImpressorasFilter);
             page.Controls.Add(btnClearFilterImpressoras);
@@ -1041,6 +1096,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportDects.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Dect, this);
 
+            var _btnDashboardDects = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardDects.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroDects = new Label
             {
                 Text = "Filtro (Responsável/IPEI/MAC/Número/Local/Modelo):",
@@ -1079,6 +1144,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarDect);
             page.Controls.Add(_btnExcluirDect);
             page.Controls.Add(_btnExportDects);
+            page.Controls.Add(_btnDashboardDects);
             page.Controls.Add(lblFiltroDects);
             page.Controls.Add(_txtDectsFilter);
             page.Controls.Add(btnClearFilterDects);
@@ -1127,6 +1193,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportTelefonesCisco.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.TelefoneCisco, this);
 
+            var _btnDashboardCisco = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardCisco.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroCisco = new Label
             {
                 Text = "Filtro (Responsável/MAC/Número/Local/IP/Serial):",
@@ -1164,6 +1240,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarTelefoneCisco);
             page.Controls.Add(_btnExcluirTelefoneCisco);
             page.Controls.Add(_btnExportTelefonesCisco);
+            page.Controls.Add(_btnDashboardCisco);
             page.Controls.Add(lblFiltroCisco);
             page.Controls.Add(_txtCiscoFilter);
             page.Controls.Add(btnClearFilterCisco);
@@ -1212,6 +1289,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportTelevisores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Televisor, this);
 
+            var _btnDashboardTelevisores = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardTelevisores.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroTvs = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local):",
@@ -1248,6 +1335,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarTelevisor);
             page.Controls.Add(_btnExcluirTelevisor);
             page.Controls.Add(_btnExportTelevisores);
+            page.Controls.Add(_btnDashboardTelevisores);
             page.Controls.Add(lblFiltroTvs);
             page.Controls.Add(_txtTvsFilter);
             page.Controls.Add(btnClearFilterTvs);
@@ -1296,6 +1384,16 @@ namespace InventarioSistem.WinForms
             };
             _btnExportRelogiosPonto.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.RelogioPonto, this);
 
+            var _btnDashboardRelogios = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardRelogios.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltroRelogios = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local/IP):",
@@ -1336,6 +1434,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnEditarRelogioPonto);
             page.Controls.Add(_btnExcluirRelogioPonto);
             page.Controls.Add(_btnExportRelogiosPonto);
+            page.Controls.Add(_btnDashboardRelogios);
             page.Controls.Add(lblFiltroRelogios);
             page.Controls.Add(_txtRelogiosFilter);
             page.Controls.Add(btnClearFilterRelogios);
