@@ -53,3 +53,55 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# ====================
+# Visual Studio / Rider
+# ====================
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.sln.iml
+
+# ====================
+# Database Files
+# ====================
+# Access Database (obsoleto - não mais usado)
+*.accdb
+*.mdb
+*.laccdb
+Data/*.accdb
+Data/*.mdb
+
+# SQL Server local files
+*.mdf
+*.ldf
+*.ndf
+
+# ====================
+# Configuration Files (com dados sensíveis)
+# ====================
+# SQL Server connection strings (NÃO commitar com senhas reais)
+sqlserver.config.json
+
+# Configurações locais obsoletas (Access)
+access.config.json
+config.json
+
+# Manter exemplos (sem dados sensíveis)
+!sqlserver.config.json.example
+!config.json.example
+
+# ====================
+# Documentation (gerada automaticamente)
+# ====================
+*VALIDATION*.md
+*BUGFIX*.md
+*ACTION_PLAN*.md
+CONFIGURACOES_IMPORTADAS.md
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md

@@ -10,7 +10,11 @@ Você precisa ter instalado:
 2. **.NET 8.0 SDK**
    - https://dotnet.microsoft.com/download/dotnet/8.0
 
-3. **Git** (para clonar o repositório)
+3. **SQL Server Express** (64-bit)
+   - https://www.microsoft.com/sql-server/sql-server-downloads
+   - Escolha "Express" → "Download now"
+
+4. **Git** (para clonar o repositório)
    - https://git-scm.com/
 
 ---
@@ -45,7 +49,33 @@ dotnet build -c Release
 
 ---
 
-## ▶️ Passo 3: Executar o Programa
+## 🗄️ Passo 3: Configurar SQL Server
+
+### **Criar o Banco de Dados**
+
+```bash
+# Execute o script de criação (PowerShell)
+.\scripts\create-database.ps1
+```
+
+**Ou manualmente**:
+1. Abra SQL Server Management Studio (SSMS)
+2. Conecte-se a `localhost\SQLEXPRESS`
+3. Execute o script em `scripts\create-database.sql`
+
+### **Configurar Connection String**
+
+Edite o arquivo `sqlserver.config.json` (será criado automaticamente na primeira execução):
+
+```json
+{
+  "ConnectionString": "Server=localhost\\SQLEXPRESS;Database=InventoryDB;Integrated Security=true;TrustServerCertificate=true;"
+}
+```
+
+---
+
+## ▶️ Passo 4: Executar o Programa
 
 ### **Opção A: Do Visual Studio**
 - Pressione **F5** ou clique em **Start/Run** (▶️)
@@ -62,7 +92,7 @@ dotnet run -c Release --project src/InventarioSistem.WinForms
 
 ---
 
-## 📦 Passo 4: Criar o Executável Compilado
+## 📦 Passo 5: Criar o Executável Compilado
 
 Se você quer gerar um executável `.exe` que não precisa do .NET instalado:
 
@@ -81,6 +111,7 @@ dotnet publish src/InventarioSistem.WinForms/InventarioSistem.WinForms.csproj \
 **Resultado:**
 - `InventorySystem.exe` (~170 MB)
 - Não requer .NET instalado
+- ⚠️ **Ainda requer SQL Server Express instalado**
 - Pronto para distribuição
 
 ---
@@ -92,9 +123,12 @@ InventoryLocal/
 ├── InventoryLocal.sln              ← Solução principal
 ├── src/
 │   ├── InventarioSistem.Core/      ← Lógica de negócio
-│   ├── InventarioSistem.Access/    ← Acesso ao banco (Access)
+│   ├── InventarioSistem.Access/    ← Acesso ao banco (SQL Server)
 │   ├── InventarioSistem.WinForms/  ← Interface gráfica (Windows Forms)
 │   └── InventarioSistem.Cli/       ← CLI (linha de comando)
+├── scripts/                         ← Scripts SQL
+│   ├── create-database.ps1         ← Criação automática do banco
+│   └── create-database.sql         ← Script SQL manual
 ├── docs/                            ← Documentação
 └── README.md
 ```
@@ -104,9 +138,11 @@ InventoryLocal/
 ## 🔧 Configuração
 
 ### **Banco de Dados**
-- Automático: Criado na primeira execução
-- Local padrão: Mesma pasta que o executável
-- Formato: Microsoft Access (.accdb)
+- **Tipo**: SQL Server Express
+- **Instância padrão**: `localhost\SQLEXPRESS`
+- **Banco**: `InventoryDB`
+- **Autenticação**: Windows Integrated Security
+- **Criação**: Automática via scripts fornecidos
 
 ### **Credenciais Padrão**
 ```
@@ -124,12 +160,24 @@ Senha: L9l337643k#$
 ```bash
 # Instale o .NET 8.0 SDK
 # Windows: https://dotnet.microsoft.com/download/dotnet/8.0
-# Linux/Mac: Você pode instalar via package manager
 ```
 
-### **Erro: "The project file 'InventoryLocal.sln' was not found"**
-- Certifique-se que está na pasta raiz do projeto
-- Use `ls` ou `dir` para verificar se `InventoryLocal.sln` existe
+### **Erro: "SQL Server connection failed"**
+1. Verifique se SQL Server Express está instalado:
+   ```powershell
+   Get-Service | Where-Object {$_.DisplayName -like "*SQL*"}
+   ```
+2. Confirme que o serviço está rodando:
+   ```powershell
+   Start-Service MSSQL$SQLEXPRESS
+   ```
+3. Verifique a connection string em `sqlserver.config.json`
+
+### **Erro: "Database 'InventoryDB' does not exist"**
+```bash
+# Execute o script de criação
+.\scripts\create-database.ps1
+```
 
 ### **Erro: "The name 'BCrypt' does not exist"**
 - Execute: `dotnet restore`
@@ -146,8 +194,10 @@ Senha: L9l337643k#$
 | Ação | Tempo |
 |------|-------|
 | Clonar repositório | 1-2 min |
+| Instalar SQL Server Express | 5-10 min |
 | dotnet restore | 2-5 min (1ª vez) |
 | dotnet build | 30-60 seg |
+| Criar banco de dados | 1-2 min |
 | dotnet run | 5-10 seg |
 | dotnet publish | 5-10 min |
 
@@ -178,6 +228,9 @@ dotnet publish src/InventarioSistem.WinForms/InventarioSistem.WinForms.csproj \
 
 # Limpar arquivos compilados
 dotnet clean
+
+# Verificar SQL Server
+sqlcmd -S localhost\SQLEXPRESS -Q "SELECT @@VERSION"
 ```
 
 ---
@@ -186,14 +239,17 @@ dotnet clean
 
 - **SECURITY_IMPROVEMENTS.md** - Melhorias de segurança implementadas
 - **DISTRIBUICAO.md** - Guia de distribuição do executável
+- **SQL_VALIDATION_REPORT.md** - Validação do schema SQL Server
 
 ---
 
 ## ✅ Verificação Final
 
-Após compilar, você deve ver:
+Após compilar e configurar, você deve ver:
 - ✅ "Build succeeded" (sem erros)
-- ✅ Programa abri sem problemas
+- ✅ SQL Server Express rodando
+- ✅ Banco InventoryDB criado
+- ✅ Programa abre sem problemas
 - ✅ Tela de login apareceu
 
 Se tudo funcionar, você está pronto! 🎉
@@ -202,4 +258,5 @@ Se tudo funcionar, você está pronto! 🎉
 
 **Desenvolvido por:** Giancarlo Conrado Romualdo  
 **Última atualização:** Dezembro 2024  
-**Versão .NET:** 8.0
+**Versão .NET:** 8.0  
+**Banco de Dados:** SQL Server Express 2022

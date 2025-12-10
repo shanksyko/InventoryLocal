@@ -37,10 +37,10 @@ public class SqlServerUserStore
             command.CommandText = @"
                 SELECT COUNT(*)
                 FROM [Users]
-                WHERE [Username] = @Username AND [Password] = @Password AND [IsActive] = 1";
+                WHERE [Username] = @Username AND [PasswordHash] = @PasswordHash AND [IsActive] = 1";
 
             command.Parameters.AddWithValue("@Username", username);
-            command.Parameters.AddWithValue("@Password", password);
+            command.Parameters.AddWithValue("@PasswordHash", password);
 
             var result = await command.ExecuteScalarAsync(cancellationToken);
             return ((int?)result ?? 0) > 0;
@@ -108,12 +108,12 @@ public class SqlServerUserStore
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO [Users]
-                ([Username], [Password], [FullName], [IsActive], [CreatedAt])
-                VALUES (@Username, @Password, @FullName, @IsActive, @CreatedAt);
+                ([Username], [PasswordHash], [FullName], [IsActive], [CreatedAt])
+                VALUES (@Username, @PasswordHash, @FullName, @IsActive, @CreatedAt);
                 SELECT SCOPE_IDENTITY();";
 
             command.Parameters.AddWithValue("@Username", username);
-            command.Parameters.AddWithValue("@Password", password);
+            command.Parameters.AddWithValue("@PasswordHash", password);
             command.Parameters.AddWithValue("@FullName", fullName ?? "");
             command.Parameters.AddWithValue("@IsActive", isActive);
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
@@ -147,10 +147,10 @@ public class SqlServerUserStore
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE [Users]
-                SET [Password] = @Password
+                SET [PasswordHash] = @PasswordHash
                 WHERE [Username] = @Username";
 
-            command.Parameters.AddWithValue("@Password", newPassword);
+            command.Parameters.AddWithValue("@PasswordHash", newPassword);
             command.Parameters.AddWithValue("@Username", username);
 
             await command.ExecuteNonQueryAsync(cancellationToken);
@@ -313,10 +313,10 @@ public class SqlServerUserStore
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE [Users]
-                SET [Password] = @Password
+                SET [PasswordHash] = @PasswordHash
                 WHERE [Id] = @Id";
 
-            command.Parameters.AddWithValue("@Password", newPassword);
+            command.Parameters.AddWithValue("@PasswordHash", newPassword);
             command.Parameters.AddWithValue("@Id", int.Parse(userId));
 
             await command.ExecuteNonQueryAsync(cancellationToken);
