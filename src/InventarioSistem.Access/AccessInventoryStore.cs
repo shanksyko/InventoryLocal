@@ -21,6 +21,14 @@ public partial class AccessInventoryStore
         await Task.Run(() => Schema.AccessSchemaManager.EnsureRequiredTables(_factory), cancellationToken);
     }
 
+        /// <summary>
+        /// Invalida o cache de dispositivos (chamar após Add/Update/Delete)
+        /// </summary>
+        public void InvalidateCache()
+        {
+            CacheManager.Instance.RemoveByPrefix("devices_");
+        }
+
     public async Task<int> AddAsync(Device device, CancellationToken cancellationToken = default)
     {
         await using var connection = _factory.CreateConnection();
@@ -38,6 +46,9 @@ public partial class AccessInventoryStore
         command.CommandText = "SELECT @@IDENTITY";
         var idObject = await command.ExecuteScalarAsync(cancellationToken);
         device.Id = Convert.ToInt32(idObject);
+    
+            InvalidateCache();
+    
         return device.Id;
     }
 
@@ -61,6 +72,14 @@ public partial class AccessInventoryStore
 
     public async Task<IReadOnlyCollection<Device>> ListAsync(DeviceType? type = null, CancellationToken cancellationToken = default)
     {
+            // Tenta obter do cache primeiro (com duração de 2 minutos)
+            var cacheKey = $"devices_list_{type?.ToString() ?? "all"}";
+            var cachedResult = CacheManager.Instance.Get<IReadOnlyCollection<Device>>(cacheKey);
+            if (cachedResult != null)
+            {
+                return cachedResult;
+            }
+
         await using var connection = _factory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
@@ -86,6 +105,10 @@ public partial class AccessInventoryStore
             }
         }
 
+            // Cachear resultado por 2 minutos
+            var result = items.AsReadOnly();
+            CacheManager.Instance.Set(cacheKey, result, TimeSpan.FromMinutes(2));
+    
         return items;
     }
 
@@ -270,3 +293,15 @@ public partial class AccessInventoryStore
         return device;
     }
 }
+    
+    InvalidateCache();
+    
+    InvalidateCache();
+    // Cache por 5 minutos já que mudanças vêm invalidar
+    return await PerformanceHelper.CachedOrExecuteAsync(
+        "devices_count_by_type",
+        async () => await ExecuteCountByTypeAsync(),
+        TimeSpan.FromMinutes(5));
+
+    async Task<IDictionary<DeviceType, int>> ExecuteCountByTypeAsync()
+    {
