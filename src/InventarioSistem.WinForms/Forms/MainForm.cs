@@ -28,7 +28,6 @@ namespace InventarioSistem.WinForms
         private CheckBox _chkUserMode = null!;
         private Label _lblMode = null!;
         private Label _lblUserInfo = null!;
-        private Button _btnLogoff = null!;
         private Button _btnTotalDashboard = null!;
 
         private TabControl _tabs = null!;
@@ -238,25 +237,12 @@ namespace InventarioSistem.WinForms
             };
             _btnTotalDashboard.Click += (_, _) => MostrarDashboardTotal();
 
-            _btnLogoff = new Button
-            {
-                Text = "Sair",
-                Size = new System.Drawing.Size(60, 28),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(ClientSize.Width - 330, 18),
-                BackColor = Color.FromArgb(220, 60, 60),
-                ForeColor = Color.White,
-                TabIndex = 1000
-            };
-            _btnLogoff.Click += (_, _) => RealizarLogoff();
-
             _headerPanel.Controls.Add(_lblTitle);
             _headerPanel.Controls.Add(_lblSubtitle);
             _headerPanel.Controls.Add(_lblUserInfo);
             _headerPanel.Controls.Add(_lblMode);
             _headerPanel.Controls.Add(_chkUserMode);
             _headerPanel.Controls.Add(_btnTotalDashboard);
-            _headerPanel.Controls.Add(_btnLogoff);
 
             _tabs = new TabControl
             {
@@ -1483,10 +1469,21 @@ namespace InventarioSistem.WinForms
             };
             _btnGerenciarUsuariosAvancado.Click += (_, _) => AbrirGerenciadorUsuarios();
 
+            var btnLogoff = new Button
+            {
+                Text = "Sair da Conta (Logoff)",
+                AutoSize = true,
+                Location = new Point(10, 160),
+                BackColor = Color.FromArgb(220, 60, 60),
+                ForeColor = Color.White,
+                Padding = new Padding(5)
+            };
+            btnLogoff.Click += (_, _) => RealizarLogoff();
+
             var lblHint = new Label
             {
                 AutoSize = true,
-                Location = new Point(10, 160),
+                Location = new Point(10, 200),
                 Text = "O banco selecionado é salvo nas configurações do usuário.\n" +
                        "Ao abrir o aplicativo novamente, ele reconectará automaticamente\n" +
                        "ao mesmo banco, até que você escolha outro aqui."
@@ -1496,6 +1493,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnSelecionarDb);
             page.Controls.Add(_btnResumoDb);
             page.Controls.Add(_btnGerenciarUsuariosAvancado);
+            page.Controls.Add(btnLogoff);
             page.Controls.Add(lblHint);
         }
 
@@ -2775,9 +2773,6 @@ namespace InventarioSistem.WinForms
             {
                 InventoryLogger.Error("MainForm", $"Erro ao registrar logoff: {ex.Message}");
             }
-            
-            // Desabilitar botão para evitar cliques duplos
-            _btnLogoff.Enabled = false;
             
             // Fechar a janela principal
             this.DialogResult = DialogResult.Cancel;
