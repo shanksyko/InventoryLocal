@@ -20,6 +20,8 @@ public class Televisor
         set => Modelo = value;
     }
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[Televisor] Id={Id}, Modelo={Modelo}, NS={SerialNumber}, Local={Local}";
 }

@@ -38,6 +38,8 @@ public class Impressora
 
     public string Responsavel { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[Impressora] Id={Id}, Nome={Nome}, Modelo={TipoModelo}, NS={SerialNumber}, LocalAtual={LocalAtual}, LocalAnterior={LocalAnterior}";
 }

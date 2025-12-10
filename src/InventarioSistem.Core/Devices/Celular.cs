@@ -19,6 +19,8 @@ public class Celular
     public string Email { get; set; } = string.Empty;
     public string Senha { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     // Aliases para compatibilidade com código antigo (se houver)
     public string Hostname
     {

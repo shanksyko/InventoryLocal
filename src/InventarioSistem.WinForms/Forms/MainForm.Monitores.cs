@@ -73,6 +73,7 @@ namespace InventarioSistem.WinForms
             _gridMonitores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridMonitores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = "Responsavel", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridMonitores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Computador", DataPropertyName = "ComputadorVinculado", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridMonitores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridMonitores.CellDoubleClick += (_, _) => EditarMonitor();
 
             page.Controls.Add(_btnAtualizarMonitores);

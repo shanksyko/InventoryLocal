@@ -10,6 +10,8 @@ public class Computer
     public string Departamento { get; set; } = string.Empty;
     public string Matricula { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[PC] Id={Id}, Host={Host}, NS={SerialNumber}, Prop={Proprietario}, Dept={Departamento}, Mat={Matricula}";
 }

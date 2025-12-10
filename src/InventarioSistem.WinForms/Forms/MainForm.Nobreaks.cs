@@ -74,6 +74,7 @@ namespace InventarioSistem.WinForms
             _gridNobreaks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridNobreaks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Status", DataPropertyName = "Status", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridNobreaks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = "SerialNumber", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridNobreaks.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridNobreaks.CellDoubleClick += (_, _) => EditarNobreak();
 
             page.Controls.Add(_btnAtualizarNobreaks);

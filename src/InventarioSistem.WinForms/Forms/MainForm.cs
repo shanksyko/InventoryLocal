@@ -262,7 +262,7 @@ namespace InventarioSistem.WinForms
             var tabComputadores = new TabPage("Computadores");
             var tabTablets = new TabPage("Tablets");
             var tabColetores = new TabPage("Coletores Android");
-            var tabCelulares = new TabPage("Celulares");
+            var tabCelulares = new TabPage("Celulares/Tablets");
             var tabImpressoras = new TabPage("Impressoras");
             var tabDects = new TabPage("DECTs");
             var tabTelefonesCisco = new TabPage("Telefones Cisco");
@@ -381,55 +381,70 @@ namespace InventarioSistem.WinForms
 
             // Disable editing controls when in user mode OR when user is Visualizador
             var isVisualizer = _currentUser?.Role == UserRole.Visualizador;
-            var enable = !isUserMode && !isVisualizer;
+            var enableEdit = !isUserMode && !isVisualizer;
+            var enableRefresh = _store != null; // visualizador pode atualizar listas
 
-            _btnNovoComputador.Enabled = enable;
-            _btnEditarComputador.Enabled = enable;
-            _btnExcluirComputador.Enabled = enable;
+            // Refresh buttons (sempre liberados se banco configurado)
+            _btnAtualizarComputadores.Enabled = enableRefresh;
+            _btnAtualizarTablets.Enabled = enableRefresh;
+            _btnAtualizarColetores.Enabled = enableRefresh;
+            _btnAtualizarCelulares.Enabled = enableRefresh;
+            _btnAtualizarImpressoras.Enabled = enableRefresh;
+            _btnAtualizarDects.Enabled = enableRefresh;
+            _btnAtualizarTelefonesCisco.Enabled = enableRefresh;
+            _btnAtualizarTelevisores.Enabled = enableRefresh;
+            _btnAtualizarRelogiosPonto.Enabled = enableRefresh;
+            _btnAtualizarMonitores.Enabled = enableRefresh;
+            _btnAtualizarNobreaks.Enabled = enableRefresh;
 
-            _btnNovoTablet.Enabled = enable;
-            _btnEditarTablet.Enabled = enable;
-            _btnExcluirTablet.Enabled = enable;
+            // Edit/Create/Delete buttons (bloqueados para visualizador ou modo usuário)
+            _btnNovoComputador.Enabled = enableEdit;
+            _btnEditarComputador.Enabled = enableEdit;
+            _btnExcluirComputador.Enabled = enableEdit;
 
-            _btnNovoColetor.Enabled = enable;
-            _btnEditarColetor.Enabled = enable;
-            _btnExcluirColetor.Enabled = enable;
+            _btnNovoTablet.Enabled = enableEdit;
+            _btnEditarTablet.Enabled = enableEdit;
+            _btnExcluirTablet.Enabled = enableEdit;
 
-            _btnNovoCelular.Enabled = enable;
-            _btnEditarCelular.Enabled = enable;
-            _btnExcluirCelular.Enabled = enable;
+            _btnNovoColetor.Enabled = enableEdit;
+            _btnEditarColetor.Enabled = enableEdit;
+            _btnExcluirColetor.Enabled = enableEdit;
 
-            _btnNovaImpressora.Enabled = enable;
-            _btnEditarImpressora.Enabled = enable;
-            _btnExcluirImpressora.Enabled = enable;
+            _btnNovoCelular.Enabled = enableEdit;
+            _btnEditarCelular.Enabled = enableEdit;
+            _btnExcluirCelular.Enabled = enableEdit;
 
-            _btnNovoDect.Enabled = enable;
-            _btnEditarDect.Enabled = enable;
-            _btnExcluirDect.Enabled = enable;
+            _btnNovaImpressora.Enabled = enableEdit;
+            _btnEditarImpressora.Enabled = enableEdit;
+            _btnExcluirImpressora.Enabled = enableEdit;
 
-            _btnNovoTelefoneCisco.Enabled = enable;
-            _btnEditarTelefoneCisco.Enabled = enable;
-            _btnExcluirTelefoneCisco.Enabled = enable;
+            _btnNovoDect.Enabled = enableEdit;
+            _btnEditarDect.Enabled = enableEdit;
+            _btnExcluirDect.Enabled = enableEdit;
 
-            _btnNovoTelevisor.Enabled = enable;
-            _btnEditarTelevisor.Enabled = enable;
-            _btnExcluirTelevisor.Enabled = enable;
+            _btnNovoTelefoneCisco.Enabled = enableEdit;
+            _btnEditarTelefoneCisco.Enabled = enableEdit;
+            _btnExcluirTelefoneCisco.Enabled = enableEdit;
 
-            _btnNovoRelogioPonto.Enabled = enable;
-            _btnEditarRelogioPonto.Enabled = enable;
-            _btnExcluirRelogioPonto.Enabled = enable;
+            _btnNovoTelevisor.Enabled = enableEdit;
+            _btnEditarTelevisor.Enabled = enableEdit;
+            _btnExcluirTelevisor.Enabled = enableEdit;
 
-            _btnNovoMonitor.Enabled = enable;
-            _btnEditarMonitor.Enabled = enable;
-            _btnExcluirMonitor.Enabled = enable;
+            _btnNovoRelogioPonto.Enabled = enableEdit;
+            _btnEditarRelogioPonto.Enabled = enableEdit;
+            _btnExcluirRelogioPonto.Enabled = enableEdit;
 
-            _btnNovoNobreak.Enabled = enable;
-            _btnEditarNobreak.Enabled = enable;
-            _btnExcluirNobreak.Enabled = enable;
+            _btnNovoMonitor.Enabled = enableEdit;
+            _btnEditarMonitor.Enabled = enableEdit;
+            _btnExcluirMonitor.Enabled = enableEdit;
 
-            // Advanced controls
-            _btnSelecionarDb.Enabled = enable;
-            _btnResumoDb.Enabled = enable;
+            _btnNovoNobreak.Enabled = enableEdit;
+            _btnEditarNobreak.Enabled = enableEdit;
+            _btnExcluirNobreak.Enabled = enableEdit;
+
+            // Advanced controls continuam bloqueados para visualizador
+            _btnSelecionarDb.Enabled = enableEdit;
+            _btnResumoDb.Enabled = enableEdit;
         }
 
         private void InitializeComputadoresTab(TabPage page)
@@ -544,6 +559,13 @@ namespace InventarioSistem.WinForms
                     HeaderText = "Matrícula",
                     DataPropertyName = nameof(LegacyDevices.Computer.Matricula),
                     AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells
+                },
+                new DataGridViewTextBoxColumn
+                {
+                    HeaderText = "Cadastrado em",
+                    DataPropertyName = nameof(LegacyDevices.Computer.CreatedAt),
+                    AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                    DefaultCellStyle = new DataGridViewCellStyle { Format = "g" }
                 }
             });
             _gridComputadores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
@@ -631,6 +653,14 @@ namespace InventarioSistem.WinForms
             btnClearFilterTablets.Click += (_, _) => _txtTabletsFilter.Text = string.Empty;
 
             _gridTablets = CreateGenericGrid(page, 105);
+            _gridTablets.AutoGenerateColumns = false;
+            _gridTablets.Columns.Clear();
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Host", DataPropertyName = nameof(LegacyDevices.Tablet.Host), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = nameof(LegacyDevices.Tablet.SerialNumber), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = nameof(LegacyDevices.Tablet.Local), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Responsável", DataPropertyName = nameof(LegacyDevices.Tablet.Responsavel), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IMEIs", DataPropertyName = nameof(LegacyDevices.Tablet.ImeisJoined), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTablets.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = nameof(LegacyDevices.Tablet.CreatedAt), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridTablets.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridTablets.CellDoubleClick += (_, _) => EditarTablet();
 
@@ -710,6 +740,14 @@ namespace InventarioSistem.WinForms
             btnClearFilterColetores.Click += (_, _) => _txtColetoresFilter.Text = string.Empty;
 
             _gridColetores = CreateGenericGrid(page, 105);
+            _gridColetores.AutoGenerateColumns = false;
+            _gridColetores.Columns.Clear();
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Host", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.Host), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.SerialNumber), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.MacAddress), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "IP", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.IpAddress), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.Local), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridColetores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = nameof(LegacyDevices.ColetorAndroid.CreatedAt), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridColetores.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridColetores.CellDoubleClick += (_, _) => EditarColetor();
 
@@ -803,6 +841,7 @@ namespace InventarioSistem.WinForms
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Setor", DataPropertyName = nameof(LegacyDevices.Celular.Setor), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "E-mail", DataPropertyName = nameof(LegacyDevices.Celular.Email), AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Senha", DataPropertyName = nameof(LegacyDevices.Celular.Senha), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            _gridCelulares.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = nameof(LegacyDevices.Celular.CreatedAt), AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridCelulares.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             _gridCelulares.CellDoubleClick += (_, _) => EditarCelular();
 
@@ -914,6 +953,13 @@ namespace InventarioSistem.WinForms
                 DataPropertyName = "LocalAnterior",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
             });
+            _gridImpressoras.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Cadastrado em",
+                DataPropertyName = "CreatedAt",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells,
+                DefaultCellStyle = new DataGridViewCellStyle { Format = "g" }
+            });
             _gridImpressoras.CellDoubleClick += (_, _) => EditarImpressora();
 
             page.Controls.Add(_btnAtualizarImpressoras);
@@ -999,6 +1045,7 @@ namespace InventarioSistem.WinForms
             _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = "MacAddress", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = "Numero", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridDects.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridDects.CellDoubleClick += (_, _) => EditarDect();
 
             page.Controls.Add(_btnAtualizarDects);
@@ -1083,6 +1130,7 @@ namespace InventarioSistem.WinForms
             _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "MAC Address", DataPropertyName = "MacAddress", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Número", DataPropertyName = "Numero", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTelefonesCisco.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridTelefonesCisco.CellDoubleClick += (_, _) => EditarTelefoneCisco();
 
             page.Controls.Add(_btnAtualizarTelefonesCisco);
@@ -1166,6 +1214,7 @@ namespace InventarioSistem.WinForms
             _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Modelo", DataPropertyName = "Modelo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SerialNumber", DataPropertyName = "SerialNumber", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
             _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Local", DataPropertyName = "Local", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            _gridTelevisores.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridTelevisores.CellDoubleClick += (_, _) => EditarTelevisor();
 
             page.Controls.Add(_btnAtualizarTelevisores);
@@ -1253,6 +1302,7 @@ namespace InventarioSistem.WinForms
             _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Data Bateria", DataPropertyName = "DataBateria", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
             _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Data Nobreak", DataPropertyName = "DataNobreak", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
             _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Próximas Verificações", DataPropertyName = "ProximasVerificacoes", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "d" } });
+            _gridRelogiosPonto.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Cadastrado em", DataPropertyName = "CreatedAt", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells, DefaultCellStyle = new DataGridViewCellStyle { Format = "g" } });
             _gridRelogiosPonto.CellDoubleClick += (_, _) => EditarRelogioPonto();
 
             page.Controls.Add(_btnAtualizarRelogiosPonto);
@@ -1362,43 +1412,69 @@ namespace InventarioSistem.WinForms
 
         private void EnableDataTabs(bool enabled)
         {
-            _btnAtualizarComputadores.Enabled = enabled;
-            _btnNovoComputador.Enabled = enabled;
-            _btnEditarComputador.Enabled = enabled;
-            _btnExcluirComputador.Enabled = enabled;
-            _btnAtualizarTablets.Enabled = enabled;
-            _btnNovoTablet.Enabled = enabled;
-            _btnEditarTablet.Enabled = enabled;
-            _btnExcluirTablet.Enabled = enabled;
-            _btnAtualizarColetores.Enabled = enabled;
-            _btnNovoColetor.Enabled = enabled;
-            _btnEditarColetor.Enabled = enabled;
-            _btnExcluirColetor.Enabled = enabled;
-            _btnAtualizarCelulares.Enabled = enabled;
-            _btnNovoCelular.Enabled = enabled;
-            _btnEditarCelular.Enabled = enabled;
-            _btnExcluirCelular.Enabled = enabled;
-            _btnAtualizarImpressoras.Enabled = enabled;
-            _btnNovaImpressora.Enabled = enabled;
-            _btnEditarImpressora.Enabled = enabled;
-            _btnExcluirImpressora.Enabled = enabled;
-            _btnAtualizarDects.Enabled = enabled;
-            _btnNovoDect.Enabled = enabled;
-            _btnEditarDect.Enabled = enabled;
-            _btnExcluirDect.Enabled = enabled;
-            _btnAtualizarTelefonesCisco.Enabled = enabled;
-            _btnNovoTelefoneCisco.Enabled = enabled;
-            _btnEditarTelefoneCisco.Enabled = enabled;
-            _btnExcluirTelefoneCisco.Enabled = enabled;
-            _btnAtualizarTelevisores.Enabled = enabled;
-            _btnNovoTelevisor.Enabled = enabled;
-            _btnEditarTelevisor.Enabled = enabled;
-            _btnExcluirTelevisor.Enabled = enabled;
-            _btnAtualizarRelogiosPonto.Enabled = enabled;
-            _btnNovoRelogioPonto.Enabled = enabled;
-            _btnEditarRelogioPonto.Enabled = enabled;
-            _btnExcluirRelogioPonto.Enabled = enabled;
+            var isVisualizer = _currentUser?.Role == UserRole.Visualizador;
+            var enableRefresh = enabled; // pode atualizar se o banco estiver configurado
+            var enableEdit = enabled && !isVisualizer; // visualizador não edita
 
+            // Refresh
+            _btnAtualizarComputadores.Enabled = enableRefresh;
+            _btnAtualizarTablets.Enabled = enableRefresh;
+            _btnAtualizarColetores.Enabled = enableRefresh;
+            _btnAtualizarCelulares.Enabled = enableRefresh;
+            _btnAtualizarImpressoras.Enabled = enableRefresh;
+            _btnAtualizarDects.Enabled = enableRefresh;
+            _btnAtualizarTelefonesCisco.Enabled = enableRefresh;
+            _btnAtualizarTelevisores.Enabled = enableRefresh;
+            _btnAtualizarRelogiosPonto.Enabled = enableRefresh;
+            _btnAtualizarMonitores.Enabled = enableRefresh;
+            _btnAtualizarNobreaks.Enabled = enableRefresh;
+
+            // Edit/Create/Delete
+            _btnNovoComputador.Enabled = enableEdit;
+            _btnEditarComputador.Enabled = enableEdit;
+            _btnExcluirComputador.Enabled = enableEdit;
+
+            _btnNovoTablet.Enabled = enableEdit;
+            _btnEditarTablet.Enabled = enableEdit;
+            _btnExcluirTablet.Enabled = enableEdit;
+
+            _btnNovoColetor.Enabled = enableEdit;
+            _btnEditarColetor.Enabled = enableEdit;
+            _btnExcluirColetor.Enabled = enableEdit;
+
+            _btnNovoCelular.Enabled = enableEdit;
+            _btnEditarCelular.Enabled = enableEdit;
+            _btnExcluirCelular.Enabled = enableEdit;
+
+            _btnNovaImpressora.Enabled = enableEdit;
+            _btnEditarImpressora.Enabled = enableEdit;
+            _btnExcluirImpressora.Enabled = enableEdit;
+
+            _btnNovoDect.Enabled = enableEdit;
+            _btnEditarDect.Enabled = enableEdit;
+            _btnExcluirDect.Enabled = enableEdit;
+
+            _btnNovoTelefoneCisco.Enabled = enableEdit;
+            _btnEditarTelefoneCisco.Enabled = enableEdit;
+            _btnExcluirTelefoneCisco.Enabled = enableEdit;
+
+            _btnNovoTelevisor.Enabled = enableEdit;
+            _btnEditarTelevisor.Enabled = enableEdit;
+            _btnExcluirTelevisor.Enabled = enableEdit;
+
+            _btnNovoRelogioPonto.Enabled = enableEdit;
+            _btnEditarRelogioPonto.Enabled = enableEdit;
+            _btnExcluirRelogioPonto.Enabled = enableEdit;
+
+            _btnNovoMonitor.Enabled = enableEdit;
+            _btnEditarMonitor.Enabled = enableEdit;
+            _btnExcluirMonitor.Enabled = enableEdit;
+
+            _btnNovoNobreak.Enabled = enableEdit;
+            _btnEditarNobreak.Enabled = enableEdit;
+            _btnExcluirNobreak.Enabled = enableEdit;
+
+            // Grids e filtros
             _gridComputadores.Enabled = enabled;
             _gridTablets.Enabled = enabled;
             _gridColetores.Enabled = enabled;
@@ -1477,8 +1553,7 @@ namespace InventarioSistem.WinForms
 
         private void LoadComputadores()
         {
-            if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
 
             try
             {
@@ -1498,8 +1573,7 @@ namespace InventarioSistem.WinForms
 
         private void LoadTablets()
         {
-            if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
 
             try
             {
@@ -1519,8 +1593,7 @@ namespace InventarioSistem.WinForms
 
         private void LoadColetores()
         {
-            if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
 
             try
             {
@@ -1540,8 +1613,7 @@ namespace InventarioSistem.WinForms
 
         private void LoadCelulares()
         {
-            if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
 
             try
             {

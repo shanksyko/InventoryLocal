@@ -34,6 +34,8 @@ public class RelogioPonto
 
     public string Responsavel { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[RelogioPonto] Id={Id}, Modelo={Modelo}, NS={SerialNumber}, Local={Local}, IP={Ip}, DataBateria={DataBateria:yyyy-MM-dd}, DataNobreak={DataNobreak:yyyy-MM-dd}, ProximaVerificacao={ProximasVerificacoes:yyyy-MM-dd}";
 }

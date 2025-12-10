@@ -10,6 +10,8 @@ public class Nobreak
     public string Status { get; set; } = string.Empty;
     public string SerialNumber { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[Nobreak] Id={Id}, Hostname={Hostname}, Local={Local}, IP={IpAddress}, Modelo={Modelo}, Status={Status}, Serial={SerialNumber}";
 }

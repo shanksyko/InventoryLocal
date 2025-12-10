@@ -28,6 +28,8 @@ public class CiscoPhone
 
     public string Serial { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[CiscoPhone] Id={Id}, Numero={Numero}, Resp={Responsavel}, Local={Local}, MAC={MacAddress}";
 }

@@ -13,6 +13,8 @@ public class Monitor
     /// </summary>
     public string ComputadorVinculado { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[Monitor] Id={Id}, Modelo={Modelo}, Serial={SerialNumber}, Local={Local}, Resp={Responsavel}, PC={ComputadorVinculado}";
 }

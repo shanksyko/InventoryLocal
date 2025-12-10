@@ -26,8 +26,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Computadores
-            (Host, SerialNumber, Proprietario, Departamento, Matricula)
-            VALUES (?, ?, ?, ?, ?)
+            (Host, SerialNumber, Proprietario, Departamento, Matricula, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", computer.Host);
@@ -35,6 +35,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Proprietario", computer.Proprietario);
         AddTextParameter(command, "Departamento", computer.Departamento);
         AddTextParameter(command, "Matricula", computer.Matricula);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = computer.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -50,7 +51,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula FROM Computadores";
+        command.CommandText = "SELECT Id, Host, SerialNumber, Proprietario, Departamento, Matricula, CreatedAt FROM Computadores";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -62,7 +63,8 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 Proprietario = GetStringSafe(reader, 3),
                 Departamento = GetStringSafe(reader, 4),
-                Matricula = GetStringSafe(reader, 5)
+                Matricula = GetStringSafe(reader, 5),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -123,8 +125,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Tablets
-            (Host, SerialNumber, Local, Responsavel, Imeis)
-            VALUES (?, ?, ?, ?, ?)
+            (Host, SerialNumber, Local, Responsavel, Imeis, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", tablet.Host);
@@ -132,6 +134,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Local", tablet.Local);
         AddTextParameter(command, "Responsavel", tablet.Responsavel);
         AddTextParameter(command, "Imeis", DeviceStringUtils.ImeisToString(tablet.Imeis));
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = tablet.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -147,7 +150,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, Local, Responsavel, Imeis FROM Tablets";
+        command.CommandText = "SELECT Id, Host, SerialNumber, Local, Responsavel, Imeis, CreatedAt FROM Tablets";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -161,7 +164,8 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 Local = GetStringSafe(reader, 3),
                 Responsavel = GetStringSafe(reader, 4),
-                Imeis = DeviceStringUtils.ImeisFromString(imeisRaw)
+                Imeis = DeviceStringUtils.ImeisFromString(imeisRaw),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -223,8 +227,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO ColetoresAndroid
-            (Host, SerialNumber, MacAddress, IpAddress, Local)
-            VALUES (?, ?, ?, ?, ?)
+            (Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Host", coletor.Host);
@@ -232,6 +236,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "MacAddress", coletor.MacAddress);
         AddTextParameter(command, "IpAddress", coletor.IpAddress);
         AddTextParameter(command, "Local", coletor.Local);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = coletor.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -247,7 +252,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Host, SerialNumber, MacAddress, IpAddress, Local FROM ColetoresAndroid";
+        command.CommandText = "SELECT Id, Host, SerialNumber, MacAddress, IpAddress, Local, CreatedAt FROM ColetoresAndroid";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -259,7 +264,8 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 MacAddress = GetStringSafe(reader, 3),
                 IpAddress = GetStringSafe(reader, 4),
-                Local = GetStringSafe(reader, 5)
+                Local = GetStringSafe(reader, 5),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -320,8 +326,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Celulares
-            (CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "CellName", celular.CellName);
@@ -336,6 +342,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Setor", celular.Setor);
         AddTextParameter(command, "Email", celular.Email);
         AddTextParameter(command, "Senha", celular.Senha);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = celular.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -351,7 +358,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = @"SELECT Id, CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha FROM Celulares";
+        command.CommandText = @"SELECT Id, CellName, Imei1, Imei2, Modelo, Numero, Roaming, Usuario, Matricula, Cargo, Setor, Email, Senha, CreatedAt FROM Celulares";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -370,7 +377,8 @@ public partial class AccessInventoryStore
                 Cargo = reader.FieldCount > 9 ? GetStringSafe(reader, 9) : string.Empty,
                 Setor = reader.FieldCount > 10 ? GetStringSafe(reader, 10) : string.Empty,
                 Email = reader.FieldCount > 11 ? GetStringSafe(reader, 11) : string.Empty,
-                Senha = reader.FieldCount > 12 ? GetStringSafe(reader, 12) : string.Empty
+                Senha = reader.FieldCount > 12 ? GetStringSafe(reader, 12) : string.Empty,
+                CreatedAt = reader.FieldCount > 13 && !reader.IsDBNull(13) ? reader.GetDateTime(13) : null
             });
         }
 
@@ -438,8 +446,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Impressoras
-            (Nome, TipoModelo, SerialNumber, LocalAtual, LocalAnterior)
-            VALUES (?, ?, ?, ?, ?)
+            (Nome, TipoModelo, SerialNumber, LocalAtual, LocalAnterior, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Nome", impressora.Nome);
@@ -447,6 +455,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "SerialNumber", impressora.SerialNumber);
         AddTextParameter(command, "LocalAtual", impressora.LocalAtual);
         AddTextParameter(command, "LocalAnterior", impressora.LocalAnterior);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = impressora.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -462,7 +471,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Nome, TipoModelo, SerialNumber, LocalAtual, LocalAnterior FROM Impressoras";
+        command.CommandText = "SELECT Id, Nome, TipoModelo, SerialNumber, LocalAtual, LocalAnterior, CreatedAt FROM Impressoras";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -474,7 +483,8 @@ public partial class AccessInventoryStore
                 TipoModelo = GetStringSafe(reader, 2),
                 SerialNumber = GetStringSafe(reader, 3),
                 LocalAtual = GetStringSafe(reader, 4),
-                LocalAnterior = GetStringSafe(reader, 5)
+                LocalAnterior = GetStringSafe(reader, 5),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -535,8 +545,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Dects
-            (Responsavel, Ipei, MacAddress, Numero, Local)
-            VALUES (?, ?, ?, ?, ?)
+            (Responsavel, Ipei, MacAddress, Numero, Local, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Responsavel", dect.Responsavel);
@@ -544,6 +554,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "MacAddress", dect.MacAddress);
         AddTextParameter(command, "Numero", dect.Numero);
         AddTextParameter(command, "Local", dect.Local);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = dect.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -559,7 +570,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Responsavel, Ipei, MacAddress, Numero, Local FROM Dects";
+        command.CommandText = "SELECT Id, Responsavel, Ipei, MacAddress, Numero, Local, CreatedAt FROM Dects";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -571,7 +582,8 @@ public partial class AccessInventoryStore
                 Ipei = GetStringSafe(reader, 2),
                 MacAddress = GetStringSafe(reader, 3),
                 Numero = GetStringSafe(reader, 4),
-                Local = GetStringSafe(reader, 5)
+                Local = GetStringSafe(reader, 5),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -632,14 +644,15 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO TelefonesCisco
-            (Responsavel, MacAddress, Numero, Local)
-            VALUES (?, ?, ?, ?)
+            (Responsavel, MacAddress, Numero, Local, CreatedAt)
+            VALUES (?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Responsavel", phone.Responsavel);
         AddTextParameter(command, "MacAddress", phone.MacAddress);
         AddTextParameter(command, "Numero", phone.Numero);
         AddTextParameter(command, "Local", phone.Local);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = phone.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -655,7 +668,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Responsavel, MacAddress, Numero, Local FROM TelefonesCisco";
+        command.CommandText = "SELECT Id, Responsavel, MacAddress, Numero, Local, CreatedAt FROM TelefonesCisco";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -666,7 +679,8 @@ public partial class AccessInventoryStore
                 Responsavel = GetStringSafe(reader, 1),
                 MacAddress = GetStringSafe(reader, 2),
                 Numero = GetStringSafe(reader, 3),
-                Local = GetStringSafe(reader, 4)
+                Local = GetStringSafe(reader, 4),
+                CreatedAt = reader.IsDBNull(5) ? null : reader.GetDateTime(5)
             });
         }
 
@@ -725,13 +739,14 @@ public partial class AccessInventoryStore
         using var command = connection.CreateCommand();
 
         command.CommandText = @"
-            INSERT INTO Televisores (Modelo, SerialNumber, Local)
-            VALUES (?, ?, ?)
+            INSERT INTO Televisores (Modelo, SerialNumber, Local, CreatedAt)
+            VALUES (?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Modelo", tv.Modelo);
         AddTextParameter(command, "SerialNumber", tv.SerialNumber);
         AddTextParameter(command, "Local", tv.Local);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = tv.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -747,7 +762,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local FROM Televisores";
+        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, CreatedAt FROM Televisores";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -757,7 +772,8 @@ public partial class AccessInventoryStore
                 Id = reader.GetInt32(0),
                 Modelo = GetStringSafe(reader, 1),
                 SerialNumber = GetStringSafe(reader, 2),
-                Local = GetStringSafe(reader, 3)
+                Local = GetStringSafe(reader, 3),
+                CreatedAt = reader.IsDBNull(4) ? null : reader.GetDateTime(4)
             });
         }
 
@@ -816,8 +832,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO RelogiosPonto
-            (Modelo, SerialNumber, Local, Ip, DataBateria, DataNobreak, ProximasVerificacoes)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (Modelo, SerialNumber, Local, Ip, DataBateria, DataNobreak, ProximasVerificacoes, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Modelo", relogio.Modelo);
@@ -827,6 +843,7 @@ public partial class AccessInventoryStore
         AddDateParameter(command, "DataBateria", relogio.DataBateria);
         AddDateParameter(command, "DataNobreak", relogio.DataNobreak);
         AddDateParameter(command, "ProximasVerificacoes", relogio.ProximasVerificacoes);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = relogio.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -842,7 +859,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, Ip, DataBateria, DataNobreak, ProximasVerificacoes FROM RelogiosPonto";
+        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, Ip, DataBateria, DataNobreak, ProximasVerificacoes, CreatedAt FROM RelogiosPonto";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -856,7 +873,8 @@ public partial class AccessInventoryStore
                 Ip = GetStringSafe(reader, 4),
                 DataBateria = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
                 DataNobreak = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
-                ProximasVerificacoes = reader.IsDBNull(7) ? null : reader.GetDateTime(7)
+                ProximasVerificacoes = reader.IsDBNull(7) ? null : reader.GetDateTime(7),
+                CreatedAt = reader.IsDBNull(8) ? null : reader.GetDateTime(8)
             });
         }
 
@@ -917,7 +935,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado FROM Monitores";
+        command.CommandText = "SELECT Id, Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado, CreatedAt FROM Monitores";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -929,7 +947,8 @@ public partial class AccessInventoryStore
                 SerialNumber = GetStringSafe(reader, 2),
                 Local = GetStringSafe(reader, 3),
                 Responsavel = GetStringSafe(reader, 4),
-                ComputadorVinculado = GetStringSafe(reader, 5)
+                ComputadorVinculado = GetStringSafe(reader, 5),
+                CreatedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
             });
         }
 
@@ -946,8 +965,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Monitores
-            (Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado)
-            VALUES (?, ?, ?, ?, ?)
+            (Modelo, SerialNumber, Local, Responsavel, ComputadorVinculado, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Modelo", monitor.Modelo);
@@ -955,6 +974,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Local", monitor.Local);
         AddTextParameter(command, "Responsavel", monitor.Responsavel);
         AddTextParameter(command, "ComputadorVinculado", monitor.ComputadorVinculado);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = monitor.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 
@@ -1014,7 +1034,7 @@ public partial class AccessInventoryStore
         connection.Open();
         using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT Id, Hostname, Local, IpAddress, Modelo, Status, SerialNumber FROM Nobreaks";
+        command.CommandText = "SELECT Id, Hostname, Local, IpAddress, Modelo, Status, SerialNumber, CreatedAt FROM Nobreaks";
 
         using var reader = command.ExecuteReader();
         while (reader.Read())
@@ -1027,7 +1047,8 @@ public partial class AccessInventoryStore
                 IpAddress = GetStringSafe(reader, 3),
                 Modelo = GetStringSafe(reader, 4),
                 Status = GetStringSafe(reader, 5),
-                SerialNumber = GetStringSafe(reader, 6)
+                SerialNumber = GetStringSafe(reader, 6),
+                CreatedAt = reader.IsDBNull(7) ? null : reader.GetDateTime(7)
             });
         }
 
@@ -1044,8 +1065,8 @@ public partial class AccessInventoryStore
 
         command.CommandText = @"
             INSERT INTO Nobreaks
-            (Hostname, Local, IpAddress, Modelo, Status, SerialNumber)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (Hostname, Local, IpAddress, Modelo, Status, SerialNumber, CreatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ";
 
         AddTextParameter(command, "Hostname", nobreak.Hostname);
@@ -1054,6 +1075,7 @@ public partial class AccessInventoryStore
         AddTextParameter(command, "Modelo", nobreak.Modelo);
         AddTextParameter(command, "Status", nobreak.Status);
         AddTextParameter(command, "SerialNumber", nobreak.SerialNumber);
+        command.Parameters.Add("CreatedAt", OdbcType.DateTime).Value = nobreak.CreatedAt ?? DateTime.Now;
 
         command.ExecuteNonQuery();
 

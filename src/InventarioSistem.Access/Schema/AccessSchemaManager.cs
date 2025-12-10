@@ -271,7 +271,8 @@ public static class AccessSchemaManager
                 ("Ip", "Ip TEXT(50)"),
                 ("DataBateria", "DataBateria DATETIME"),
                 ("DataNobreak", "DataNobreak DATETIME"),
-                ("ProximasVerificacoes", "ProximasVerificacoes DATETIME")
+                ("ProximasVerificacoes", "ProximasVerificacoes DATETIME"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         }
 
@@ -294,7 +295,8 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Local", "Local TEXT(100)"),
                 ("Responsavel", "Responsavel TEXT(100)"),
-                ("ComputadorVinculado", "ComputadorVinculado TEXT(100)")
+                ("ComputadorVinculado", "ComputadorVinculado TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         }
 
@@ -319,7 +321,8 @@ public static class AccessSchemaManager
                 ("IpAddress", "IpAddress TEXT(50)"),
                 ("Modelo", "Modelo TEXT(100)"),
                 ("Status", "Status TEXT(50)"),
-                ("SerialNumber", "SerialNumber TEXT(100)")
+                ("SerialNumber", "SerialNumber TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         }
 
@@ -344,7 +347,8 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Proprietario", "Proprietario TEXT(100)"),
                 ("Departamento", "Departamento TEXT(100)"),
-                ("Matricula", "Matricula TEXT(50)")
+                ("Matricula", "Matricula TEXT(50)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -367,7 +371,8 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("Local", "Local TEXT(100)"),
                 ("Responsavel", "Responsavel TEXT(100)"),
-                ("Imeis", "Imeis TEXT(255)")
+                ("Imeis", "Imeis TEXT(255)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -390,7 +395,8 @@ public static class AccessSchemaManager
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("MacAddress", "MacAddress TEXT(50)"),
                 ("IpAddress", "IpAddress TEXT(50)"),
-                ("Local", "Local TEXT(100)")
+                ("Local", "Local TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -427,7 +433,8 @@ public static class AccessSchemaManager
                 ("Cargo", "Cargo TEXT(100)"),
                 ("Setor", "Setor TEXT(100)"),
                 ("Email", "Email TEXT(150)"),
-                ("Senha", "Senha TEXT(150)")
+                ("Senha", "Senha TEXT(150)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -450,7 +457,8 @@ public static class AccessSchemaManager
                 ("TipoModelo", "TipoModelo TEXT(100)"),
                 ("SerialNumber", "SerialNumber TEXT(100)"),
                 ("LocalAtual", "LocalAtual TEXT(100)"),
-                ("LocalAnterior", "LocalAnterior TEXT(100)")
+                ("LocalAnterior", "LocalAnterior TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -473,7 +481,8 @@ public static class AccessSchemaManager
                 ("Ipei", "Ipei TEXT(100)"),
                 ("MacAddress", "MacAddress TEXT(50)"),
                 ("Numero", "Numero TEXT(50)"),
-                ("Local", "Local TEXT(100)")
+                ("Local", "Local TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -494,7 +503,8 @@ public static class AccessSchemaManager
                 ("Responsavel", "Responsavel TEXT(100)"),
                 ("MacAddress", "MacAddress TEXT(50)"),
                 ("Numero", "Numero TEXT(50)"),
-                ("Local", "Local TEXT(100)")
+                ("Local", "Local TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 
@@ -513,7 +523,8 @@ public static class AccessSchemaManager
             {
                 ("Modelo", "Modelo TEXT(100)"),
                 ("SerialNumber", "SerialNumber TEXT(100)"),
-                ("Local", "Local TEXT(100)")
+                ("Local", "Local TEXT(100)"),
+                ("CreatedAt", "CreatedAt DATETIME")
             });
         });
 

@@ -94,15 +94,15 @@ public class UserEditForm : Form
             Checked = true
         };
 
-        // Buttons
+        // Buttons (agrupados para evitar sobreposição em diferentes DPIs)
         _btnSave = new Button
         {
             Text = "Salvar",
             Size = new System.Drawing.Size(100, 35),
-            Location = new System.Drawing.Point(210, 305),
             BackColor = System.Drawing.Color.FromArgb(0, 122, 204),
             ForeColor = System.Drawing.Color.White,
-            Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
+            Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold),
+            Margin = new Padding(0, 0, 10, 0)
         };
         _btnSave.Click += (_, _) => SaveAsync();
 
@@ -110,9 +110,27 @@ public class UserEditForm : Form
         {
             Text = "Cancelar",
             Size = new System.Drawing.Size(100, 35),
-            Location = new System.Drawing.Point(270, 305)
+            Margin = new Padding(0)
         };
         _btnCancel.Click += (_, _) => DialogResult = DialogResult.Cancel;
+
+        var footerPanel = new Panel
+        {
+            Dock = DockStyle.Bottom,
+            Height = 60,
+            Padding = new Padding(15, 10, 15, 10)
+        };
+
+        var buttonsFlow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Right,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false
+        };
+        buttonsFlow.Controls.AddRange(new Control[] { _btnSave, _btnCancel });
+        footerPanel.Controls.Add(buttonsFlow);
 
         Controls.Add(lblUsername);
         Controls.Add(_txtUsername);
@@ -126,8 +144,7 @@ public class UserEditForm : Form
         Controls.Add(lblRole);
         Controls.Add(_cmbRole);
         Controls.Add(_chkIsActive);
-        Controls.Add(_btnSave);
-        Controls.Add(_btnCancel);
+        Controls.Add(footerPanel);
     }
 
     private void PopulateFields()

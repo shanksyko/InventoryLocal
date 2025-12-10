@@ -31,6 +31,8 @@ public class DectPhone
 
     public string Modelo { get; set; } = string.Empty;
 
+    public DateTime? CreatedAt { get; set; }
+
     public override string ToString()
         => $"[DectPhone] Id={Id}, Numero={Numero}, Resp={Responsavel}, Local={Local}, IPEI={Ipei}, MAC={MacAddress}";
 }
