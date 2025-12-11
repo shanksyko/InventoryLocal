@@ -80,19 +80,20 @@ public class TotalDashboardForm : Form
         var series = new Series("Itens")
         {
             ChartType = SeriesChartType.Pie,
-            IsValueShownAsLabel = true,
-            Label = "#VALX: #VAL (#PERCENT{P0})",
+            IsValueShownAsLabel = false,  // Remover labels dentro do gráfico
             LegendText = "#VALX (#VAL)",
             Font = new Font("Segoe UI", 9F, FontStyle.Bold)
         };
         _chart.Series.Add(series);
 
-        // Adicionar legenda
+        // Adicionar legenda ao lado direito
         var legend = new Legend("Legend")
         {
             Docking = Docking.Right,
             Alignment = StringAlignment.Center,
-            Font = new Font("Segoe UI", 9F)
+            Font = new Font("Segoe UI", 9F),
+            TitleFont = new Font("Segoe UI", 10F, FontStyle.Bold),
+            Title = "Legenda"
         };
         _chart.Legends.Add(legend);
 
@@ -115,7 +116,8 @@ public class TotalDashboardForm : Form
         _gridTotals.Columns.AddRange(new DataGridViewColumn[]
         {
             new DataGridViewTextBoxColumn { HeaderText = "Tipo de Item", DataPropertyName = "Type", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill },
-            new DataGridViewTextBoxColumn { HeaderText = "Quantidade", DataPropertyName = "Count", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells }
+            new DataGridViewTextBoxColumn { HeaderText = "Quantidade", DataPropertyName = "Count", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells },
+            new DataGridViewTextBoxColumn { HeaderText = "Percentual", DataPropertyName = "Percentage", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells }
         });
 
         splitContainer.Panel2.Controls.Add(_gridTotals);
@@ -189,12 +191,23 @@ public class TotalDashboardForm : Form
             }
 
             // Preencher grid com dados e total
-            var dataSource = totals.Select(x => new { Type = x.Key, Count = x.Value }).ToList();
+            var totalCount = totals.Sum(x => x.Value);
+            var dataSource = totals.Select(x => new 
+            { 
+                Type = x.Key, 
+                Count = x.Value,
+                Percentage = $"{(x.Value * 100.0 / totalCount):F1}%"
+            }).ToList();
             
             // Adicionar linha de total
             if (dataSource.Count > 0)
             {
-                dataSource.Add(new { Type = "TOTAL", Count = dataSource.Sum(x => x.Count) });
+                dataSource.Add(new 
+                { 
+                    Type = "TOTAL", 
+                    Count = totalCount,
+                    Percentage = "100.0%"
+                });
             }
             
             // Usar BindingSource para permitir melhor controle
