@@ -31,7 +31,7 @@ public class ResponsiveDeviceListForm : Form
     private Button _btnExport = null!;
 
     private List<dynamic> _allData = new();
-    private int _currentPage = 1;
+    // private int _currentPage = 1; // Para paginação futura
     private const int PageSize = 50;
 
     public ResponsiveDeviceListForm(SqlServerInventoryStore store, string deviceType = "Dispositivos")
@@ -161,7 +161,7 @@ public class ResponsiveDeviceListForm : Form
         _btnEdit.Click += async (s, e) => await OnEditAsync();
         _btnDelete.Click += async (s, e) => await OnDeleteAsync();
         _btnRefresh.Click += async (s, e) => await LoadDataAsync();
-        _btnExport.Click += OnExport;
+        _btnExport.Click += async (s, e) => await OnExportAsync();
 
         _searchBox.TextChanged += (s, e) => ApplyFilters();
         _filterCombo.SelectedIndexChanged += (s, e) => ApplyFilters();
@@ -268,8 +268,9 @@ public class ResponsiveDeviceListForm : Form
         }
     }
 
-    private void OnExport()
+    private async Task OnExportAsync()
     {
         ResponsiveUIHelper.ShowSuccess("Exportação em desenvolvimento");
+        await Task.CompletedTask;
     }
 }

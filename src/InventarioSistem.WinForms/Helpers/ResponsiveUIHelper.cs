@@ -118,7 +118,7 @@ public static class ResponsiveUIHelper
     /// <summary>
     /// Cria um ComboBox responsivo
     /// </summary>
-    public static ComboBox CreateComboBox(int width = 200, string[] items = null)
+    public static ComboBox CreateComboBox(int width = 200, string[]? items = null)
     {
         var combo = new ComboBox
         {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -30,7 +30,6 @@ public class DatabaseSetupForm : Form
     private Button _btnCancel = null!;
     private Label _lblStatus = null!;
     private ProgressBar _progressBar = null!;
-    private TextBox _txtLog = null!;
     private RichTextBox _rtbLog = null!;
 
     private string? _selectedSqlScript;
