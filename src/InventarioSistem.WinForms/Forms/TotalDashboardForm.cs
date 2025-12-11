@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using InventarioSistem.Access;
@@ -22,7 +23,7 @@ public class TotalDashboardForm : Form
     {
         _store = store;
         InitializeUI();
-        LoadData();
+        LoadDataAsync();
     }
 
     private void InitializeUI()
@@ -123,27 +124,60 @@ public class TotalDashboardForm : Form
         Controls.Add(lblTitle);
     }
 
-    private void LoadData()
+    private async void LoadDataAsync()
     {
         try
         {
-            var totals = new Dictionary<string, int>();
+            // Mostrar indicador de carregamento
+            var loadingLabel = new Label
+            {
+                Text = "⏳ Carregando dados...",
+                Font = new Font("Segoe UI", 12F),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill,
+                ForeColor = Color.DarkBlue
+            };
+            _chart.Visible = false;
+            _gridTotals.Visible = false;
 
-            // Contar cada tipo de item
-            totals["Computadores"] = _store.GetAllComputers().Count;
-            totals["Tablets"] = _store.GetAllTablets().Count;
-            totals["Coletores"] = _store.GetAllColetores().Count;
-            totals["Celulares"] = _store.GetAllCelulares().Count;
-            totals["Impressoras"] = _store.GetAllImpressoras().Count;
-            totals["DECTs"] = _store.GetAllDects().Count;
-            totals["Telefones Cisco"] = _store.GetAllTelefonesCisco().Count;
-            totals["Televisores"] = _store.GetAllTelevisores().Count;
-            totals["Relógios Ponto"] = _store.GetAllRelogiosPonto().Count;
-            totals["Monitores"] = _store.GetAllMonitores().Count;
-            totals["Nobreaks"] = _store.GetAllNobreaks().Count;
+            // Carregar dados de forma assíncrona
+            var totals = await Task.Run(async () =>
+            {
+                var result = new Dictionary<string, int>();
+                var counts = await _store.CountByTypeAsync();
+                
+                // Mapear os nomes dos tipos
+                var typeMapping = new Dictionary<string, string>
+                {
+                    ["Computadores"] = "Computadores",
+                    ["Tablets"] = "Tablets",
+                    ["ColetoresAndroid"] = "Coletores",
+                    ["Celulares"] = "Celulares",
+                    ["Impressoras"] = "Impressoras",
+                    ["Dects"] = "DECTs",
+                    ["TelefonesCisco"] = "Telefones Cisco",
+                    ["Televisores"] = "Televisores",
+                    ["RelogiosPonto"] = "Relógios Ponto",
+                    ["Monitores"] = "Monitores",
+                    ["Nobreaks"] = "Nobreaks"
+                };
+                
+                foreach (var kvp in counts)
+                {
+                    var displayName = typeMapping.ContainsKey(kvp.Key) 
+                        ? typeMapping[kvp.Key] 
+                        : kvp.Key;
+                    
+                    if (kvp.Value > 0)
+                        result[displayName] = kvp.Value;
+                }
+                
+                return result;
+            });
 
-            // Remover itens com contagem zero
-            totals = totals.Where(x => x.Value > 0).ToDictionary(x => x.Key, x => x.Value);
+            loadingLabel.Dispose();
+            _chart.Visible = true;
+            _gridTotals.Visible = true;
 
             // Preencher gráfico
             var series = _chart.Series["Itens"];
