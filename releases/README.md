@@ -7,6 +7,22 @@
 - **Data**: 2025-12-11
 - **Versão .NET**: 8.0
 
+## 📥 Versões Disponíveis
+
+### 🎯 Versão Completa (Recomendada)
+- **Arquivo**: `InventorySystem-v1.0.0-Complete.zip` (70 MB)
+- **Inclui**: .NET Runtime 8.0 embutido
+- **Vantagem**: Funciona mesmo sem .NET instalado
+- **Uso**: Ideal para distribuição / máquinas limpas
+- **Instalação**: Extrair e executar imediatamente
+
+### 💾 Versão Leve
+- **Arquivo**: `InventorySystem-v1.0.0-Lite.zip` (6.8 MB)
+- **Requer**: .NET Runtime 8.0 pré-instalado
+- **Vantagem**: Arquivo pequeno
+- **Uso**: Ideal para máquinas com .NET 8.0 já instalado
+- **Instalação**: Extrair, baixar .NET se necessário, executar
+
 ## 📋 Recursos Inclusos
 
 ### 🔐 Segurança
@@ -42,16 +58,23 @@
 
 ## 🚀 Como Instalar
 
-### Requisitos Mínimos
-- Windows 7 ou superior (ou Windows Server 2008 R2+)
-- .NET Runtime 8.0 (download automático se necessário)
+### Pré-requisitos
+
+**Versão Completa:**
+- Windows 7 ou superior
 - 500 MB de espaço em disco
+- Nada mais! (.NET já vem incluído)
+
+**Versão Leve:**
+- Windows 7 ou superior
+- 500 MB de espaço em disco
+- .NET Runtime 8.0 ([download aqui](https://dotnet.microsoft.com/download/dotnet/8.0))
 
 ### Passo 1: Extrair o ZIP
-```bash
-# Extrair para uma pasta, exemplo:
-# C:\Program Files\InventorySystem
-```
+
+Escolha uma das versões:
+- **Completa**: InventorySystem-v1.0.0-Complete.zip (70 MB)
+- **Leve**: InventorySystem-v1.0.0-Lite.zip (6.8 MB)
 
 ### Passo 2: Executar
 ```bash
