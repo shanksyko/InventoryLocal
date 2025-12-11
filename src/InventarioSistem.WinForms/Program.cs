@@ -23,41 +23,84 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                // Initialize SQL Server infrastructure
+                // 🔧 ETAPA 1: CONFIGURAÇÃO INICIAL - OBRIGATÓRIA NA PRIMEIRA EXECUÇÃO
                 var sqlConfig = SqlServerConfig.Load();
-                _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);
-                _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
+                bool isFirstRun = string.IsNullOrWhiteSpace(sqlConfig.ConnectionString);
 
-                // Test connection and initialize database if needed
-                try
+                if (isFirstRun)
                 {
-                    // Test if connection string is configured
-                    if (string.IsNullOrWhiteSpace(sqlConfig.ConnectionString))
+                    ShowWelcomeMessage();
+                    
+                    // Mostrar formulário de configuração até que seja bem-sucedido
+                    bool configured = false;
+                    while (!configured)
                     {
-                        // Database not configured - show new advanced setup dialog
                         using (var setupForm = new DatabaseSetupForm())
                         {
                             if (setupForm.ShowDialog() != DialogResult.OK)
                             {
-                                MessageBox.Show(
-                                    "Configuração cancelada. A aplicação será fechada.",
-                                    "Cancelado",
-                                    MessageBoxButtons.OK,
+                                var result = MessageBox.Show(
+                                    "Você precisa configurar o banco de dados para usar a aplicação.\n\n" +
+                                    "Deseja tentar novamente?",
+                                    "Configuração Obrigatória",
+                                    MessageBoxButtons.YesNo,
                                     MessageBoxIcon.Warning);
-                                return;
+
+                                if (result == DialogResult.No)
+                                {
+                                    MessageBox.Show(
+                                        "A aplicação será fechada.",
+                                        "Configuração Obrigatória",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Information);
+                                    return;
+                                }
+                                continue;
                             }
 
                             var connString = setupForm.GetConnectionString();
                             if (!string.IsNullOrEmpty(connString))
                             {
-                                sqlConfig.ConnectionString = connString;
-                                sqlConfig.Save();
-                                _sqlServerFactory = new SqlServerConnectionFactory(connString);
-                                _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
+                                try
+                                {
+                                    // Validar conexão
+                                    using (var testConn = new SqlServerConnectionFactory(connString).CreateConnection())
+                                    {
+                                        testConn.Open();
+                                    }
+
+                                    sqlConfig.ConnectionString = connString;
+                                    sqlConfig.Save();
+                                    configured = true;
+
+                                    MessageBox.Show(
+                                        "✅ Configuração salva com sucesso!\n\n" +
+                                        "A aplicação iniciará agora.",
+                                        "Sucesso",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Information);
+                                }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(
+                                        $"❌ Erro ao validar conexão:\n\n{ex.Message}\n\n" +
+                                        "Verifique os dados e tente novamente.",
+                                        "Erro de Conexão",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Error);
+                                }
                             }
                         }
                     }
+                }
 
+                // 🗄️ ETAPA 2: INICIALIZAR FACTORY E USER STORE
+                _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);
+                _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
+
+                // 🗄️ ETAPA 3: VALIDAR BANCO E CRIAR SCHEMA
+                try
+                {
                     // Ensure schema is created
                     SqlServerSchemaManager.EnsureRequiredTables(_sqlServerFactory);
 
@@ -136,6 +179,22 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private static void ShowWelcomeMessage()
+        {
+            MessageBox.Show(
+                "🎉 Bem-vindo ao Inventory System!\n\n" +
+                "Esta é sua primeira execução.\n\n" +
+                "Você será guiado através da configuração do banco de dados SQL Server.\n\n" +
+                "Certifique-se de que:\n" +
+                "✅ SQL Server Express está instalado\n" +
+                "✅ O serviço SQL Server está em execução\n" +
+                "✅ O arquivo create-schema.sql está disponível\n\n" +
+                "Clique OK para continuar.",
+                "Primeiro Acesso - Configuração",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 }

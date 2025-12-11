@@ -38,13 +38,15 @@ public class DatabaseSetupForm : Form
 
     public DatabaseSetupForm()
     {
-        Text = "Configuração do Banco de Dados SQL Server";
+        Text = "Configuração do Banco de Dados SQL Server - OBRIGATÓRIO";
         Size = new Size(800, 700);
         MinimumSize = new Size(600, 500);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = ResponsiveUIHelper.Colors.LightBackground;
         Font = ResponsiveUIHelper.Fonts.Regular;
         FormBorderStyle = FormBorderStyle.Sizable;
+        ControlBox = false; // Desabilita fechar via X
+        MaximizeBox = false;
 
         InitializeUI();
         LoadLocalServers();
@@ -52,11 +54,12 @@ public class DatabaseSetupForm : Form
 
     private void InitializeUI()
     {
-        // Header
+        // Header com aviso
         var headerPanel = ResponsiveUIHelper.CreateHeaderPanel(
-            "Configuração do SQL Server",
-            "Selecione o servidor, banco de dados e execute o script de inicialização"
+            "⚙️ Configuração Inicial - OBRIGATÓRIA",
+            "Configure o SQL Server para continuar. Este processo é necessário apenas na primeira execução."
         );
+        headerPanel.BackColor = ResponsiveUIHelper.Colors.PrimaryOrange;
         Controls.Add(headerPanel);
 
         // Painel principal com scroll
@@ -68,7 +71,29 @@ public class DatabaseSetupForm : Form
             Padding = new Padding(ResponsiveUIHelper.Spacing.Large)
         };
 
-        int y = ResponsiveUIHelper.Spacing.Medium;
+        // Painel de instruções
+        var instructionsPanel = ResponsiveUIHelper.CreateCard(650, 100);
+        instructionsPanel.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium);
+        
+        var lblInstructions = new Label
+        {
+            Text = "📋 Instruções:\n" +
+                   "1. Selecione ou digite o servidor SQL Server (ex: localhost\\SQLEXPRESS)\n" +
+                   "2. Clique em 'Testar Conexão' para validar\n" +
+                   "3. Selecione um banco de dados ou crie um novo\n" +
+                   "4. Selecione o arquivo create-schema.sql\n" +
+                   "5. Clique em 'Executar Script' para criar as tabelas\n" +
+                   "6. Clique em 'Salvar Configuração' para finalizar",
+            Font = ResponsiveUIHelper.Fonts.Small,
+            ForeColor = ResponsiveUIHelper.Colors.TextDark,
+            AutoSize = false,
+            Dock = DockStyle.Fill,
+            Padding = new Padding(ResponsiveUIHelper.Spacing.Medium)
+        };
+        instructionsPanel.Controls.Add(lblInstructions);
+        mainPanel.Controls.Add(instructionsPanel);
+
+        int y = ResponsiveUIHelper.Spacing.Medium + 120;
 
         // ===== SEÇÃO 1: SELEÇÃO DE SERVIDOR =====
         var lblServer = ResponsiveUIHelper.CreateLabel(
