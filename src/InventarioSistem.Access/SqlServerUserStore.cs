@@ -95,7 +95,7 @@ public class SqlServerUserStore
     /// <summary>
     /// Creates a new user in the database.
     /// </summary>
-    public async Task<int> CreateUserAsync(string username, string password, string fullName, bool isActive = true, CancellationToken cancellationToken = default)
+    public async Task<int> CreateUserAsync(string username, string password, string fullName, bool isActive = true, string role = "User", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             throw new ArgumentException("Username and password are required");
@@ -108,13 +108,14 @@ public class SqlServerUserStore
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO [Users]
-                ([Username], [PasswordHash], [FullName], [IsActive], [CreatedAt])
-                VALUES (@Username, @PasswordHash, @FullName, @IsActive, @CreatedAt);
+                ([Username], [PasswordHash], [FullName], [Role], [IsActive], [CreatedAt])
+                VALUES (@Username, @PasswordHash, @FullName, @Role, @IsActive, @CreatedAt);
                 SELECT SCOPE_IDENTITY();";
 
             command.Parameters.AddWithValue("@Username", username);
             command.Parameters.AddWithValue("@PasswordHash", password);
             command.Parameters.AddWithValue("@FullName", fullName ?? "");
+            command.Parameters.AddWithValue("@Role", role ?? "User");
             command.Parameters.AddWithValue("@IsActive", isActive);
             command.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
 
@@ -203,8 +204,8 @@ public class SqlServerUserStore
     public (int Id, string Username, string FullName, bool IsActive)? GetUser(string username) =>
         GetUserAsync(username).GetAwaiter().GetResult();
 
-    public int CreateUser(string username, string password, string fullName, bool isActive = true) =>
-        CreateUserAsync(username, password, fullName, isActive).GetAwaiter().GetResult();
+    public int CreateUser(string username, string password, string fullName, bool isActive = true, string role = "User") =>
+        CreateUserAsync(username, password, fullName, isActive, role).GetAwaiter().GetResult();
 
     public bool UpdatePassword(string username, string newPassword) =>
         UpdatePasswordAsync(username, newPassword).GetAwaiter().GetResult();
@@ -258,9 +259,9 @@ public class SqlServerUserStore
     /// <summary>
     /// Adds a new user (alias for CreateUserAsync).
     /// </summary>
-    public async Task AddUserAsync(string username, string password, string fullName, bool isActive = true, CancellationToken cancellationToken = default)
+    public async Task AddUserAsync(string username, string password, string fullName, bool isActive = true, string role = "User", CancellationToken cancellationToken = default)
     {
-        await CreateUserAsync(username, password, fullName, isActive, cancellationToken);
+        await CreateUserAsync(username, password, fullName, isActive, role, cancellationToken);
     }
 
     /// <summary>

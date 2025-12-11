@@ -107,13 +107,13 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_gridMonitores);
         }
 
-        private void LoadMonitores()
+        private async void LoadMonitores()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllMonitores();
+                var list = await Task.Run(() => _store.GetAllMonitores());
                 _monitoresCache = list.ToList();
                 ApplyMonitoresFilter();
             }

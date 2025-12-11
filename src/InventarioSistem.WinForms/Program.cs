@@ -64,7 +64,8 @@ namespace InventarioSistem.WinForms
                             "admin",
                             "L9l337643k#$",
                             "Administrador",
-                            true);
+                            true,
+                            "Admin");
 
                         MessageBox.Show(
                             "Primeiro acesso detectado. Usuário padrão criado:\n\n" +

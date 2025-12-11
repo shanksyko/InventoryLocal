@@ -108,13 +108,13 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_gridNobreaks);
         }
 
-        private void LoadNobreaks()
+        private async void LoadNobreaks()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllNobreaks();
+                var list = await Task.Run(() => _store.GetAllNobreaks());
                 _nobreaksCache = list.ToList();
                 ApplyNobreaksFilter();
             }

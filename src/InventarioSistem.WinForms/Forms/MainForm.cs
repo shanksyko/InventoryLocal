@@ -1668,13 +1668,16 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private void LoadComputadores()
+        private async void LoadComputadores()
         {
             if (_store == null) return;
 
+            var originalCursor = Cursor;
             try
             {
-                var list = _store.GetAllComputers();
+                Cursor = Cursors.WaitCursor;
+                // Carregar em background para não bloquear a UI
+                var list = await Task.Run(() => _store.GetAllComputers());
                 _computersCache = ToList(list);
                 ApplyComputersFilter();
             }
@@ -1686,15 +1689,19 @@ namespace InventarioSistem.WinForms
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+            finally
+            {
+                Cursor = originalCursor;
+            }
         }
 
-        private void LoadTablets()
+        private async void LoadTablets()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllTablets();
+                var list = await Task.Run(() => _store.GetAllTablets());
                 _tabletsCache = ToList(list);
                 ApplyTabletsFilter();
             }
@@ -1708,13 +1715,13 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private void LoadColetores()
+        private async void LoadColetores()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllColetores();
+                var list = await Task.Run(() => _store.GetAllColetores());
                 _coletoresCache = ToList(list);
                 ApplyColetoresFilter();
             }
@@ -1728,13 +1735,13 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private void LoadCelulares()
+        private async void LoadCelulares()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllCelulares();
+                var list = await Task.Run(() => _store.GetAllCelulares());
                 _celularesCache = ToList(list);
                 ApplyCelularesFilter();
             }
@@ -2148,13 +2155,13 @@ namespace InventarioSistem.WinForms
         private static string GetResult(Dictionary<string, string> result, string key)
             => result.TryGetValue(key, out var value) ? value?.Trim() ?? string.Empty : string.Empty;
 
-        private void LoadImpressoras()
+        private async void LoadImpressoras()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllImpressoras();
+                var list = await Task.Run(() => _store.GetAllImpressoras());
                 _impressorasCache = list.ToList();
                 ApplyImpressorasFilter();
             }
@@ -2246,13 +2253,13 @@ namespace InventarioSistem.WinForms
             InventoryLogger.Info("WinForms", $"Impressora excluída via UI (Id={selected.Id}).");
         }
 
-        private void LoadDects()
+        private async void LoadDects()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllDects();
+                var list = await Task.Run(() => _store.GetAllDects());
                 _dectsCache = list.ToList();
                 ApplyDectsFilter();
             }
@@ -2344,13 +2351,13 @@ namespace InventarioSistem.WinForms
             InventoryLogger.Info("WinForms", $"DECT excluído via UI (Id={selected.Id}).");
         }
 
-        private void LoadTelefonesCisco()
+        private async void LoadTelefonesCisco()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllTelefonesCisco();
+                var list = await Task.Run(() => _store.GetAllTelefonesCisco());
                 _ciscoCache = list.ToList();
                 ApplyCiscoFilter();
             }
@@ -2440,13 +2447,13 @@ namespace InventarioSistem.WinForms
             InventoryLogger.Info("WinForms", $"Telefone Cisco excluído via UI (Id={selected.Id}).");
         }
 
-        private void LoadTelevisores()
+        private async void LoadTelevisores()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllTelevisores();
+                var list = await Task.Run(() => _store.GetAllTelevisores());
                 _tvsCache = list.ToList();
                 ApplyTvsFilter();
             }
@@ -2531,13 +2538,13 @@ namespace InventarioSistem.WinForms
             InventoryLogger.Info("WinForms", $"Televisor excluído via UI (Id={selected.Id}).");
         }
 
-        private void LoadRelogiosPonto()
+        private async void LoadRelogiosPonto()
         {
             if (_store == null) return;
 
             try
             {
-                var list = _store.GetAllRelogiosPonto();
+                var list = await Task.Run(() => _store.GetAllRelogiosPonto());
                 _relogiosCache = list.ToList();
                 ApplyRelogiosFilter();
             }

@@ -13,6 +13,7 @@ public class PerformanceTest
 {
     private static SqlServerConnectionFactory? _factory;
     private static SqlServerInventoryStore? _store;
+    private static SqlServerUserStore? _userStore;
 
     public static async Task Main(string[] args)
     {
@@ -30,6 +31,7 @@ public class PerformanceTest
 
         _factory = new SqlServerConnectionFactory(config.ConnectionString);
         _store = new SqlServerInventoryStore(_factory);
+        _userStore = new SqlServerUserStore(_factory);
 
         Console.WriteLine("✅ Conectado ao banco de dados");
         Console.WriteLine();
@@ -46,6 +48,7 @@ public class PerformanceTest
             Console.WriteLine("6 - Inserir 50 de cada tipo (550 total)");
             Console.WriteLine("7 - Teste de leitura (listar todos)");
             Console.WriteLine("8 - Limpar todos os dados");
+            Console.WriteLine("9 - Criar usuário admin");
             Console.WriteLine("0 - Sair");
             Console.WriteLine();
             Console.Write("Opção: ");
@@ -78,6 +81,9 @@ public class PerformanceTest
                     break;
                 case "8":
                     await LimparDados();
+                    break;
+                case "9":
+                    await CriarUsuarioAdmin();
                     break;
                 case "0":
                     Console.WriteLine("Encerrando...");
@@ -397,5 +403,45 @@ public class PerformanceTest
         sw.Stop();
         Console.WriteLine();
         Console.WriteLine($"✅ {deleted} dispositivos removidos em {sw.Elapsed.TotalSeconds:F2} segundos");
+    }
+
+    private static async Task CriarUsuarioAdmin()
+    {
+        Console.WriteLine("Criando usuário admin...");
+        
+        try
+        {
+            // Verificar se já existe
+            var existingUser = _userStore!.GetUser("admin");
+            if (existingUser.HasValue)
+            {
+                Console.WriteLine("⚠️  Usuário admin já existe no banco de dados!");
+                Console.WriteLine($"   ID: {existingUser.Value.Id}");
+                Console.WriteLine($"   Nome: {existingUser.Value.FullName}");
+                Console.WriteLine($"   Ativo: {existingUser.Value.IsActive}");
+                return;
+            }
+
+            // Criar usuário admin
+            await _userStore!.CreateUserAsync(
+                username: "admin",
+                password: "L9l337643k#$",
+                fullName: "Administrador",
+                isActive: true,
+                role: "Admin"
+            );
+
+            Console.WriteLine("✅ Usuário admin criado com sucesso!");
+            Console.WriteLine();
+            Console.WriteLine("Credenciais:");
+            Console.WriteLine("  Usuário: admin");
+            Console.WriteLine("  Senha: L9l337643k#$");
+            Console.WriteLine();
+            Console.WriteLine("⚠️  Recomenda-se alterar a senha após o primeiro login!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Erro ao criar usuário: {ex.Message}");
+        }
     }
 }
