@@ -115,9 +115,12 @@ public class PerformanceTest
             }
 
             Console.WriteLine();
-            Console.WriteLine("Pressione qualquer tecla para continuar...");
-            Console.ReadKey();
-            Console.Clear();
+            if (!Console.IsInputRedirected)
+            {
+                Console.WriteLine("Pressione qualquer tecla para continuar...");
+                Console.ReadKey();
+                Console.Clear();
+            }
         }
     }
 
