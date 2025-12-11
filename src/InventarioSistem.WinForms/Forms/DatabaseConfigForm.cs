@@ -374,4 +374,28 @@ public class DatabaseConfigForm : Form
 
     public string GetConnectionString() => _connectionString;
     public string GetMode() => _selectedMode;
+    
+    /// <summary>
+    /// Informa se há dados no banco atual (para oferecer migração)
+    /// </summary>
+    public static bool HasExistingData(string connectionString)
+    {
+        try
+        {
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+            
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES 
+                WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = 'dbo'";
+            
+            var tableCount = (int?)cmd.ExecuteScalar() ?? 0;
+            return tableCount > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

@@ -98,12 +98,6 @@ namespace InventarioSistem.WinForms
                                         testConn.Open();
                                     }
 
-                                    // Salvar configuração
-                                    sqlConfig.ConnectionString = connString;
-                                    sqlConfig.UseLocalDb = (mode == "localdb");
-                                    sqlConfig.Save();
-                                    configured = true;
-
                                     var modeText = mode switch
                                     {
                                         "localdb" => "LocalDB (Automático)",
@@ -111,6 +105,46 @@ namespace InventarioSistem.WinForms
                                         "filemdf" => "Arquivo .mdf",
                                         _ => "Desconhecido"
                                     };
+
+                                    // Verificar se há dados no banco anterior
+                                    bool hasExistingData = false;
+                                    if (!isFirstRun && !string.IsNullOrWhiteSpace(sqlConfig.ConnectionString))
+                                    {
+                                        try
+                                        {
+                                            hasExistingData = DatabaseConfigForm.HasExistingData(sqlConfig.ConnectionString);
+                                        }
+                                        catch { }
+                                    }
+
+                                    // Se há dados, oferecer migração
+                                    if (hasExistingData && sqlConfig.ConnectionString != connString)
+                                    {
+                                        var migrateResult = MessageBox.Show(
+                                            $"Foram detectados dados no banco anterior.\n\n" +
+                                            $"Deseja migrar os dados para o novo destino?\n\n" +
+                                            $"Origem: {(sqlConfig.UseLocalDb ? "LocalDB" : "Outro banco")}\n" +
+                                            $"Destino: {modeText}",
+                                            "Migração de Dados",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question);
+
+                                        if (migrateResult == DialogResult.Yes)
+                                        {
+                                            using (var migrationForm = new DatabaseMigrationForm(
+                                                sqlConfig.ConnectionString,
+                                                connString))
+                                            {
+                                                migrationForm.ShowDialog();
+                                            }
+                                        }
+                                    }
+
+                                    // Salvar configuração
+                                    sqlConfig.ConnectionString = connString;
+                                    sqlConfig.UseLocalDb = (mode == "localdb");
+                                    sqlConfig.Save();
+                                    configured = true;
 
                                     MessageBox.Show(
                                         $"✅ Configuração salva com sucesso!\n\n" +
