@@ -40,7 +40,7 @@ namespace InventarioSistem.WinForms
 
                     // Ensure schema is created
                     SqlServerSchemaManager.EnsureRequiredTables(_sqlServerFactory);
-                    
+
                     InventoryLogger.Info("Program", "Banco de dados SQL Server inicializado com sucesso");
                 }
                 catch (Exception ex)
@@ -174,11 +174,11 @@ namespace InventarioSistem.WinForms
                 {
                     config.ConnectionString = textBox.Text.Trim();
                     config.Save();
-                    
+
                     // Update factory with new connection string
                     _sqlServerFactory = new SqlServerConnectionFactory(config.ConnectionString);
                     _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
-                    
+
                     MessageBox.Show(
                         "Configuração salva com sucesso!",
                         "Sucesso",

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Core.Logging;
+using InventarioSistem.WinForms.Forms;
 using LegacyDevices = InventarioSistem.Core.Devices;
 
 namespace InventarioSistem.WinForms
@@ -43,6 +44,24 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirMonitor.Click += (_, _) => ExcluirMonitor();
 
+            var _btnExportMonitores = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportMonitores.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Monitor, this);
+
+            var _btnDashboardMonitores = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardMonitores.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local/Responsável/Computador):",
@@ -80,6 +99,8 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoMonitor);
             page.Controls.Add(_btnEditarMonitor);
             page.Controls.Add(_btnExcluirMonitor);
+            page.Controls.Add(_btnExportMonitores);
+            page.Controls.Add(_btnDashboardMonitores);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtMonitoresFilter);
             page.Controls.Add(btnClear);

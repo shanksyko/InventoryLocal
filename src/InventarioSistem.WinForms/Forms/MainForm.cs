@@ -8,9 +8,9 @@ using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Schema;
-using InventarioSistem.WinForms.Forms;
 using InventarioSistem.Core.Entities;
 using InventarioSistem.Core.Logging;
+using InventarioSistem.WinForms.Forms;
 using LegacyDevices = InventarioSistem.Core.Devices;
 
 namespace InventarioSistem.WinForms
@@ -143,7 +143,7 @@ namespace InventarioSistem.WinForms
             {
                 // Ensure schema is created
                 SqlServerSchemaManager.EnsureRequiredTables(_sqlFactory);
-                
+
                 _lblDbPath.Text = "Banco: SQL Server (configurado)";
                 EnableDataTabs(true);
                 // Lazy-loading: não carrega todas as abas automaticamente
@@ -221,8 +221,8 @@ namespace InventarioSistem.WinForms
             _lblUserInfo = new Label
             {
                 AutoSize = true,
-                Text = _currentUser != null ? 
-                    $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" : 
+                Text = _currentUser != null ?
+                    $"Conectado como: {_currentUser.FullName ?? _currentUser.Username} ({_currentUser.Role})" :
                     "",
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 Location = new Point(ClientSize.Width - 750, 24),
@@ -1633,14 +1633,14 @@ namespace InventarioSistem.WinForms
             if (_txtLog == null) return;
 
             _txtLog.AppendText(line + Environment.NewLine);
-            
+
             // Limita o tamanho do log a 100KB para evitar crescimento ilimitado
             const int maxChars = 102400; // 100 KB
             if (_txtLog.TextLength > maxChars)
             {
                 _txtLog.Text = _txtLog.Text.Substring(_txtLog.TextLength - maxChars);
             }
-            
+
             _txtLog.SelectionStart = _txtLog.TextLength;
             _txtLog.ScrollToCaret();
         }
@@ -1781,7 +1781,7 @@ namespace InventarioSistem.WinForms
         {
             if (!IsUserAuthorizedForEdit()) return;
             if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
             if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
             {
                 MessageBox.Show(this, "Selecione um computador para editar.", "Aviso",
@@ -1804,7 +1804,7 @@ namespace InventarioSistem.WinForms
         {
             if (!IsUserAuthorizedForEdit()) return;
             if (!IsUserAuthorizedForEdit()) return;
-                if (_store == null) return;
+            if (_store == null) return;
             if (_gridComputadores.CurrentRow?.DataBoundItem is not LegacyDevices.Computer selected)
             {
                 MessageBox.Show(this, "Selecione um computador para excluir.", "Aviso",
@@ -2614,82 +2614,82 @@ namespace InventarioSistem.WinForms
             return source is List<T> list ? list : new List<T>(source);
         }
 
-    private void SelecionarBanco()
-    {
-        var form = new Form
+        private void SelecionarBanco()
         {
-            Text = "Configurar SQL Server",
-            Size = new Size(600, 200),
-            StartPosition = FormStartPosition.CenterParent,
-            FormBorderStyle = FormBorderStyle.FixedDialog,
-            MaximizeBox = false,
-            MinimizeBox = false
-        };
+            var form = new Form
+            {
+                Text = "Configurar SQL Server",
+                Size = new Size(600, 200),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
 
-        var label = new Label
-        {
-            Text = "Connection String:",
-            Location = new Point(10, 20),
-            AutoSize = true
-        };
+            var label = new Label
+            {
+                Text = "Connection String:",
+                Location = new Point(10, 20),
+                AutoSize = true
+            };
 
-        var textBox = new TextBox
-        {
-            Location = new Point(10, 45),
-            Size = new Size(560, 20),
-            Text = new SqlServerConfig().ConnectionString ?? ""
-        };
+            var textBox = new TextBox
+            {
+                Location = new Point(10, 45),
+                Size = new Size(560, 20),
+                Text = new SqlServerConfig().ConnectionString ?? ""
+            };
 
-        var btnOk = new Button
-        {
-            Text = "OK",
-            DialogResult = DialogResult.OK,
-            Location = new Point(400, 100)
-        };
+            var btnOk = new Button
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Location = new Point(400, 100)
+            };
 
-        var btnCancel = new Button
-        {
-            Text = "Cancelar",
-            DialogResult = DialogResult.Cancel,
-            Location = new Point(490, 100)
-        };
+            var btnCancel = new Button
+            {
+                Text = "Cancelar",
+                DialogResult = DialogResult.Cancel,
+                Location = new Point(490, 100)
+            };
 
-        form.Controls.AddRange(new Control[] { label, textBox, btnOk, btnCancel });
-        form.AcceptButton = btnOk;
-        form.CancelButton = btnCancel;
+            form.Controls.AddRange(new Control[] { label, textBox, btnOk, btnCancel });
+            form.AcceptButton = btnOk;
+            form.CancelButton = btnCancel;
 
-        if (form.ShowDialog(this) != DialogResult.OK)
-            return;
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return;
 
-        var connStr = textBox.Text.Trim();
+            var connStr = textBox.Text.Trim();
 
-        try
-        {
-            // Save connection string to config
-            var config = new SqlServerConfig();
-            // The config is persisted automatically in SqlServerConfig's constructor/save mechanism
-            _lblDbPath.Text = $"SQL Server: {connStr.Substring(0, Math.Min(50, connStr.Length))}...";
-            InventoryLogger.Info("WinForms", "SQL Server configurado");
-
-            // Garante estrutura mínima
             try
             {
-                var factory = new SqlServerConnectionFactory(connStr);
-                SqlServerSchemaManager.EnsureRequiredTables(factory);
-                InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
-            }
-            catch (Exception ex)
-            {
-                InventoryLogger.Error("WinForms", "Erro ao garantir schema SQL Server.", ex);
-                MessageBox.Show(this,
-                    "Ocorreu um erro ao criar/verificar as tabelas:\n\n" +
-                    ex.Message,
-                    "Erro de schema",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                EnableDataTabs(false);
-                return;
-            }
+                // Save connection string to config
+                var config = new SqlServerConfig();
+                // The config is persisted automatically in SqlServerConfig's constructor/save mechanism
+                _lblDbPath.Text = $"SQL Server: {connStr.Substring(0, Math.Min(50, connStr.Length))}...";
+                InventoryLogger.Info("WinForms", "SQL Server configurado");
+
+                // Garante estrutura mínima
+                try
+                {
+                    var factory = new SqlServerConnectionFactory(connStr);
+                    SqlServerSchemaManager.EnsureRequiredTables(factory);
+                    InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
+                }
+                catch (Exception ex)
+                {
+                    InventoryLogger.Error("WinForms", "Erro ao garantir schema SQL Server.", ex);
+                    MessageBox.Show(this,
+                        "Ocorreu um erro ao criar/verificar as tabelas:\n\n" +
+                        ex.Message,
+                        "Erro de schema",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    EnableDataTabs(false);
+                    return;
+                }
                 EnableDataTabs(true);
 
                 try
@@ -2727,49 +2727,49 @@ namespace InventarioSistem.WinForms
             }
         }
 
-    private void MostrarResumoBanco()
-    {
-        try
+        private void MostrarResumoBanco()
         {
-            var config = new SqlServerConfig();
-            var connStr = config.ConnectionString;
-            
-            if (string.IsNullOrWhiteSpace(connStr))
+            try
             {
+                var config = new SqlServerConfig();
+                var connStr = config.ConnectionString;
+
+                if (string.IsNullOrWhiteSpace(connStr))
+                {
+                    MessageBox.Show(this,
+                        "Nenhuma conexão SQL Server configurada.\n" +
+                        "Use 'Configurar SQL Server' primeiro.",
+                        "Resumo do banco",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var factory = new SqlServerConnectionFactory(connStr);
+                var totals = _store?.CountByTypeAsync().GetAwaiter().GetResult() ?? new Dictionary<string, int>();
+
+                var summary = "Resumo do banco de dados:\n\n";
+                foreach (var item in totals)
+                {
+                    summary += $"{item.Key}: {item.Value}\n";
+                }
+
                 MessageBox.Show(this,
-                    "Nenhuma conexão SQL Server configurada.\n" +
-                    "Use 'Configurar SQL Server' primeiro.",
+                    summary,
                     "Resumo do banco",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-                return;
+                    MessageBoxIcon.Information);
             }
-
-            var factory = new SqlServerConnectionFactory(connStr);
-            var totals = _store?.CountByTypeAsync().GetAwaiter().GetResult() ?? new Dictionary<string, int>();
-            
-            var summary = "Resumo do banco de dados:\n\n";
-            foreach (var item in totals)
+            catch (Exception ex)
             {
-                summary += $"{item.Key}: {item.Value}\n";
+                InventoryLogger.Error("WinForms", "Erro ao gerar resumo do banco.", ex);
+                MessageBox.Show(this,
+                    "Erro ao obter resumo do banco:\n\n" + ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
-            
-            MessageBox.Show(this,
-                summary,
-                "Resumo do banco",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
         }
-        catch (Exception ex)
-        {
-            InventoryLogger.Error("WinForms", "Erro ao gerar resumo do banco.", ex);
-            MessageBox.Show(this,
-                "Erro ao obter resumo do banco:\n\n" + ex.Message,
-                "Erro",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-        }
-    }
 
         private void AbrirGerenciadorUsuarios()
         {
@@ -2839,7 +2839,7 @@ namespace InventarioSistem.WinForms
             {
                 InventoryLogger.Error("MainForm", $"Erro ao registrar logoff: {ex.Message}");
             }
-            
+
             // Reiniciar a aplicação para voltar ao login
             Application.Restart();
             Environment.Exit(0);

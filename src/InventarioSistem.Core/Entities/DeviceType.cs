@@ -10,5 +10,7 @@ public enum DeviceType
     Dect,
     TelefoneCisco,
     Televisor,
-    RelogioPonto
+    RelogioPonto,
+    Monitor,
+    Nobreak
 }

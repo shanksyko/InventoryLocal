@@ -97,6 +97,18 @@ public static class XlsxExporter
                     ExportRelogiosPonto(ws, items);
                     break;
                 }
+            case DeviceType.Monitor:
+                {
+                    var items = store.GetAllMonitores();
+                    ExportMonitores(ws, items);
+                    break;
+                }
+            case DeviceType.Nobreak:
+                {
+                    var items = store.GetAllNobreaks();
+                    ExportNobreaks(ws, items);
+                    break;
+                }
             default:
                 throw new Exception($"Tipo {type} não suportado para exportação");
         }
@@ -325,6 +337,54 @@ public static class XlsxExporter
             ws.Cell(row, 6).Value = item.DataNobreak?.ToString("g") ?? "";
             ws.Cell(row, 7).Value = item.ProximasVerificacoes?.ToString("g") ?? "";
             ws.Cell(row, 8).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportMonitores(IXLWorksheet ws, List<Core.Devices.Monitor> items)
+    {
+        ws.Cell(1, 1).Value = "Modelo";
+        ws.Cell(1, 2).Value = "SerialNumber";
+        ws.Cell(1, 3).Value = "Local";
+        ws.Cell(1, 4).Value = "Responsável";
+        ws.Cell(1, 5).Value = "Computador Vinculado";
+        ws.Cell(1, 6).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Modelo))
+        {
+            ws.Cell(row, 1).Value = item.Modelo;
+            ws.Cell(row, 2).Value = item.SerialNumber;
+            ws.Cell(row, 3).Value = item.Local;
+            ws.Cell(row, 4).Value = item.Responsavel;
+            ws.Cell(row, 5).Value = item.ComputadorVinculado;
+            ws.Cell(row, 6).Value = item.CreatedAt?.ToString("g") ?? "";
+            row++;
+        }
+    }
+
+    private static void ExportNobreaks(IXLWorksheet ws, List<Core.Devices.Nobreak> items)
+    {
+        ws.Cell(1, 1).Value = "Hostname";
+        ws.Cell(1, 2).Value = "Local";
+        ws.Cell(1, 3).Value = "IP";
+        ws.Cell(1, 4).Value = "Modelo";
+        ws.Cell(1, 5).Value = "Status";
+        ws.Cell(1, 6).Value = "SerialNumber";
+        ws.Cell(1, 7).Value = "Cadastrado em";
+        ws.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+        foreach (var item in items.OrderBy(x => x.Hostname))
+        {
+            ws.Cell(row, 1).Value = item.Hostname;
+            ws.Cell(row, 2).Value = item.Local;
+            ws.Cell(row, 3).Value = item.IpAddress;
+            ws.Cell(row, 4).Value = item.Modelo;
+            ws.Cell(row, 5).Value = item.Status;
+            ws.Cell(row, 6).Value = item.SerialNumber;
+            ws.Cell(row, 7).Value = item.CreatedAt?.ToString("g") ?? "";
             row++;
         }
     }

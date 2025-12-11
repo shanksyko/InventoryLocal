@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using InventarioSistem.Core.Logging;
+using InventarioSistem.WinForms.Forms;
 using LegacyDevices = InventarioSistem.Core.Devices;
 
 namespace InventarioSistem.WinForms
@@ -43,6 +44,24 @@ namespace InventarioSistem.WinForms
             };
             _btnExcluirNobreak.Click += (_, _) => ExcluirNobreak();
 
+            var _btnExportNobreaks = new Button
+            {
+                Text = "Exportar XLSX",
+                AutoSize = true,
+                Location = new Point(400, 10)
+            };
+            _btnExportNobreaks.Click += (_, _) => XlsxExporter.ExportWithDialog(_store!, InventarioSistem.Core.Entities.DeviceType.Nobreak, this);
+
+            var _btnDashboardNobreaks = new Button
+            {
+                Text = "Gráfico",
+                AutoSize = true,
+                Location = new Point(480, 10),
+                BackColor = Color.FromArgb(50, 160, 120),
+                ForeColor = Color.White
+            };
+            _btnDashboardNobreaks.Click += (_, _) => MostrarDashboardTotal();
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Hostname/Local/IP/Modelo/Status/Serial):",
@@ -81,6 +100,8 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnNovoNobreak);
             page.Controls.Add(_btnEditarNobreak);
             page.Controls.Add(_btnExcluirNobreak);
+            page.Controls.Add(_btnExportNobreaks);
+            page.Controls.Add(_btnDashboardNobreaks);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtNobreaksFilter);
             page.Controls.Add(btnClear);
