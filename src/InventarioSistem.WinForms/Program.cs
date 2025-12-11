@@ -23,15 +23,44 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                // 🔧 ETAPA 1: CONFIGURAÇÃO INICIAL - OBRIGATÓRIA NA PRIMEIRA EXECUÇÃO
+                // 🔧 ETAPA 1: INICIALIZAR LocalDB AUTOMATICAMENTE
+                try
+                {
+                    if (!LocalDbManager.IsLocalDbAvailable())
+                    {
+                        MessageBox.Show(
+                            "❌ LocalDB não está disponível.\n\n" +
+                            "Certifique-se de que o .NET Runtime está instalado corretamente.",
+                            "Erro de Banco de Dados",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    LocalDbManager.Initialize();
+                    InventoryLogger.Info("Program", LocalDbManager.GetInfo());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"❌ Erro ao inicializar LocalDB:\n\n{ex.Message}",
+                        "Erro de Banco de Dados",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                // 🔧 ETAPA 2: CARREGAR CONFIGURAÇÃO (Com LocalDB como padrão)
                 var sqlConfig = SqlServerConfig.Load();
+
+                // Se for primeira execução e usar LocalDB, não mostrar formulário
                 bool isFirstRun = string.IsNullOrWhiteSpace(sqlConfig.ConnectionString);
 
-                if (isFirstRun)
+                if (isFirstRun && !sqlConfig.UseLocalDb)
                 {
+                    // Apenas mostrar formulário se quiser usar SQL Server (não LocalDB)
                     ShowWelcomeMessage();
-                    
-                    // Mostrar formulário de configuração até que seja bem-sucedido
+
                     bool configured = false;
                     while (!configured)
                     {
@@ -63,13 +92,13 @@ namespace InventarioSistem.WinForms
                             {
                                 try
                                 {
-                                    // Validar conexão
                                     using (var testConn = new SqlServerConnectionFactory(connString).CreateConnection())
                                     {
                                         testConn.Open();
                                     }
 
                                     sqlConfig.ConnectionString = connString;
+                                    sqlConfig.UseLocalDb = false;
                                     sqlConfig.Save();
                                     configured = true;
 
@@ -94,16 +123,14 @@ namespace InventarioSistem.WinForms
                     }
                 }
 
-                // 🗄️ ETAPA 2: INICIALIZAR FACTORY E USER STORE
+                // 🗄️ ETAPA 3: INICIALIZAR FACTORY E USER STORE
                 _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);
                 _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
 
-                // 🗄️ ETAPA 3: VALIDAR BANCO E CRIAR SCHEMA
+                // 🗄️ ETAPA 4: VALIDAR BANCO E CRIAR SCHEMA
                 try
                 {
-                    // Ensure schema is created
                     SqlServerSchemaManager.EnsureRequiredTables(_sqlServerFactory);
-
                     InventoryLogger.Info("Program", "Banco de dados SQL Server inicializado com sucesso");
                 }
                 catch (Exception ex)

@@ -7,6 +7,7 @@ namespace InventarioSistem.Access.Config;
 public class SqlServerConfig
 {
     public string? ConnectionString { get; set; }
+    public bool UseLocalDb { get; set; } = true; // Padrão: LocalDB
 
     private static string ConfigFile =>
         Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sqlserver.config.json");
@@ -14,16 +15,39 @@ public class SqlServerConfig
     public static SqlServerConfig Load()
     {
         if (!File.Exists(ConfigFile))
-            return new SqlServerConfig();
+        {
+            // Primeira execução - usar LocalDB por padrão
+            var config = new SqlServerConfig
+            {
+                ConnectionString = LocalDbManager.GetConnectionString(),
+                UseLocalDb = true
+            };
+            config.Save();
+            return config;
+        }
 
         try
         {
             var json = File.ReadAllText(ConfigFile);
-            return JsonSerializer.Deserialize<SqlServerConfig>(json) ?? new SqlServerConfig();
+            var config = JsonSerializer.Deserialize<SqlServerConfig>(json) ?? new SqlServerConfig();
+            
+            // Se não tem connection string, usar LocalDB
+            if (string.IsNullOrEmpty(config.ConnectionString))
+            {
+                config.ConnectionString = LocalDbManager.GetConnectionString();
+                config.UseLocalDb = true;
+                config.Save();
+            }
+            
+            return config;
         }
         catch
         {
-            return new SqlServerConfig();
+            return new SqlServerConfig
+            {
+                ConnectionString = LocalDbManager.GetConnectionString(),
+                UseLocalDb = true
+            };
         }
     }
 
@@ -37,3 +61,4 @@ public class SqlServerConfig
         File.WriteAllText(ConfigFile, json);
     }
 }
+
