@@ -364,7 +364,12 @@ public class DatabaseConfigForm : Form
 
     private void AddLog(string message, Color? color = null)
     {
-        _rtbLog.Invoke(() =>
+        if (!IsHandleCreated)
+        {
+            return; // Ignore se o formulário ainda não foi criado
+        }
+
+        this.Invoke(() =>
         {
             _rtbLog.SelectionColor = color ?? ResponsiveUIHelper.Colors.TextDark;
             _rtbLog.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}\n");

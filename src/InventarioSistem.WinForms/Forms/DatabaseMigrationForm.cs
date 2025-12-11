@@ -237,6 +237,11 @@ public class DatabaseMigrationForm : Form
 
     private void AddLog(string message, Color? color = null)
     {
+        if (!IsHandleCreated)
+        {
+            return; // Ignore se o formulário ainda não foi criado
+        }
+
         this.Invoke(() =>
         {
             _rtbLog.SelectionColor = color ?? ResponsiveUIHelper.Colors.TextDark;
