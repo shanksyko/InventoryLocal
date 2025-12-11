@@ -46,9 +46,10 @@ public class PerformanceTest
             Console.WriteLine("4 - Inserir 100 monitores");
             Console.WriteLine("5 - Inserir 100 nobreaks");
             Console.WriteLine("6 - Inserir 50 de cada tipo (550 total)");
-            Console.WriteLine("7 - Teste de leitura (listar todos)");
-            Console.WriteLine("8 - Limpar todos os dados");
-            Console.WriteLine("9 - Criar usuário admin");
+            Console.WriteLine("7 - Inserir 500 de cada tipo (5500 total) - TESTE PESADO");
+            Console.WriteLine("8 - Teste de leitura (listar todos)");
+            Console.WriteLine("9 - Limpar todos os dados");
+            Console.WriteLine("A - Criar usuário admin");
             Console.WriteLine("0 - Sair");
             Console.WriteLine();
             Console.Write("Opção: ");
@@ -56,7 +57,7 @@ public class PerformanceTest
             var opcao = Console.ReadLine();
             Console.WriteLine();
 
-            switch (opcao)
+            switch (opcao?.ToUpper())
             {
                 case "1":
                     await InserirComputadores(100);
@@ -77,12 +78,15 @@ public class PerformanceTest
                     await InserirTodosTipos();
                     break;
                 case "7":
-                    await TestarLeitura();
+                    await InserirTodosTipos(500); // 5500 total
                     break;
                 case "8":
-                    await LimparDados();
+                    await TestarLeitura();
                     break;
                 case "9":
+                    await LimparDados();
+                    break;
+                case "A":
                     await CriarUsuarioAdmin();
                     break;
                 case "0":
@@ -253,34 +257,35 @@ public class PerformanceTest
         Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
     }
 
-    private static async Task InserirTodosTipos()
+    private static async Task InserirTodosTipos(int quantidadePorTipo = 50)
     {
-        Console.WriteLine("Inserindo 50 dispositivos de cada tipo...");
+        Console.WriteLine($"Inserindo {quantidadePorTipo} dispositivos de cada tipo...");
         var sw = Stopwatch.StartNew();
 
-        await InserirComputadores(50);
-        await InserirTablets(50);
-        await InserirCelulares(50);
-        await InserirMonitores(50);
-        await InserirNobreaks(50);
+        await InserirComputadores(quantidadePorTipo);
+        await InserirTablets(quantidadePorTipo);
+        await InserirCelulares(quantidadePorTipo);
+        await InserirMonitores(quantidadePorTipo);
+        await InserirNobreaks(quantidadePorTipo);
 
         // Adicionar outros tipos
-        Console.WriteLine("Inserindo 50 coletores...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"Inserindo {quantidadePorTipo} coletores...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var coletor = new ColetorAndroid
             {
                 Host = $"COLETOR-{i:D4}",
                 SerialNumber = $"SN-COL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
-                IpAddress = $"192.168.50.{i}",
+                IpAddress = $"192.168.{(i / 254) + 50}.{(i % 254) + 1}",
                 Local = $"Local {i}"
             };
             _store!.AddColetor(coletor);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine("Inserindo 50 impressoras...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"\nInserindo {quantidadePorTipo} impressoras...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var impressora = new Impressora
             {
@@ -291,37 +296,40 @@ public class PerformanceTest
                 LocalAnterior = ""
             };
             _store!.AddImpressora(impressora);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine("Inserindo 50 DECTs...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"\nInserindo {quantidadePorTipo} DECTs...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var dect = new DectPhone
             {
                 Responsavel = $"Usuário {i}",
                 Ipei = $"IPEI-{i:D10}",
                 MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
-                Numero = $"400{i:D2}",
+                Numero = $"400{i % 100:D2}",
                 Local = $"Sala {i}"
             };
             _store!.AddDect(dect);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine("Inserindo 50 telefones Cisco...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"\nInserindo {quantidadePorTipo} telefones Cisco...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var cisco = new CiscoPhone
             {
                 Responsavel = $"Usuário {i}",
                 MacAddress = $"00:1B:2C:3D:{i / 256:X2}:{i % 256:X2}",
-                Numero = $"300{i:D2}",
+                Numero = $"300{i % 100:D2}",
                 Local = $"Sala {i}"
             };
             _store!.AddTelefoneCisco(cisco);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine("Inserindo 50 televisores...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"\nInserindo {quantidadePorTipo} televisores...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var tv = new Televisor
             {
@@ -330,24 +338,28 @@ public class PerformanceTest
                 SerialNumber = $"SN-TV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
             };
             _store!.AddTelevisor(tv);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine("Inserindo 50 relógios de ponto...");
-        for (int i = 1; i <= 50; i++)
+        Console.WriteLine($"\nInserindo {quantidadePorTipo} relógios de ponto...");
+        for (int i = 1; i <= quantidadePorTipo; i++)
         {
             var relogio = new RelogioPonto
             {
-                Local = $"Entrada {i}",
-                Ip = $"192.168.10.{i}",
+                Local = $"Entrada {(i % 20) + 1}",
+                Ip = $"192.168.10.{(i % 254) + 1}",
                 Modelo = $"Henry-{(i % 2) + 1}",
                 SerialNumber = $"SN-REL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
             };
             _store!.AddRelogioPonto(relogio);
+            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
         sw.Stop();
+        var total = quantidadePorTipo * 11;
         Console.WriteLine();
-        Console.WriteLine($"✅ 550 dispositivos inseridos em {sw.Elapsed.TotalSeconds:F2} segundos");
+        Console.WriteLine($"✅ {total} dispositivos inseridos em {sw.Elapsed.TotalSeconds:F2} segundos");
+        Console.WriteLine($"   Média: {(sw.ElapsedMilliseconds / total):F1}ms por item");
     }
 
     private static async Task TestarLeitura()

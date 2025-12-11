@@ -493,16 +493,24 @@ namespace InventarioSistem.WinForms
             };
             _btnDashboardComputadores.Click += (_, _) => MostrarDashboardTotal();
 
+            var lblInfo = new Label
+            {
+                Text = "ℹ️ Exibindo até 1000 registros mais recentes para melhor performance",
+                AutoSize = true,
+                Location = new Point(10, 50),
+                ForeColor = Color.DarkBlue
+            };
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Host/N/S/Proprietário/Departamento/Matrícula):",
                 AutoSize = true,
-                Location = new Point(10, 50)
+                Location = new Point(10, 75)
             };
 
             _txtComputersFilter = new TextBox
             {
-                Location = new Point(10, 70),
+                Location = new Point(10, 95),
                 Width = 260
             };
             _txtComputersFilter.TextChanged += (_, _) => ApplyComputersFilter();
@@ -511,15 +519,15 @@ namespace InventarioSistem.WinForms
             {
                 Text = "Limpar filtro",
                 AutoSize = true,
-                Location = new Point(_txtComputersFilter.Right + 10, 68)
+                Location = new Point(_txtComputersFilter.Right + 10, 93)
             };
             btnClearFilter.Click += (_, _) => _txtComputersFilter.Text = string.Empty;
 
             _gridComputadores = new DataGridView
             {
-                Location = new Point(10, 105),
+                Location = new Point(10, 130),
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 115),
+                Size = new Size(page.ClientSize.Width - 20, page.ClientSize.Height - 140),
                 ReadOnly = true,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
@@ -587,6 +595,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnExcluirComputador);
             page.Controls.Add(_btnExportComputadores);
             page.Controls.Add(_btnDashboardComputadores);
+            page.Controls.Add(lblInfo);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtComputersFilter);
             page.Controls.Add(btnClearFilter);

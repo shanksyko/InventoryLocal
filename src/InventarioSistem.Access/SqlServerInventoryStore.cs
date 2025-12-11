@@ -86,14 +86,16 @@ public partial class SqlServerInventoryStore : IDisposable
         InventoryLogger.Info("SqlServerInventoryStore", $"Computador inserido: Host='{computer.Host}', NS='{computer.SerialNumber}'");
     }
 
-    public async Task<List<Computer>> GetAllComputersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Computer>> GetAllComputersAsync(int? limit = null, CancellationToken cancellationToken = default)
     {
         var computers = new List<Computer>();
         await using var connection = _factory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT [Id], [Host], [SerialNumber], [Proprietario], [Departamento], [Matricula], [CreatedAt] FROM [Computadores] ORDER BY [Id]";
+        // Limitar a 1000 registros por padrão para melhor performance com grandes volumes
+        var limitClause = limit.HasValue ? $"TOP {limit.Value}" : "TOP 1000";
+        command.CommandText = $"SELECT {limitClause} [Id], [Host], [SerialNumber], [Proprietario], [Departamento], [Matricula], [CreatedAt] FROM [Computadores] ORDER BY [Id] DESC";
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
@@ -152,7 +154,7 @@ public partial class SqlServerInventoryStore : IDisposable
     }
 
     // Sync wrappers
-    public List<Computer> GetAllComputers() => GetAllComputersAsync().GetAwaiter().GetResult();
+    public List<Computer> GetAllComputers(int? limit = null) => GetAllComputersAsync(limit).GetAwaiter().GetResult();
     public void AddComputer(Computer computer) => AddComputerAsync(computer).GetAwaiter().GetResult();
     public void UpdateComputer(Computer computer) => UpdateComputerAsync(computer).GetAwaiter().GetResult();
     public void DeleteComputer(int id) => DeleteComputerAsync(id).GetAwaiter().GetResult();
@@ -417,8 +419,8 @@ public partial class SqlServerInventoryStore : IDisposable
     {
         var result = new List<dynamic>();
         
-        // Get all device types and return as dynamic list
-        var computers = await GetAllComputersAsync(cancellationToken);
+        // Get all device types and return as dynamic list (limit to 1000 per type for performance)
+        var computers = await GetAllComputersAsync(1000, cancellationToken);
         foreach (var c in computers)
         {
             result.Add(new { c.Id, Type = "Computer", c.Host, c.SerialNumber, c.CreatedAt });
