@@ -50,23 +50,19 @@ namespace InventarioSistem.WinForms
                     return;
                 }
 
-                // 🔧 ETAPA 2: CARREGAR CONFIGURAÇÃO (Com LocalDB como padrão)
+                // 🔧 ETAPA 2: CONFIGURAR MODO DE BANCO DE DADOS
                 var sqlConfig = SqlServerConfig.Load();
-
-                // Se for primeira execução e usar LocalDB, não mostrar formulário
                 bool isFirstRun = string.IsNullOrWhiteSpace(sqlConfig.ConnectionString);
 
-                if (isFirstRun && !sqlConfig.UseLocalDb)
+                if (isFirstRun)
                 {
-                    // Apenas mostrar formulário se quiser usar SQL Server (não LocalDB)
-                    ShowWelcomeMessage();
-
+                    // Mostrar formulário de seleção de modo (LocalDB, SQL Server ou Arquivo)
                     bool configured = false;
                     while (!configured)
                     {
-                        using (var setupForm = new DatabaseSetupForm())
+                        using (var configForm = new DatabaseConfigForm())
                         {
-                            if (setupForm.ShowDialog() != DialogResult.OK)
+                            if (configForm.ShowDialog() != DialogResult.OK)
                             {
                                 var result = MessageBox.Show(
                                     "Você precisa configurar o banco de dados para usar a aplicação.\n\n" +
@@ -77,34 +73,42 @@ namespace InventarioSistem.WinForms
 
                                 if (result == DialogResult.No)
                                 {
-                                    MessageBox.Show(
-                                        "A aplicação será fechada.",
-                                        "Configuração Obrigatória",
-                                        MessageBoxButtons.OK,
-                                        MessageBoxIcon.Information);
                                     return;
                                 }
                                 continue;
                             }
 
-                            var connString = setupForm.GetConnectionString();
+                            var connString = configForm.GetConnectionString();
+                            var mode = configForm.GetMode();
+
                             if (!string.IsNullOrEmpty(connString))
                             {
                                 try
                                 {
+                                    // Validar conexão
                                     using (var testConn = new SqlServerConnectionFactory(connString).CreateConnection())
                                     {
                                         testConn.Open();
                                     }
 
+                                    // Salvar configuração
                                     sqlConfig.ConnectionString = connString;
-                                    sqlConfig.UseLocalDb = false;
+                                    sqlConfig.UseLocalDb = (mode == "localdb");
                                     sqlConfig.Save();
                                     configured = true;
 
+                                    var modeText = mode switch
+                                    {
+                                        "localdb" => "LocalDB (Automático)",
+                                        "sqlserver" => "SQL Server",
+                                        "filemdf" => "Arquivo .mdf",
+                                        _ => "Desconhecido"
+                                    };
+
                                     MessageBox.Show(
-                                        "✅ Configuração salva com sucesso!\n\n" +
-                                        "A aplicação iniciará agora.",
+                                        $"✅ Configuração salva com sucesso!\n\n" +
+                                        $"Modo: {modeText}\n\n" +
+                                        $"A aplicação iniciará agora.",
                                         "Sucesso",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Information);
@@ -113,7 +117,7 @@ namespace InventarioSistem.WinForms
                                 {
                                     MessageBox.Show(
                                         $"❌ Erro ao validar conexão:\n\n{ex.Message}\n\n" +
-                                        "Verifique os dados e tente novamente.",
+                                        $"Verifique os dados e tente novamente.",
                                         "Erro de Conexão",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Error);
@@ -208,21 +212,6 @@ namespace InventarioSistem.WinForms
             }
         }
 
-        private static void ShowWelcomeMessage()
-        {
-            MessageBox.Show(
-                "🎉 Bem-vindo ao Inventory System!\n\n" +
-                "Esta é sua primeira execução.\n\n" +
-                "Você será guiado através da configuração do banco de dados SQL Server.\n\n" +
-                "Certifique-se de que:\n" +
-                "✅ SQL Server Express está instalado\n" +
-                "✅ O serviço SQL Server está em execução\n" +
-                "✅ O arquivo create-schema.sql está disponível\n\n" +
-                "Clique OK para continuar.",
-                "Primeiro Acesso - Configuração",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
     }
 }
 
