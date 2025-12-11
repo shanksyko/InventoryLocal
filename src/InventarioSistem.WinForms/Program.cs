@@ -24,39 +24,46 @@ namespace InventarioSistem.WinForms
             try
             {
                 // 🔧 ETAPA 1: INICIALIZAR LocalDB AUTOMATICAMENTE
+                bool localDbAvailable = false;
                 try
                 {
                     if (!LocalDbManager.IsLocalDbAvailable())
                     {
-                        MessageBox.Show(
-                            "❌ LocalDB não está disponível.\n\n" +
-                            "Certifique-se de que o .NET Runtime está instalado corretamente.",
-                            "Erro de Banco de Dados",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        return;
+                        // Tentar inicializar LocalDB
+                        try
+                        {
+                            LocalDbManager.Initialize();
+                            localDbAvailable = true;
+                        }
+                        catch
+                        {
+                            // LocalDB não disponível - usar SQL Server ou Arquivo
+                            localDbAvailable = false;
+                        }
+                    }
+                    else
+                    {
+                        localDbAvailable = true;
                     }
 
-                    LocalDbManager.Initialize();
-                    InventoryLogger.Info("Program", LocalDbManager.GetInfo());
+                    if (localDbAvailable)
+                    {
+                        InventoryLogger.Info("Program", LocalDbManager.GetInfo());
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(
-                        $"❌ Erro ao inicializar LocalDB:\n\n{ex.Message}",
-                        "Erro de Banco de Dados",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
+                    InventoryLogger.Error("Program", $"LocalDB não disponível: {ex.Message}");
+                    localDbAvailable = false;
                 }
 
                 // 🔧 ETAPA 2: CONFIGURAR MODO DE BANCO DE DADOS
                 var sqlConfig = SqlServerConfig.Load();
                 bool isFirstRun = string.IsNullOrWhiteSpace(sqlConfig.ConnectionString);
 
-                if (isFirstRun)
+                // Se LocalDB não está disponível ou é primeira execução, mostrar formulário
+                if (!localDbAvailable || isFirstRun)
                 {
-                    // Mostrar formulário de seleção de modo (LocalDB, SQL Server ou Arquivo)
                     bool configured = false;
                     while (!configured)
                     {
@@ -125,6 +132,12 @@ namespace InventarioSistem.WinForms
                             }
                         }
                     }
+                }
+                else
+                {
+                    // LocalDB está disponível e configurado
+                    sqlConfig.ConnectionString = LocalDbManager.GetConnectionString();
+                    sqlConfig.UseLocalDb = true;
                 }
 
                 // 🗄️ ETAPA 3: INICIALIZAR FACTORY E USER STORE

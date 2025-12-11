@@ -415,7 +415,11 @@ public class DatabaseSetupForm : Form
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                _cmbDatabases.Items.Add(reader["name"].ToString());
+                var dbName = reader["name"]?.ToString();
+                if (!string.IsNullOrEmpty(dbName))
+                {
+                    _cmbDatabases.Items.Add(dbName);
+                }
             }
 
             AddLog($"✅ {_cmbDatabases.Items.Count} bancos de dados encontrados");
