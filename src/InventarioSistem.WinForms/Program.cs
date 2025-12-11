@@ -34,8 +34,28 @@ namespace InventarioSistem.WinForms
                     // Test if connection string is configured
                     if (string.IsNullOrWhiteSpace(sqlConfig.ConnectionString))
                     {
-                        // Database not configured - show database setup dialog
-                        ShowDatabaseSetupDialog(sqlConfig);
+                        // Database not configured - show new advanced setup dialog
+                        using (var setupForm = new DatabaseSetupForm())
+                        {
+                            if (setupForm.ShowDialog() != DialogResult.OK)
+                            {
+                                MessageBox.Show(
+                                    "Configuração cancelada. A aplicação será fechada.",
+                                    "Cancelado",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning);
+                                return;
+                            }
+
+                            var connString = setupForm.GetConnectionString();
+                            if (!string.IsNullOrEmpty(connString))
+                            {
+                                sqlConfig.ConnectionString = connString;
+                                sqlConfig.Save();
+                                _sqlServerFactory = new SqlServerConnectionFactory(connString);
+                                _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
+                            }
+                        }
                     }
 
                     // Ensure schema is created
@@ -117,95 +137,7 @@ namespace InventarioSistem.WinForms
                     MessageBoxIcon.Error);
             }
         }
-
-        private static void ShowDatabaseSetupDialog(SqlServerConfig config)
-        {
-            var result = MessageBox.Show(
-                "Banco de dados SQL Server não configurado.\n\n" +
-                "Deseja configurar agora?",
-                "Configuração de Banco de Dados",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
-            {
-                using var form = new Form
-                {
-                    Text = "Configurar SQL Server",
-                    Size = new System.Drawing.Size(600, 200),
-                    StartPosition = FormStartPosition.CenterScreen,
-                    FormBorderStyle = FormBorderStyle.FixedDialog,
-                    MaximizeBox = false,
-                    MinimizeBox = false
-                };
-
-                var label = new Label
-                {
-                    Text = "Connection String do SQL Server:",
-                    Location = new System.Drawing.Point(10, 20),
-                    AutoSize = true
-                };
-
-                var textBox = new TextBox
-                {
-                    Location = new System.Drawing.Point(10, 45),
-                    Size = new System.Drawing.Size(560, 20),
-                    Text = "Server=localhost\\SQLEXPRESS;Database=InventoryDB;Integrated Security=true;TrustServerCertificate=true;"
-                };
-
-                var btnOk = new Button
-                {
-                    Text = "OK",
-                    DialogResult = DialogResult.OK,
-                    Location = new System.Drawing.Point(400, 100)
-                };
-
-                var btnCancel = new Button
-                {
-                    Text = "Cancelar",
-                    DialogResult = DialogResult.Cancel,
-                    Location = new System.Drawing.Point(490, 100)
-                };
-
-                form.Controls.AddRange(new Control[] { label, textBox, btnOk, btnCancel });
-                form.AcceptButton = btnOk;
-                form.CancelButton = btnCancel;
-
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    config.ConnectionString = textBox.Text.Trim();
-                    config.Save();
-
-                    // Update factory with new connection string
-                    _sqlServerFactory = new SqlServerConnectionFactory(config.ConnectionString);
-                    _sqlServerUserStore = new SqlServerUserStore(_sqlServerFactory);
-
-                    MessageBox.Show(
-                        "Configuração salva com sucesso!",
-                        "Sucesso",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "A aplicação será fechada pois o banco de dados não foi configurado.",
-                        "Configuração Cancelada",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    Environment.Exit(0);
-                }
-            }
-            else
-            {
-                MessageBox.Show(
-                    "A aplicação será fechada pois o banco de dados não foi configurado.",
-                    "Configuração Necessária",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-                Environment.Exit(0);
-            }
-        }
     }
 }
+
 
