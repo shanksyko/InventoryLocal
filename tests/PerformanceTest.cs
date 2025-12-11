@@ -1,0 +1,401 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using InventarioSistem.Access;
+using InventarioSistem.Access.Config;
+using InventarioSistem.Core.Devices;
+using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
+
+namespace InventarioSistem.Tests;
+
+public class PerformanceTest
+{
+    private static SqlServerConnectionFactory? _factory;
+    private static SqlServerInventoryStore? _store;
+
+    public static async Task Main(string[] args)
+    {
+        Console.WriteLine("=== TESTE DE PERFORMANCE - INVENTÁRIO ===");
+        Console.WriteLine();
+
+        // Carregar configuração
+        var config = SqlServerConfig.Load();
+        if (string.IsNullOrWhiteSpace(config.ConnectionString))
+        {
+            Console.WriteLine("❌ Connection string não configurada!");
+            Console.WriteLine("Configure em: sqlserver.config.json");
+            return;
+        }
+
+        _factory = new SqlServerConnectionFactory(config.ConnectionString);
+        _store = new SqlServerInventoryStore(_factory);
+
+        Console.WriteLine("✅ Conectado ao banco de dados");
+        Console.WriteLine();
+
+        // Menu de testes
+        while (true)
+        {
+            Console.WriteLine("Escolha um teste:");
+            Console.WriteLine("1 - Inserir 100 computadores");
+            Console.WriteLine("2 - Inserir 100 tablets");
+            Console.WriteLine("3 - Inserir 100 celulares");
+            Console.WriteLine("4 - Inserir 100 monitores");
+            Console.WriteLine("5 - Inserir 100 nobreaks");
+            Console.WriteLine("6 - Inserir 50 de cada tipo (550 total)");
+            Console.WriteLine("7 - Teste de leitura (listar todos)");
+            Console.WriteLine("8 - Limpar todos os dados");
+            Console.WriteLine("0 - Sair");
+            Console.WriteLine();
+            Console.Write("Opção: ");
+
+            var opcao = Console.ReadLine();
+            Console.WriteLine();
+
+            switch (opcao)
+            {
+                case "1":
+                    await InserirComputadores(100);
+                    break;
+                case "2":
+                    await InserirTablets(100);
+                    break;
+                case "3":
+                    await InserirCelulares(100);
+                    break;
+                case "4":
+                    await InserirMonitores(100);
+                    break;
+                case "5":
+                    await InserirNobreaks(100);
+                    break;
+                case "6":
+                    await InserirTodosTipos();
+                    break;
+                case "7":
+                    await TestarLeitura();
+                    break;
+                case "8":
+                    await LimparDados();
+                    break;
+                case "0":
+                    Console.WriteLine("Encerrando...");
+                    return;
+                default:
+                    Console.WriteLine("❌ Opção inválida!");
+                    break;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Pressione qualquer tecla para continuar...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+    }
+
+    private static async Task InserirComputadores(int quantidade)
+    {
+        Console.WriteLine($"Inserindo {quantidade} computadores...");
+        var sw = Stopwatch.StartNew();
+
+        for (int i = 1; i <= quantidade; i++)
+        {
+            var computer = new Computer
+            {
+                Host = $"DESKTOP-TEST-{i:D4}",
+                SerialNumber = $"SN-COMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                Proprietario = $"Usuário {i}",
+                Departamento = $"Departamento {(i % 10) + 1}",
+                Matricula = $"MAT{i:D5}"
+            };
+
+            _store!.AddComputer(computer);
+
+            if (i % 10 == 0)
+            {
+                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {quantidade} computadores inseridos em {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
+    }
+
+    private static async Task InserirTablets(int quantidade)
+    {
+        Console.WriteLine($"Inserindo {quantidade} tablets...");
+        var sw = Stopwatch.StartNew();
+
+        for (int i = 1; i <= quantidade; i++)
+        {
+            var tablet = new Tablet
+            {
+                Host = $"TABLET-TEST-{i:D4}",
+                SerialNumber = $"SN-TAB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                Local = $"Local {(i % 5) + 1}",
+                Responsavel = $"Responsável {i}",
+                Imeis = new List<string> { $"35{i:D13}", $"36{i:D13}" }
+            };
+
+            _store!.AddTablet(tablet);
+
+            if (i % 10 == 0)
+            {
+                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {quantidade} tablets inseridos em {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
+    }
+
+    private static async Task InserirCelulares(int quantidade)
+    {
+        Console.WriteLine($"Inserindo {quantidade} celulares...");
+        var sw = Stopwatch.StartNew();
+
+        for (int i = 1; i <= quantidade; i++)
+        {
+            var celular = new Celular
+            {
+                CellName = $"CELL-{i:D4}",
+                Modelo = $"Modelo-{(i % 10) + 1}",
+                Numero = $"(11) 9{i:D8}",
+                Usuario = $"Usuário {i}",
+                Setor = $"Setor {(i % 5) + 1}",
+                Imei1 = $"35{i:D13}",
+                Imei2 = $"36{i:D13}"
+            };
+
+            _store!.AddCelular(celular);
+
+            if (i % 10 == 0)
+            {
+                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {quantidade} celulares inseridos em {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
+    }
+
+    private static async Task InserirMonitores(int quantidade)
+    {
+        Console.WriteLine($"Inserindo {quantidade} monitores...");
+        var sw = Stopwatch.StartNew();
+
+        for (int i = 1; i <= quantidade; i++)
+        {
+            var monitor = new MonitorDevice
+            {
+                Modelo = $"Monitor-{(i % 5) + 1}",
+                SerialNumber = $"SN-MON-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                Local = $"Sala {(i % 20) + 1}",
+                Responsavel = $"Usuário {i}",
+                ComputadorVinculado = $"DESKTOP-{i:D4}"
+            };
+
+            _store!.AddMonitor(monitor);
+
+            if (i % 10 == 0)
+            {
+                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {quantidade} monitores inseridos em {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
+    }
+
+    private static async Task InserirNobreaks(int quantidade)
+    {
+        Console.WriteLine($"Inserindo {quantidade} nobreaks...");
+        var sw = Stopwatch.StartNew();
+
+        for (int i = 1; i <= quantidade; i++)
+        {
+            var nobreak = new Nobreak
+            {
+                Hostname = $"NOBREAK-{i:D4}",
+                Local = $"Sala {(i % 20) + 1}",
+                IpAddress = $"192.168.{(i / 254) + 1}.{(i % 254) + 1}",
+                Modelo = $"APC-{(i % 3) + 1}",
+                Status = i % 3 == 0 ? "Online" : "Offline",
+                SerialNumber = $"SN-NOB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+            };
+
+            _store!.AddNobreak(nobreak);
+
+            if (i % 10 == 0)
+            {
+                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {quantidade} nobreaks inseridos em {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Média: {sw.ElapsedMilliseconds / quantidade}ms por item");
+    }
+
+    private static async Task InserirTodosTipos()
+    {
+        Console.WriteLine("Inserindo 50 dispositivos de cada tipo...");
+        var sw = Stopwatch.StartNew();
+
+        await InserirComputadores(50);
+        await InserirTablets(50);
+        await InserirCelulares(50);
+        await InserirMonitores(50);
+        await InserirNobreaks(50);
+
+        // Adicionar outros tipos
+        Console.WriteLine("Inserindo 50 coletores...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var coletor = new ColetorAndroid
+            {
+                Host = $"COLETOR-{i:D4}",
+                SerialNumber = $"SN-COL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
+                IpAddress = $"192.168.50.{i}",
+                Local = $"Local {i}"
+            };
+            _store!.AddColetor(coletor);
+        }
+
+        Console.WriteLine("Inserindo 50 impressoras...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var impressora = new Impressora
+            {
+                Nome = $"PRINTER-{i:D4}",
+                TipoModelo = $"HP-{(i % 5) + 1}",
+                SerialNumber = $"SN-IMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                LocalAtual = $"Andar {(i % 3) + 1}",
+                LocalAnterior = ""
+            };
+            _store!.AddImpressora(impressora);
+        }
+
+        Console.WriteLine("Inserindo 50 DECTs...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var dect = new DectPhone
+            {
+                Responsavel = $"Usuário {i}",
+                Ipei = $"IPEI-{i:D10}",
+                MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
+                Numero = $"400{i:D2}",
+                Local = $"Sala {i}"
+            };
+            _store!.AddDect(dect);
+        }
+
+        Console.WriteLine("Inserindo 50 telefones Cisco...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var cisco = new CiscoPhone
+            {
+                Responsavel = $"Usuário {i}",
+                MacAddress = $"00:1B:2C:3D:{i / 256:X2}:{i % 256:X2}",
+                Numero = $"300{i:D2}",
+                Local = $"Sala {i}"
+            };
+            _store!.AddTelefoneCisco(cisco);
+        }
+
+        Console.WriteLine("Inserindo 50 televisores...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var tv = new Televisor
+            {
+                Local = $"Sala {i}",
+                Modelo = $"Samsung-{(i % 3) + 1}",
+                SerialNumber = $"SN-TV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+            };
+            _store!.AddTelevisor(tv);
+        }
+
+        Console.WriteLine("Inserindo 50 relógios de ponto...");
+        for (int i = 1; i <= 50; i++)
+        {
+            var relogio = new RelogioPonto
+            {
+                Local = $"Entrada {i}",
+                Ip = $"192.168.10.{i}",
+                Modelo = $"Henry-{(i % 2) + 1}",
+                SerialNumber = $"SN-REL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+            };
+            _store!.AddRelogioPonto(relogio);
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ 550 dispositivos inseridos em {sw.Elapsed.TotalSeconds:F2} segundos");
+    }
+
+    private static async Task TestarLeitura()
+    {
+        Console.WriteLine("Testando leitura de todos os dispositivos...");
+        var sw = Stopwatch.StartNew();
+
+        var devices = await _store!.ListAsync();
+        var count = devices.Count;
+
+        sw.Stop();
+        Console.WriteLine($"✅ {count} dispositivos lidos em {sw.ElapsedMilliseconds}ms");
+
+        // Contar por tipo
+        Console.WriteLine();
+        Console.WriteLine("Resumo por tipo:");
+        var counts = await _store.CountByTypeAsync();
+        foreach (var item in counts)
+        {
+            Console.WriteLine($"  {item.Key}: {item.Value}");
+        }
+    }
+
+    private static async Task LimparDados()
+    {
+        Console.Write("⚠️  Tem certeza que deseja limpar TODOS os dados? (S/N): ");
+        var confirmacao = Console.ReadLine()?.ToUpper();
+
+        if (confirmacao != "S")
+        {
+            Console.WriteLine("Operação cancelada.");
+            return;
+        }
+
+        Console.WriteLine("Limpando dados...");
+        var sw = Stopwatch.StartNew();
+
+        // Listar todos e deletar
+        var devices = await _store!.ListAsync();
+        int deleted = 0;
+
+        foreach (var device in devices)
+        {
+            await _store.DeleteAsync((int)device.Id);
+            deleted++;
+
+            if (deleted % 10 == 0)
+            {
+                Console.Write($"\rDeletando: {deleted}/{devices.Count}");
+            }
+        }
+
+        sw.Stop();
+        Console.WriteLine();
+        Console.WriteLine($"✅ {deleted} dispositivos removidos em {sw.Elapsed.TotalSeconds:F2} segundos");
+    }
+}
