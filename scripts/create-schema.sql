@@ -226,18 +226,20 @@ CREATE TABLE [Users] (
 -- ========================================
 -- INSERIR USUÁRIO PADRÃO (ADMIN)
 -- ========================================
+-- Usuário: admin
 -- Senha: L9l337643k#$
--- Hash: $2a$12$HASH_BCRYPT_AQUI
+-- Role: Admin
 -- ========================================
 
 IF NOT EXISTS (SELECT 1 FROM [Users] WHERE [Username] = 'admin')
-INSERT INTO [Users] ([Username], [PasswordHash], [FullName], [Role], [IsActive], [CreatedAt])
+INSERT INTO [Users] ([Username], [PasswordHash], [FullName], [Role], [IsActive], [CreatedAt], [LastPasswordChange])
 VALUES (
     'admin',
     '$2a$12$Yd7V/K2Qn.Y5W6/5X8Z9C.Uk/7N2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6',
-    'Administrador',
+    'Administrador Sistema',
     'Admin',
     1,
+    GETUTCDATE(),
     GETUTCDATE()
 );
 
