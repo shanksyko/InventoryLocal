@@ -80,22 +80,16 @@ public class TotalDashboardForm : Form
         var series = new Series("Itens")
         {
             ChartType = SeriesChartType.Pie,
-            IsValueShownAsLabel = false,  // Remover labels dentro do gráfico
+            IsValueShownAsLabel = true,
+            Label = "#VALX\n#PERCENT{P0}",  // Nome na primeira linha, percentual na segunda
             LegendText = "#VALX (#VAL)",
-            Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+            LabelForeColor = Color.Black
         };
         _chart.Series.Add(series);
 
-        // Adicionar legenda ao lado direito
-        var legend = new Legend("Legend")
-        {
-            Docking = Docking.Right,
-            Alignment = StringAlignment.Center,
-            Font = new Font("Segoe UI", 9F),
-            TitleFont = new Font("Segoe UI", 10F, FontStyle.Bold),
-            Title = "Legenda"
-        };
-        _chart.Legends.Add(legend);
+        // Remover legenda para deixar mais espaço ao gráfico
+        _chart.Legends.Clear();
 
         splitContainer.Panel1.Controls.Add(_chart);
 
