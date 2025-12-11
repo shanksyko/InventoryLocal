@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+    <PackageReference Include="ClosedXML" Version="0.95.4" />
   </ItemGroup>
 
   <PropertyGroup>

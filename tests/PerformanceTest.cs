@@ -1,11 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
+using InventarioSistem.Access.Export;
 using InventarioSistem.Core.Devices;
+using InventarioSistem.Core.Entities;
+using ComputerDevice = InventarioSistem.Core.Devices.Computer;
+using TabletDevice = InventarioSistem.Core.Devices.Tablet;
+using ColetorDevice = InventarioSistem.Core.Devices.ColetorAndroid;
+using CelularDevice = InventarioSistem.Core.Devices.Celular;
+using ImpressoraDevice = InventarioSistem.Core.Devices.Impressora;
+using DectDevice = InventarioSistem.Core.Devices.DectPhone;
+using CiscoDevice = InventarioSistem.Core.Devices.CiscoPhone;
+using TelevisorDevice = InventarioSistem.Core.Devices.Televisor;
+using RelogioDevice = InventarioSistem.Core.Devices.RelogioPonto;
 using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
+using NobreakDevice = InventarioSistem.Core.Devices.Nobreak;
 
 namespace InventarioSistem.Tests;
 
@@ -49,6 +62,7 @@ public class PerformanceTest
             Console.WriteLine("7 - Inserir 500 de cada tipo (5500 total) - TESTE PESADO");
             Console.WriteLine("8 - Teste de leitura (listar todos)");
             Console.WriteLine("9 - Limpar todos os dados");
+            Console.WriteLine("E - Teste de exportação XLSX");
             Console.WriteLine("A - Criar usuário admin");
             Console.WriteLine("0 - Sair");
             Console.WriteLine();
@@ -86,6 +100,9 @@ public class PerformanceTest
                 case "9":
                     await LimparDados();
                     break;
+                case "E":
+                    await TestarExportacao();
+                    break;
                 case "A":
                     await CriarUsuarioAdmin();
                     break;
@@ -111,7 +128,7 @@ public class PerformanceTest
 
         for (int i = 1; i <= quantidade; i++)
         {
-            var computer = new Computer
+            var computer = new ComputerDevice
             {
                 Host = $"DESKTOP-TEST-{i:D4}",
                 SerialNumber = $"SN-COMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
@@ -141,7 +158,7 @@ public class PerformanceTest
 
         for (int i = 1; i <= quantidade; i++)
         {
-            var tablet = new Tablet
+            var tablet = new TabletDevice
             {
                 Host = $"TABLET-TEST-{i:D4}",
                 SerialNumber = $"SN-TAB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
@@ -171,7 +188,7 @@ public class PerformanceTest
 
         for (int i = 1; i <= quantidade; i++)
         {
-            var celular = new Celular
+            var celular = new CelularDevice
             {
                 CellName = $"CELL-{i:D4}",
                 Modelo = $"Modelo-{(i % 10) + 1}",
@@ -272,7 +289,7 @@ public class PerformanceTest
         Console.WriteLine($"Inserindo {quantidadePorTipo} coletores...");
         for (int i = 1; i <= quantidadePorTipo; i++)
         {
-            var coletor = new ColetorAndroid
+            var coletor = new ColetorDevice
             {
                 Host = $"COLETOR-{i:D4}",
                 SerialNumber = $"SN-COL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
@@ -284,10 +301,10 @@ public class PerformanceTest
             if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine($"\nInserindo {quantidadePorTipo} impressoras...");
+        Console.WriteLine($"Inserindo {quantidadePorTipo} impressoras...");
         for (int i = 1; i <= quantidadePorTipo; i++)
         {
-            var impressora = new Impressora
+            var impressora = new ImpressoraDevice
             {
                 Nome = $"PRINTER-{i:D4}",
                 TipoModelo = $"HP-{(i % 5) + 1}",
@@ -328,10 +345,10 @@ public class PerformanceTest
             if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine($"\nInserindo {quantidadePorTipo} televisores...");
+        Console.WriteLine($"Inserindo {quantidadePorTipo} televisores...");
         for (int i = 1; i <= quantidadePorTipo; i++)
         {
-            var tv = new Televisor
+            var tv = new TelevisorDevice
             {
                 Local = $"Sala {i}",
                 Modelo = $"Samsung-{(i % 3) + 1}",
@@ -341,10 +358,10 @@ public class PerformanceTest
             if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
         }
 
-        Console.WriteLine($"\nInserindo {quantidadePorTipo} relógios de ponto...");
+        Console.WriteLine($"Inserindo {quantidadePorTipo} relógios de ponto...");
         for (int i = 1; i <= quantidadePorTipo; i++)
         {
-            var relogio = new RelogioPonto
+            var relogio = new RelogioDevice
             {
                 Local = $"Entrada {(i % 20) + 1}",
                 Ip = $"192.168.10.{(i % 254) + 1}",
@@ -455,5 +472,71 @@ public class PerformanceTest
         {
             Console.WriteLine($"❌ Erro ao criar usuário: {ex.Message}");
         }
+    }
+
+    private static async Task TestarExportacao()
+    {
+        Console.WriteLine("Teste de Exportação XLSX");
+        Console.WriteLine("=========================");
+        Console.WriteLine();
+
+        // Criar diretório de saída
+        var outputDir = Path.Combine(
+            Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) ?? "",
+            "exports"
+        );
+        Directory.CreateDirectory(outputDir);
+
+        Console.WriteLine($"Arquivos serão salvos em: {outputDir}");
+        Console.WriteLine();
+
+        var deviceTypes = new[]
+        {
+            (DeviceType.Computer, "Computadores"),
+            (DeviceType.Tablet, "Tablets"),
+            (DeviceType.ColetorAndroid, "Coletores Android"),
+            (DeviceType.Celular, "Celulares"),
+            (DeviceType.Impressora, "Impressoras"),
+            (DeviceType.Dect, "DECT Phones"),
+            (DeviceType.TelefoneCisco, "Telefones Cisco"),
+            (DeviceType.Televisor, "Televisores"),
+            (DeviceType.RelogioPonto, "Relógios de Ponto"),
+            (DeviceType.Monitor, "Monitores"),
+            (DeviceType.Nobreak, "Nobreaks")
+        };
+
+        var successCount = 0;
+        var failureCount = 0;
+
+        foreach (var (type, name) in deviceTypes)
+        {
+            try
+            {
+                var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                var filename = $"inventario-{name.ToLower().Replace(" ", "-")}-{timestamp}.xlsx";
+                var filepath = Path.Combine(outputDir, filename);
+
+                Console.Write($"Exportando {name,-25} ... ");
+
+                var sw = Stopwatch.StartNew();
+                XlsxExporterHelper.ExportToFile(_store!, type, filepath);
+                sw.Stop();
+
+                var fileInfo = new FileInfo(filepath);
+                Console.WriteLine($"✅ OK ({fileInfo.Length / 1024} KB em {sw.ElapsedMilliseconds}ms)");
+
+                successCount++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ ERRO: {ex.Message}");
+                failureCount++;
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"Resumo: {successCount} sucesso, {failureCount} erro");
+        Console.WriteLine();
+        Console.WriteLine($"Arquivos salvos em: {outputDir}");
     }
 }
