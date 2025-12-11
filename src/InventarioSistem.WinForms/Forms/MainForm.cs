@@ -1685,8 +1685,9 @@ namespace InventarioSistem.WinForms
             try
             {
                 Cursor = Cursors.WaitCursor;
-                // Carregar em background para não bloquear a UI
-                var list = await Task.Run(() => _store.GetAllComputers());
+                // Usar async direto - mais rápido que Task.Run com sync
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllComputersAsync(1000, cts.Token);
                 _computersCache = ToList(list);
                 ApplyComputersFilter();
             }
@@ -1710,7 +1711,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllTablets());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllTabletsAsync(cts.Token);
                 _tabletsCache = ToList(list);
                 ApplyTabletsFilter();
             }
@@ -1730,7 +1732,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllColetores());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllColetoresAsync(cts.Token);
                 _coletoresCache = ToList(list);
                 ApplyColetoresFilter();
             }
@@ -1750,7 +1753,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllCelulares());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllCelularesAsync(cts.Token);
                 _celularesCache = ToList(list);
                 ApplyCelularesFilter();
             }
@@ -2170,7 +2174,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllImpressoras());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllImpressorasAsync(cts.Token);
                 _impressorasCache = list.ToList();
                 ApplyImpressorasFilter();
             }
@@ -2268,7 +2273,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllDects());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllDectsAsync(cts.Token);
                 _dectsCache = list.ToList();
                 ApplyDectsFilter();
             }
@@ -2366,7 +2372,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllTelefonesCisco());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllTelefonesCiscoAsync(cts.Token);
                 _ciscoCache = list.ToList();
                 ApplyCiscoFilter();
             }
@@ -2462,7 +2469,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllTelevisores());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllTelevisoresAsync(cts.Token);
                 _tvsCache = list.ToList();
                 ApplyTvsFilter();
             }
@@ -2553,7 +2561,8 @@ namespace InventarioSistem.WinForms
 
             try
             {
-                var list = await Task.Run(() => _store.GetAllRelogiosPonto());
+                var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(5));
+                var list = await _store.GetAllRelogiosPontoAsync(cts.Token);
                 _relogiosCache = list.ToList();
                 ApplyRelogiosFilter();
             }

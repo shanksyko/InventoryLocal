@@ -8,17 +8,17 @@ using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Export;
 using InventarioSistem.Core.Devices;
 using InventarioSistem.Core.Entities;
-using ComputerDevice = InventarioSistem.Core.Devices.Computer;
-using TabletDevice = InventarioSistem.Core.Devices.Tablet;
-using ColetorDevice = InventarioSistem.Core.Devices.ColetorAndroid;
 using CelularDevice = InventarioSistem.Core.Devices.Celular;
-using ImpressoraDevice = InventarioSistem.Core.Devices.Impressora;
-using DectDevice = InventarioSistem.Core.Devices.DectPhone;
 using CiscoDevice = InventarioSistem.Core.Devices.CiscoPhone;
-using TelevisorDevice = InventarioSistem.Core.Devices.Televisor;
-using RelogioDevice = InventarioSistem.Core.Devices.RelogioPonto;
+using ColetorDevice = InventarioSistem.Core.Devices.ColetorAndroid;
+using ComputerDevice = InventarioSistem.Core.Devices.Computer;
+using DectDevice = InventarioSistem.Core.Devices.DectPhone;
+using ImpressoraDevice = InventarioSistem.Core.Devices.Impressora;
 using MonitorDevice = InventarioSistem.Core.Devices.Monitor;
 using NobreakDevice = InventarioSistem.Core.Devices.Nobreak;
+using RelogioDevice = InventarioSistem.Core.Devices.RelogioPonto;
+using TabletDevice = InventarioSistem.Core.Devices.Tablet;
+using TelevisorDevice = InventarioSistem.Core.Devices.Televisor;
 
 namespace InventarioSistem.Tests;
 
@@ -440,7 +440,7 @@ public class PerformanceTest
     private static async Task CriarUsuarioAdmin()
     {
         Console.WriteLine("Criando usuário admin...");
-        
+
         try
         {
             // Verificar se já existe
