@@ -1,0 +1,4 @@
+{
+  "ConnectionString": "(LocalDB)\\InventoryLocal;AttachDbFileName=C:\\Users\\username\\AppData\\Local\\InventoryLocal\\InventoryLocal.mdf;Integrated Security=true;TrustServerCertificate=true;",
+  "UseLocalDb": true
+}
