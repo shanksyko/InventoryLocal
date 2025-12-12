@@ -202,23 +202,6 @@ public static class LocalDbManager
                 Log($"📁 Diretório criado: {directory}");
             }
 
-            // Se arquivo já existe, deletar
-            if (File.Exists(mdfPath))
-            {
-                File.Delete(mdfPath);
-                Log("🗑️  Arquivo existente removido");
-            }
-
-            // Também remover arquivo .ldf se existir
-            var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
-            if (File.Exists(ldfPath))
-            {
-                File.Delete(ldfPath);
-                Log("🗑️  Arquivo de log removido");
-            }
-
-            Log("⚙️  Criando banco de dados...");
-
             // Connection string para criar o banco
             var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;";
 
@@ -227,8 +210,43 @@ public static class LocalDbManager
                 conn.Open();
                 Log("✅ Conectado ao LocalDB");
 
-                // Criar banco de dados
+                // Se já existir um database com o mesmo nome, derruba antes de recriar
                 var dbName = Path.GetFileNameWithoutExtension(mdfPath);
+
+                using (var checkCmd = conn.CreateCommand())
+                {
+                    checkCmd.CommandText = "SELECT db_id(@name)";
+                    checkCmd.Parameters.AddWithValue("@name", dbName);
+                    var exists = checkCmd.ExecuteScalar() != DBNull.Value;
+
+                    if (exists)
+                    {
+                        Log("⚠️  Banco já existia, removendo para recriar...");
+
+                        using var dropCmd = conn.CreateCommand();
+                        dropCmd.CommandText = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{dbName}]";
+                        dropCmd.ExecuteNonQuery();
+                        Log("🗑️  Banco existente removido");
+                    }
+                }
+
+                // Se arquivo já existe, deletar (após drop)
+                if (File.Exists(mdfPath))
+                {
+                    File.Delete(mdfPath);
+                    Log("🗑️  Arquivo existente removido");
+                }
+
+                // Também remover arquivo .ldf se existir
+                var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+                if (File.Exists(ldfPath))
+                {
+                    File.Delete(ldfPath);
+                    Log("🗑️  Arquivo de log removido");
+                }
+
+                Log("⚙️  Criando banco de dados...");
+
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = $@"
