@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using Microsoft.Data.SqlClient;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
@@ -17,9 +19,11 @@ namespace InventarioSistem.WinForms
 {
     public partial class MainForm : Form
     {
-        private readonly SqlServerInventoryStore? _store;
-        private readonly SqlServerUserStore? _userStore;
-        private readonly SqlServerConnectionFactory? _sqlFactory;
+        private SqlServerInventoryStore? _store;
+        private SqlServerUserStore? _userStore;
+        private SqlServerConnectionFactory? _sqlFactory;
+        private System.Threading.Timer? _backupTimer;
+        private bool _backupInProgress;
         private User? _currentUser;
 
         // Cabeçalho visual
@@ -104,11 +108,12 @@ namespace InventarioSistem.WinForms
         private Button _btnSelecionarDb = null!;
         private Button _btnResumoDb = null!;
         private Button _btnGerenciarUsuariosAvancado = null!;
+        private Button _btnBackupEnviarSql = null!;
 
         // Aba Log
         private TextBox _txtLog = null!;
 
-        public MainForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerInventoryStore? store = null, SqlServerUserStore? SqlServerUserStore = null)
+        public MainForm(SqlServerConnectionFactory? sqlFactory = null, SqlServerInventoryStore? store = null, SqlServerUserStore? SqlServerUserStore = null, User? currentUser = null)
         {
             Text = "Inventory System";
             StartPosition = FormStartPosition.CenterScreen;
@@ -135,7 +140,9 @@ namespace InventarioSistem.WinForms
             _sqlFactory = sqlFactory ?? new SqlServerConnectionFactory(config.ConnectionString);
             _store = store ?? new SqlServerInventoryStore(_sqlFactory);
             _userStore = SqlServerUserStore;
-            _currentUser = new User { Username = "admin", FullName = "Administrador" }; // Placeholder
+            _currentUser = currentUser ?? new User { Username = "admin", FullName = "Administrador", Role = UserRole.Admin };
+
+            StartAutoBackupTimer();
 
             InitializeLayout();
 
@@ -305,6 +312,12 @@ namespace InventarioSistem.WinForms
             ApplyUserMode(false);
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            _backupTimer?.Dispose();
+        }
+
         private void TabControl_SelectedIndexChanged(object? sender, EventArgs e)
         {
             // Lazy-loading: carrega dados apenas quando a aba é selecionada
@@ -361,21 +374,34 @@ namespace InventarioSistem.WinForms
 
         private void ApplyUserMode(bool isUserMode)
         {
+            var isVisualizer = _currentUser?.Role == UserRole.Visualizador;
+            var effectiveUserMode = isUserMode || isVisualizer;
+
             // Update header visuals
-            if (isUserMode)
+            if (isVisualizer)
+            {
+                _headerPanel.BackColor = Color.FromArgb(245, 245, 235);
+                _lblMode.Text = "Modo: Visualizador (somente leitura)";
+                _chkUserMode.Checked = true;
+                _chkUserMode.Enabled = false;
+            }
+            else if (effectiveUserMode)
             {
                 _headerPanel.BackColor = Color.FromArgb(245, 250, 245);
                 _lblMode.Text = "Modo: Usuário";
+                _chkUserMode.Checked = true;
+                _chkUserMode.Enabled = true;
             }
             else
             {
                 _headerPanel.BackColor = Color.FromArgb(230, 236, 245);
                 _lblMode.Text = string.Empty;
+                _chkUserMode.Checked = false;
+                _chkUserMode.Enabled = true;
             }
 
             // Disable editing controls when in user mode OR when user is Visualizador
-            var isVisualizer = _currentUser?.Role == UserRole.Visualizador;
-            var enableEdit = !isUserMode && !isVisualizer;
+            var enableEdit = !effectiveUserMode;
             var enableRefresh = _store != null; // visualizador pode atualizar listas
 
             // Refresh buttons (sempre liberados se banco configurado)
@@ -1450,34 +1476,48 @@ namespace InventarioSistem.WinForms
 
         private void InitializeAvancadoTab(TabPage page)
         {
+            var stack = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.TopDown,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                WrapContents = false,
+                Location = new Point(10, 10),
+                Padding = new Padding(0, 0, 0, 0)
+            };
+
             _lblDbPath = new Label
             {
                 AutoSize = true,
-                Location = new Point(10, 15),
                 Text = "Banco atual: (não configurado)"
             };
 
             _btnSelecionarDb = new Button
             {
                 Text = "Configurar SQL Server...",
-                AutoSize = true,
-                Location = new Point(10, 45)
+                AutoSize = true
             };
             _btnSelecionarDb.Click += (_, _) => SelecionarBanco();
 
             _btnResumoDb = new Button
             {
                 Text = "Resumo do banco",
-                AutoSize = true,
-                Location = new Point(10, 80)
+                AutoSize = true
             };
             _btnResumoDb.Click += (_, _) => MostrarResumoBanco();
+
+            _btnBackupEnviarSql = new Button
+            {
+                Text = "Backup e enviar para SQL",
+                AutoSize = true,
+                Visible = _currentUser?.Role == UserRole.Admin
+            };
+            _btnBackupEnviarSql.Click += (_, _) => AbrirBackupEnvioSql();
 
             _btnGerenciarUsuariosAvancado = new Button
             {
                 Text = "Gerenciar usuários...",
                 AutoSize = true,
-                Location = new Point(10, 120),
                 Visible = _currentUser?.Role == UserRole.Admin
             };
             _btnGerenciarUsuariosAvancado.Click += (_, _) => AbrirGerenciadorUsuarios();
@@ -1486,7 +1526,6 @@ namespace InventarioSistem.WinForms
             {
                 Text = "Sair da Conta (Logoff)",
                 AutoSize = true,
-                Location = new Point(10, 160),
                 BackColor = Color.FromArgb(220, 60, 60),
                 ForeColor = Color.White,
                 Padding = new Padding(5)
@@ -1496,7 +1535,7 @@ namespace InventarioSistem.WinForms
             var lblHint = new Label
             {
                 AutoSize = true,
-                Location = new Point(10, 200),
+                MaximumSize = new Size(380, 0),
                 Text = "O banco selecionado é salvo nas configurações do usuário.\n" +
                        "Ao abrir o aplicativo novamente, ele reconectará automaticamente\n" +
                        "ao mesmo banco, até que você escolha outro aqui."
@@ -1505,19 +1544,24 @@ namespace InventarioSistem.WinForms
             var lblDeveloper = new Label
             {
                 AutoSize = true,
-                Location = new Point(10, 280),
                 Text = "Desenvolvido por Giancarlo Conrado Romualdo",
                 Font = new Font("Segoe UI", 9F, FontStyle.Italic),
                 ForeColor = Color.FromArgb(100, 100, 100)
             };
 
-            page.Controls.Add(_lblDbPath);
-            page.Controls.Add(_btnSelecionarDb);
-            page.Controls.Add(_btnResumoDb);
-            page.Controls.Add(_btnGerenciarUsuariosAvancado);
-            page.Controls.Add(btnLogoff);
-            page.Controls.Add(lblHint);
-            page.Controls.Add(lblDeveloper);
+            // Espaçamentos
+            stack.Controls.Add(_lblDbPath);
+            stack.Controls.Add(_btnSelecionarDb);
+            stack.Controls.Add(_btnResumoDb);
+            stack.Controls.Add(_btnBackupEnviarSql);
+            stack.Controls.Add(_btnGerenciarUsuariosAvancado);
+            stack.Controls.Add(btnLogoff);
+            stack.Controls.Add(lblHint);
+            stack.Controls.Add(lblDeveloper);
+
+            stack.SetFlowBreak(lblHint, true);
+
+            page.Controls.Add(stack);
         }
 
         private void InitializeLogTab(TabPage page)
@@ -1771,8 +1815,8 @@ namespace InventarioSistem.WinForms
         // Método de validação de permissão para edit/delete (silencioso para visualizador)
         private bool IsUserAuthorizedForEdit()
         {
-            // Visualizador permanece read-only: apenas retorna false sem popup
-            if (_currentUser?.Role == UserRole.Visualizador)
+            // Visualizador ou modo usuário permanecem read-only: apenas retorna false sem popup
+            if (_currentUser?.Role == UserRole.Visualizador || _chkUserMode.Checked)
                 return false;
 
             return true;
@@ -2639,68 +2683,91 @@ namespace InventarioSistem.WinForms
             return source is List<T> list ? list : new List<T>(source);
         }
 
-        private void SelecionarBanco()
+        private async void SelecionarBanco()
         {
-            var form = new Form
-            {
-                Text = "Configurar SQL Server",
-                Size = new Size(600, 200),
-                StartPosition = FormStartPosition.CenterParent,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
+            // Carrega config atual para comparar e confirmar troca
+            var currentConfig = SqlServerConfig.Load();
 
-            var label = new Label
-            {
-                Text = "Connection String:",
-                Location = new Point(10, 20),
-                AutoSize = true
-            };
-
-            var textBox = new TextBox
-            {
-                Location = new Point(10, 45),
-                Size = new Size(560, 20),
-                Text = new SqlServerConfig().ConnectionString ?? ""
-            };
-
-            var btnOk = new Button
-            {
-                Text = "OK",
-                DialogResult = DialogResult.OK,
-                Location = new Point(400, 100)
-            };
-
-            var btnCancel = new Button
-            {
-                Text = "Cancelar",
-                DialogResult = DialogResult.Cancel,
-                Location = new Point(490, 100)
-            };
-
-            form.Controls.AddRange(new Control[] { label, textBox, btnOk, btnCancel });
-            form.AcceptButton = btnOk;
-            form.CancelButton = btnCancel;
-
-            if (form.ShowDialog(this) != DialogResult.OK)
+            // Reutiliza o configurador completo (LocalDB, SQL Server ou arquivo .mdf)
+            using var configForm = new DatabaseConfigForm();
+            if (configForm.ShowDialog(this) != DialogResult.OK)
                 return;
 
-            var connStr = textBox.Text.Trim();
+            var connStr = configForm.GetConnectionString();
+            var mode = configForm.GetMode();
 
             try
             {
-                // Save connection string to config
-                var config = new SqlServerConfig();
-                // The config is persisted automatically in SqlServerConfig's constructor/save mechanism
-                _lblDbPath.Text = $"SQL Server: {connStr.Substring(0, Math.Min(50, connStr.Length))}...";
-                InventoryLogger.Info("WinForms", "SQL Server configurado");
+                Cursor = Cursors.WaitCursor;
 
-                // Garante estrutura mínima
+                if (string.IsNullOrWhiteSpace(connStr))
+                {
+                    MessageBox.Show(this,
+                        "Informe uma connection string válida.",
+                        "Validação",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Valida formato da connection string antes de prosseguir
                 try
                 {
-                    var factory = new SqlServerConnectionFactory(connStr);
-                    SqlServerSchemaManager.EnsureRequiredTables(factory);
+                    _ = new SqlConnectionStringBuilder(connStr);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this,
+                        "Connection string inválida:\n\n" + ex.Message,
+                        "Validação",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Confirmar troca se connection string ou modo mudaram
+                var newUseLocalDb = mode == "localdb" || mode == "filemdf";
+                var sameConn = string.Equals(currentConfig.ConnectionString, connStr, StringComparison.OrdinalIgnoreCase);
+                var sameMode = currentConfig.UseLocalDb == newUseLocalDb;
+                if (!sameConn || !sameMode)
+                {
+                    var confirm = MessageBox.Show(this,
+                        "Você está trocando o banco de dados. Isso irá recarregar as tabelas usando a nova conexão.\n\nDeseja continuar?",
+                        "Confirmar troca de banco",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (confirm != DialogResult.Yes)
+                        return;
+                }
+
+                // Persistir configuração
+                var config = SqlServerConfig.Load();
+                config.ConnectionString = connStr;
+                config.UseLocalDb = newUseLocalDb;
+                config.Save();
+
+                // Recriar factory/stores para usar imediatamente
+                _sqlFactory = new SqlServerConnectionFactory(connStr);
+                _store = new SqlServerInventoryStore(_sqlFactory);
+                _userStore ??= new SqlServerUserStore(_sqlFactory);
+
+                StartAutoBackupTimer();
+
+                var modeText = mode switch
+                {
+                    "localdb" => "LocalDB",
+                    "filemdf" => "Arquivo .mdf",
+                    _ => "SQL Server"
+                };
+
+                _lblDbPath.Text = $"Banco: {modeText} ({connStr.Substring(0, Math.Min(60, connStr.Length))}...)";
+                InventoryLogger.Info("WinForms", $"Banco configurado ({modeText})");
+
+                // Validar conexão e garantir schema sem travar a UI
+                try
+                {
+                    await Task.Run(() => SqlServerSchemaManager.EnsureRequiredTables(_sqlFactory));
                     InventoryLogger.Info("WinForms", "EnsureRequiredTables() finalizado com sucesso.");
                 }
                 catch (Exception ex)
@@ -2733,14 +2800,14 @@ namespace InventarioSistem.WinForms
                 }
 
                 MessageBox.Show(this,
-                    "✔ Banco SQL Server configurado e salvo nas configurações.\n" +
+                    "✔ Banco configurado e salvo nas configurações.\n" +
                     "Na próxima vez que abrir o programa, ele já conectará\n" +
                     "automaticamente nesta conexão.",
-                    "SQL Server",
+                    "Banco de Dados",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
-                InventoryLogger.Info("WinForms", "Banco SQL Server configurado com sucesso e grids recarregadas.");
+                InventoryLogger.Info("WinForms", "Banco configurado com sucesso e grids recarregadas.");
             }
             catch (Exception ex)
             {
@@ -2749,6 +2816,10 @@ namespace InventarioSistem.WinForms
                     "Erro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
             }
         }
 
@@ -2810,6 +2881,143 @@ namespace InventarioSistem.WinForms
 
             using var form = new UserManagementForm(_userStore, _currentUser);
             form.ShowDialog(this);
+        }
+
+        private void StartAutoBackupTimer()
+        {
+            _backupTimer?.Dispose();
+
+            if (_sqlFactory == null)
+                return;
+
+            // Roda a cada 3 minutos; primeira execução após 3 minutos
+            _backupTimer = new System.Threading.Timer(async _ => await RunBackupAsync(), null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
+            InventoryLogger.Info("WinForms", "Timer de backup automático iniciado (3 min)");
+        }
+
+        private async Task RunBackupAsync()
+        {
+            if (_backupInProgress)
+                return;
+
+            if (_sqlFactory == null)
+                return;
+
+            try
+            {
+                _backupInProgress = true;
+
+                var builder = new SqlConnectionStringBuilder(_sqlFactory.ConnectionString);
+                var dbName = string.IsNullOrWhiteSpace(builder.InitialCatalog)
+                    ? "Inventory"
+                    : builder.InitialCatalog;
+
+                var backupFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{dbName}.bak");
+                var sanitizedDb = dbName.Replace("]", "]]", StringComparison.Ordinal);
+                var escapedPath = backupFile.Replace("'", "''", StringComparison.Ordinal);
+
+                await using var conn = _sqlFactory.CreateConnection();
+                await conn.OpenAsync();
+
+                await using var cmd = conn.CreateCommand();
+                cmd.CommandText = $"BACKUP DATABASE [{sanitizedDb}] TO DISK = '{escapedPath}' WITH INIT, COMPRESSION";
+                await cmd.ExecuteNonQueryAsync();
+
+                InventoryLogger.Info("WinForms", $"Backup automático gerado: {backupFile}");
+            }
+            catch (Exception ex)
+            {
+                InventoryLogger.Error("WinForms", "Falha no backup automático", ex);
+            }
+            finally
+            {
+                _backupInProgress = false;
+            }
+        }
+
+        private void AbrirBackupEnvioSql()
+        {
+            if (_currentUser?.Role != UserRole.Admin)
+            {
+                MessageBox.Show(this,
+                    "Apenas administradores podem executar backup/migração.",
+                    "Acesso negado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_sqlFactory == null)
+            {
+                MessageBox.Show(this,
+                    "Conexão com o banco não está configurada.",
+                    "Aviso",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            var sourceConn = _sqlFactory.ConnectionString;
+            var targetConn = PromptForTargetConnectionString();
+            if (string.IsNullOrWhiteSpace(targetConn))
+                return;
+
+            using var form = new DatabaseMigrationForm(sourceConn, targetConn);
+            form.ShowDialog(this);
+        }
+
+        private string? PromptForTargetConnectionString()
+        {
+            var dialog = new Form
+            {
+                Text = "Destino SQL Server",
+                Size = new Size(620, 180),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MinimizeBox = false,
+                MaximizeBox = false
+            };
+
+            var lbl = new Label
+            {
+                Text = "Informe a connection string de destino (SQL Server):",
+                AutoSize = true,
+                Location = new Point(12, 15)
+            };
+
+            var txt = new TextBox
+            {
+                Location = new Point(12, 40),
+                Width = 580
+            };
+
+            var btnOk = new Button
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Location = new Point(400, 80),
+                AutoSize = true
+            };
+
+            var btnCancel = new Button
+            {
+                Text = "Cancelar",
+                DialogResult = DialogResult.Cancel,
+                Location = new Point(500, 80),
+                AutoSize = true
+            };
+
+            dialog.AcceptButton = btnOk;
+            dialog.CancelButton = btnCancel;
+
+            dialog.Controls.Add(lbl);
+            dialog.Controls.Add(txt);
+            dialog.Controls.Add(btnOk);
+            dialog.Controls.Add(btnCancel);
+
+            return dialog.ShowDialog(this) == DialogResult.OK
+                ? txt.Text.Trim()
+                : null;
         }
 
         private void MostrarDashboard()

@@ -209,7 +209,7 @@ public class UserEditForm : Form
                     Provider = "Local"
                 };
 
-                await _userStore.AddUserAsync(username, password, fullName ?? "", isActive);
+                await _userStore.AddUserAsync(username, password, fullName ?? "", isActive, role.ToString());
                 MessageBox.Show(this, "Usuário criado com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
@@ -230,10 +230,10 @@ public class UserEditForm : Form
                         return;
                     }
 
-                    await _userStore.UpdatePasswordAsync(_existingUser.Id.ToString(), User.HashPassword(password));
+                    await _userStore.UpdateUserPasswordAsync(_existingUser.Id.ToString(), password);
                 }
 
-                await _userStore.UpdateUserAsync(_existingUser.Id.ToString(), username, fullName ?? "", isActive);
+                await _userStore.UpdateUserAsync(_existingUser.Id.ToString(), username, fullName ?? "", isActive, role.ToString());
                 MessageBox.Show(this, "Usuário atualizado com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 

@@ -19,6 +19,12 @@ public class DatabaseConfigForm : Form
     private RadioButton _rbLocalDb = null!;
     private RadioButton _rbSqlServer = null!;
     private RadioButton _rbFileMdf = null!;
+
+    private TextBox _txtSqlServer = null!;
+    private TextBox _txtSqlDatabase = null!;
+    private TextBox _txtSqlUser = null!;
+    private TextBox _txtSqlPassword = null!;
+    private CheckBox _chkSqlIntegratedSecurity = null!;
     
     private Panel _panelLocalDb = null!;
     private Panel _panelSqlServer = null!;
@@ -116,7 +122,7 @@ public class DatabaseConfigForm : Form
 
         y += 30;
 
-        _panelSqlServer = ResponsiveUIHelper.CreateCard(650, 150);
+        _panelSqlServer = ResponsiveUIHelper.CreateCard(650, 220);
         _panelSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
         _panelSqlServer.Visible = false;
 
@@ -131,22 +137,73 @@ public class DatabaseConfigForm : Form
         };
         pnlSqlControls.Controls.Add(lblSqlServer);
 
-        var txtSqlServer = ResponsiveUIHelper.CreateTextBox("localhost\\SQLEXPRESS", 340);
-        txtSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium + 25);
-        txtSqlServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        pnlSqlControls.Controls.Add(txtSqlServer);
-        pnlSqlControls.Tag = txtSqlServer;
+        _txtSqlServer = ResponsiveUIHelper.CreateTextBox("GIANPC\\SQLEXPRESS", 320);
+        _txtSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium + 22);
+        _txtSqlServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        pnlSqlControls.Controls.Add(_txtSqlServer);
 
-        var btnTestSql = ResponsiveUIHelper.CreateButton("🔗 Testar", 100, ResponsiveUIHelper.Colors.PrimaryBlue);
+        var lblDatabase = new Label
+        {
+            Text = "Banco de dados (Initial Catalog):",
+            AutoSize = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlServer.Bottom + ResponsiveUIHelper.Spacing.Medium),
+            Font = ResponsiveUIHelper.Fonts.LabelBold
+        };
+        pnlSqlControls.Controls.Add(lblDatabase);
+
+        _txtSqlDatabase = ResponsiveUIHelper.CreateTextBox("InventoryLocal", 220);
+        _txtSqlDatabase.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblDatabase.Bottom + 4);
+        pnlSqlControls.Controls.Add(_txtSqlDatabase);
+
+        _chkSqlIntegratedSecurity = new CheckBox
+        {
+            Text = "Usar Segurança Integrada (Windows)",
+            AutoSize = true,
+            Checked = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlDatabase.Bottom + ResponsiveUIHelper.Spacing.Small)
+        };
+        _chkSqlIntegratedSecurity.CheckedChanged += (_, _) => ToggleSqlAuthFields();
+        pnlSqlControls.Controls.Add(_chkSqlIntegratedSecurity);
+
+        var lblSqlUser = new Label
+        {
+            Text = "Usuário (SQL Authentication):",
+            AutoSize = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _chkSqlIntegratedSecurity.Bottom + ResponsiveUIHelper.Spacing.Small),
+            Font = ResponsiveUIHelper.Fonts.LabelBold
+        };
+        pnlSqlControls.Controls.Add(lblSqlUser);
+
+        _txtSqlUser = ResponsiveUIHelper.CreateTextBox(string.Empty, 200);
+        _txtSqlUser.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblSqlUser.Bottom + 4);
+        pnlSqlControls.Controls.Add(_txtSqlUser);
+
+        var lblSqlPassword = new Label
+        {
+            Text = "Senha:",
+            AutoSize = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlUser.Bottom + ResponsiveUIHelper.Spacing.Small),
+            Font = ResponsiveUIHelper.Fonts.LabelBold
+        };
+        pnlSqlControls.Controls.Add(lblSqlPassword);
+
+        _txtSqlPassword = ResponsiveUIHelper.CreateTextBox(string.Empty, 200);
+        _txtSqlPassword.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblSqlPassword.Bottom + 4);
+        _txtSqlPassword.PasswordChar = '*';
+        pnlSqlControls.Controls.Add(_txtSqlPassword);
+
+        var btnTestSql = ResponsiveUIHelper.CreateButton("🔗 Testar", 120, ResponsiveUIHelper.Colors.PrimaryBlue);
         btnTestSql.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnTestSql.Location = new Point(txtSqlServer.Right + ResponsiveUIHelper.Spacing.Small, txtSqlServer.Top);
-        btnTestSql.Click += (s, e) => TestSqlConnection(txtSqlServer.Text);
+        btnTestSql.Location = new Point(_txtSqlServer.Right + ResponsiveUIHelper.Spacing.Small, _txtSqlServer.Top);
+        btnTestSql.Click += (s, e) => TestSqlConnection();
         pnlSqlControls.Controls.Add(btnTestSql);
+
+        ToggleSqlAuthFields();
 
         _panelSqlServer.Controls.Add(pnlSqlControls);
         mainPanel.Controls.Add(_panelSqlServer);
 
-        y += 170;
+        y += 240;
 
         // ===== MODO 3: Arquivo .mdf =====
         _rbFileMdf = new RadioButton
@@ -217,17 +274,20 @@ public class DatabaseConfigForm : Form
             Height = 60,
             Dock = DockStyle.Bottom,
             BackColor = ResponsiveUIHelper.Colors.CardBackground,
-            BorderStyle = BorderStyle.FixedSingle
+            BorderStyle = BorderStyle.FixedSingle,
+            Padding = new Padding(ResponsiveUIHelper.Spacing.Medium)
         };
 
         _btnContinue = ResponsiveUIHelper.CreateButton("➡️  Continuar", 150, ResponsiveUIHelper.Colors.PrimaryGreen);
         _btnContinue.Click += OnContinue;
+        _btnContinue.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
 
         _btnCancel = ResponsiveUIHelper.CreateButton("❌ Cancelar", 100, ResponsiveUIHelper.Colors.PrimaryRed);
         _btnCancel.Click += (s, e) => DialogResult = DialogResult.Cancel;
+        _btnCancel.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
 
-        int x = buttonPanel.Width - 270;
         int btnY = (buttonPanel.Height - _btnContinue.Height) / 2;
+        int x = ResponsiveUIHelper.Spacing.Medium;
 
         _btnContinue.Location = new Point(x, btnY);
         buttonPanel.Controls.Add(_btnContinue);
@@ -237,15 +297,17 @@ public class DatabaseConfigForm : Form
         buttonPanel.Controls.Add(_btnCancel);
 
         _lblStatus = ResponsiveUIHelper.CreateLabel("Pronto");
-        _lblStatus.Location = new Point(ResponsiveUIHelper.Spacing.Medium, btnY + 5);
+        _lblStatus.Location = new Point(_btnCancel.Right + ResponsiveUIHelper.Spacing.Large, btnY + 5);
+        _lblStatus.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
         buttonPanel.Controls.Add(_lblStatus);
 
         _progressBar = new ProgressBar
         {
-            Location = new Point(250, btnY),
-            Size = new Size(300, 20),
+            Location = new Point(_lblStatus.Right + ResponsiveUIHelper.Spacing.Medium, btnY + 2),
+            Size = new Size(220, 18),
             Visible = false,
-            Style = ProgressBarStyle.Marquee
+            Style = ProgressBarStyle.Marquee,
+            Anchor = AnchorStyles.Left | AnchorStyles.Bottom
         };
         buttonPanel.Controls.Add(_progressBar);
 
@@ -282,22 +344,106 @@ public class DatabaseConfigForm : Form
         AddLog("📁 Modo Arquivo .mdf selecionado");
     }
 
-    private void TestSqlConnection(string server)
+    private void ToggleSqlAuthFields()
     {
+        var useIntegrated = _chkSqlIntegratedSecurity.Checked;
+        _txtSqlUser.Enabled = !useIntegrated;
+        _txtSqlPassword.Enabled = !useIntegrated;
+    }
+
+    private bool TryBuildSqlServerConnectionString(out string connString)
+    {
+        connString = string.Empty;
+
+        var server = _txtSqlServer.Text.Trim();
+        var database = _txtSqlDatabase.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(server))
+        {
+            AddLog("❌ Informe o servidor do SQL Server.", Color.Red);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(database))
+        {
+            AddLog("❌ Informe o nome do banco (Initial Catalog).", Color.Red);
+            return false;
+        }
+
         try
         {
-            AddLog($"🔗 Testando conexão para {server}...");
-            var connString = $"Server={server};Integrated Security=true;TrustServerCertificate=true;Connection Timeout=5;";
-            
-            using var conn = new SqlConnection(connString);
-            conn.Open();
-            
-            _connectionString = connString;
-            AddLog($"✅ Conexão estabelecida com sucesso!");
+            var builder = new SqlConnectionStringBuilder
+            {
+                DataSource = server,
+                InitialCatalog = database,
+                Encrypt = false,
+                TrustServerCertificate = false,
+                PersistSecurityInfo = false,
+                Pooling = false,
+                MultipleActiveResultSets = false,
+                ConnectTimeout = 5
+            };
+
+            if (_chkSqlIntegratedSecurity.Checked)
+            {
+                builder.IntegratedSecurity = true;
+            }
+            else
+            {
+                var user = _txtSqlUser.Text.Trim();
+                var password = _txtSqlPassword.Text;
+
+                if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(password))
+                {
+                    AddLog("❌ Informe usuário e senha ou marque Segurança Integrada.", Color.Red);
+                    return false;
+                }
+
+                builder.IntegratedSecurity = false;
+                builder.UserID = user;
+                builder.Password = password;
+            }
+
+            connString = builder.ToString();
+            return true;
         }
         catch (Exception ex)
         {
-            AddLog($"❌ Erro na conexão: {ex.Message}", Color.Red);
+            AddLog($"❌ Connection string inválida: {ex.Message}", Color.Red);
+            return false;
+        }
+    }
+
+    private bool TryOpenConnection(string connString, out string? error)
+    {
+        try
+        {
+            using var conn = new SqlConnection(connString);
+            conn.Open();
+            error = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+    }
+
+    private void TestSqlConnection()
+    {
+        if (!TryBuildSqlServerConnectionString(out var connString))
+            return;
+
+        AddLog($"🔗 Testando conexão para {_txtSqlServer.Text.Trim()}...");
+        if (TryOpenConnection(connString, out var error))
+        {
+            _connectionString = connString;
+            AddLog("✅ Conexão estabelecida com sucesso!");
+        }
+        else
+        {
+            AddLog($"❌ Erro na conexão: {error}", Color.Red);
         }
     }
 
@@ -365,13 +511,23 @@ public class DatabaseConfigForm : Form
             }
             else if (_selectedMode == "sqlserver")
             {
-                if (string.IsNullOrEmpty(_connectionString))
+                if (!TryBuildSqlServerConnectionString(out var connString))
                 {
-                    AddLog("❌ Teste a conexão do SQL Server primeiro", Color.Red);
                     _btnContinue.Enabled = true;
                     _progressBar.Visible = false;
                     return;
                 }
+
+                if (!TryOpenConnection(connString, out var error))
+                {
+                    AddLog($"❌ Erro ao validar SQL Server: {error}", Color.Red);
+                    _btnContinue.Enabled = true;
+                    _progressBar.Visible = false;
+                    return;
+                }
+
+                _connectionString = connString;
+                AddLog("✅ Conexão SQL Server validada com sucesso!");
             }
             else if (_selectedMode == "filemdf")
             {

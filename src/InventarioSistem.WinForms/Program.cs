@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Config;
 using InventarioSistem.Access.Db;
@@ -60,9 +61,23 @@ namespace InventarioSistem.WinForms
                 // 🔧 ETAPA 2: CONFIGURAR MODO DE BANCO DE DADOS
                 var sqlConfig = SqlServerConfig.Load();
                 bool isFirstRun = string.IsNullOrWhiteSpace(sqlConfig.ConnectionString);
+                bool localDbConfiguredButUnavailable = sqlConfig.UseLocalDb && !localDbAvailable;
 
-                // Se LocalDB não está disponível ou é primeira execução, mostrar formulário
-                if (!localDbAvailable || isFirstRun)
+                bool connectionInvalid = false;
+                if (!isFirstRun)
+                {
+                    try
+                    {
+                        _ = new SqlConnectionStringBuilder(sqlConfig.ConnectionString);
+                    }
+                    catch
+                    {
+                        connectionInvalid = true;
+                    }
+                }
+
+                // Só abre o configurador se não houver connection string ou se a configuração aponta para LocalDB e ele não estiver disponível.
+                if (isFirstRun || localDbConfiguredButUnavailable || connectionInvalid)
                 {
                     bool configured = false;
                     while (!configured)
@@ -167,12 +182,7 @@ namespace InventarioSistem.WinForms
                         }
                     }
                 }
-                else
-                {
-                    // LocalDB está disponível e configurado
-                    sqlConfig.ConnectionString = LocalDbManager.GetConnectionString();
-                    sqlConfig.UseLocalDb = true;
-                }
+                // Caso já esteja configurado, seguimos em frente sem abrir o configurador.
 
                 // 🗄️ ETAPA 3: INICIALIZAR FACTORY E USER STORE
                 _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);
@@ -237,7 +247,7 @@ namespace InventarioSistem.WinForms
                     var loggedInUser = LoginForm.LoggedInUser;
                     if (loggedInUser != null)
                     {
-                        Application.Run(new MainForm(_sqlServerFactory, inventoryStore, _sqlServerUserStore));
+                        Application.Run(new MainForm(_sqlServerFactory, inventoryStore, _sqlServerUserStore, loggedInUser));
                     }
                     else
                     {
