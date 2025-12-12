@@ -111,6 +111,8 @@ public class DatabaseConfigForm : Form
         _panelLocalDb.Controls.Add(lblLocalDb);
         mainPanel.Controls.Add(_panelLocalDb);
 
+        y += 140;
+
         // ===== MODO 2: SQLite =====
         _rbSqlite = new RadioButton
         {
@@ -172,8 +174,6 @@ public class DatabaseConfigForm : Form
         y += 230;
 
         // ===== MODO 3: SQL Server =====
-
-        y += 140;
         _rbSqlServer = new RadioButton
         {
             Text = "🖥️  SQL Server (Servidor/Rede)",
@@ -269,7 +269,7 @@ public class DatabaseConfigForm : Form
 
         y += 240;
 
-        // ===== MODO 3: Arquivo .mdf =====
+        // ===== MODO 4: Arquivo .mdf =====
         _rbFileMdf = new RadioButton
         {
             Text = "📁 Arquivo .mdf (Rede/Local)",
@@ -396,6 +396,7 @@ public class DatabaseConfigForm : Form
     private void ShowLocalDbPanel()
     {
         _panelLocalDb.Visible = true;
+        _panelSqlite.Visible = false;
         _panelSqlServer.Visible = false;
         _panelFileMdf.Visible = false;
         _selectedMode = "localdb";
@@ -405,6 +406,7 @@ public class DatabaseConfigForm : Form
     private void ShowSqlServerPanel()
     {
         _panelLocalDb.Visible = false;
+        _panelSqlite.Visible = false;
         _panelSqlServer.Visible = true;
         _panelFileMdf.Visible = false;
         _selectedMode = "sqlserver";
@@ -423,8 +425,7 @@ public class DatabaseConfigForm : Form
 
     private void ShowFileMdfPanel()
     {
-        _panelLocalDb.Visible = false;
-        _panelSqlServer.Visible = false;
+        _panelLocalDb.Visible = false;        _panelSqlite.Visible = false;        _panelSqlServer.Visible = false;
         _panelFileMdf.Visible = true;
         _selectedMode = "filemdf";
         AddLog("�� Modo Arquivo .mdf selecionado");
