@@ -474,18 +474,27 @@ public class DatabaseConfigForm : Form
 
         if (choice == DialogResult.Yes)
         {
-            // Criar novo arquivo
+            // Criar novo arquivo - pré-preencher com caminho padrão em AppData
+            var defaultPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "InventoryLocal",
+                "InventoryDB.mdf"
+            );
+            var defaultDir = Path.GetDirectoryName(defaultPath);
+
             using var saveDialog = new SaveFileDialog
             {
                 Filter = "SQL Database Files (*.mdf)|*.mdf",
                 Title = "Criar novo arquivo de banco de dados",
                 FileName = "InventoryDB.mdf",
-                DefaultExt = "mdf"
+                DefaultExt = "mdf",
+                InitialDirectory = defaultDir ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
             };
 
             if (saveDialog.ShowDialog() == DialogResult.OK)
             {
                 var mdfPath = saveDialog.FileName;
+                AddLog($"📍 Caminho selecionado: {mdfPath}");
                 
                 // Validar permissões de escrita
                 var directory = Path.GetDirectoryName(mdfPath);
