@@ -35,15 +35,21 @@ public class SqlServerUserStore
 
             await using var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT COUNT(*)
+                SELECT [PasswordHash]
                 FROM [Users]
-                WHERE [Username] = @Username AND [PasswordHash] = @PasswordHash AND [IsActive] = 1";
+                WHERE [Username] = @Username AND [IsActive] = 1";
 
             command.Parameters.AddWithValue("@Username", username);
-            command.Parameters.AddWithValue("@PasswordHash", password);
 
             var result = await command.ExecuteScalarAsync(cancellationToken);
-            return ((int?)result ?? 0) > 0;
+            
+            if (result == null || result == DBNull.Value)
+                return false;
+
+            var storedHash = result.ToString();
+            
+            // Verificar senha usando BCrypt
+            return BCrypt.Net.BCrypt.Verify(password, storedHash);
         }
         catch (Exception ex)
         {
