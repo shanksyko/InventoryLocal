@@ -19,6 +19,7 @@ public class DatabaseConfigForm : Form
     private RadioButton _rbLocalDb = null!;
     private RadioButton _rbSqlServer = null!;
     private RadioButton _rbFileMdf = null!;
+    private RadioButton _rbSqlite = null!;
 
     private TextBox _txtSqlServer = null!;
     private TextBox _txtSqlDatabase = null!;
@@ -30,6 +31,7 @@ public class DatabaseConfigForm : Form
     private Panel _panelSqlServer = null!;
     private Panel _panelFileMdf = null!;
     
+    private Panel _panelSqlite = null!;
     private Label _lblStatus = null!;
     private ProgressBar _progressBar = null!;
     private RichTextBox _rtbLog = null!;
@@ -107,9 +109,43 @@ public class DatabaseConfigForm : Form
         _panelLocalDb.Controls.Add(lblLocalDb);
         mainPanel.Controls.Add(_panelLocalDb);
 
+        // ===== MODO 2: SQLite =====
+        _rbSqlite = new RadioButton
+        {
+            Text = "💾 SQLite (Embarcado - Sem Instalação)",
+            AutoSize = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, y),
+            Font = ResponsiveUIHelper.Fonts.LabelBold
+        };
+        _rbSqlite.CheckedChanged += (s, e) => { if (_rbSqlite.Checked) ShowSqlitePanel(); };
+        mainPanel.Controls.Add(_rbSqlite);
+
+        y += 30;
+
+        _panelSqlite = ResponsiveUIHelper.CreateCard(650, 120);
+        _panelSqlite.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
+        _panelSqlite.Visible = false;
+        
+        var lblSqlite = new Label
+        {
+            Text = "💾 SQLite é um banco de dados embarcado em um arquivo único\n\n" +
+                   "✓ Sem instalação necessária\n" +
+                   "✓ Funciona em qualquer PC\n" +
+                   "✓ Banco local (arquivo .db)\n" +
+                   "✓ Perfeito para começar agora",
+            AutoSize = false,
+            Dock = DockStyle.Fill,
+            Padding = new Padding(ResponsiveUIHelper.Spacing.Medium),
+            Font = ResponsiveUIHelper.Fonts.Small
+        };
+        _panelSqlite.Controls.Add(lblSqlite);
+        mainPanel.Controls.Add(_panelSqlite);
+
         y += 140;
 
-        // ===== MODO 2: SQL Server =====
+        // ===== MODO 3: SQL Server =====
+
+        y += 140;
         _rbSqlServer = new RadioButton
         {
             Text = "🖥️  SQL Server (Servidor/Rede)",
@@ -345,6 +381,16 @@ public class DatabaseConfigForm : Form
         _panelFileMdf.Visible = false;
         _selectedMode = "sqlserver";
         AddLog("🖥️  Modo SQL Server selecionado");
+    }
+
+    private void ShowSqlitePanel()
+    {
+        _panelLocalDb.Visible = false;
+        _panelSqlServer.Visible = false;
+        _panelFileMdf.Visible = false;
+        _panelSqlite.Visible = true;
+        _selectedMode = "sqlite";
+        AddLog("💾 Modo SQLite selecionado");
     }
 
     private void ShowFileMdfPanel()
@@ -658,6 +704,28 @@ public class DatabaseConfigForm : Form
                     _connectionString = connString;
                     AddLog("✅ Conexão SQL Server validada com sucesso!");
                 }
+                else if (_selectedMode == "sqlite")
+                {
+                    AddLog("💾 Criando banco SQLite...");
+                    AddLog("⏱️  Isso pode levar alguns segundos...");
+                    
+                    try
+                    {
+                        _connectionString = SqliteDbManager.CreateSqliteDatabase((msg) => AddLog(msg));
+                        AddLog("✅ Banco SQLite criado com sucesso!");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog($"❌ Erro ao criar banco SQLite: {ex.Message}", Color.Red);
+                        this.Invoke(() =>
+                        {
+                            _btnContinue.Enabled = true;
+                            _progressBar.Visible = false;
+                        });
+                        return;
+                    }
+                }
+
                 else if (_selectedMode == "filemdf")
                 {
                     if (string.IsNullOrEmpty(_connectionString))
