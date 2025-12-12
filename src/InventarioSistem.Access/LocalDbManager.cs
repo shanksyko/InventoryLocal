@@ -217,16 +217,41 @@ public static class LocalDbManager
                     checkCmd.CommandTimeout = 30;
                     checkCmd.CommandText = "SELECT db_id(@name)";
                     checkCmd.Parameters.AddWithValue("@name", dbName);
-                    var exists = checkCmd.ExecuteScalar() != DBNull.Value;
+                    var dbIdObj = checkCmd.ExecuteScalar();
+                    var exists = dbIdObj != null && dbIdObj != DBNull.Value;
 
                     if (exists)
                     {
-                        Log("ℹ️  Banco já existia. Reutilizando e garantindo estrutura/usuário...");
+                        var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+                        var mdfExists = File.Exists(mdfPath);
+                        var ldfExists = File.Exists(ldfPath);
 
-                        var existingConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
-                        EnsureSchemaAndAdmin(existingConn, Log);
-                        Log("🎉 Banco reutilizado e pronto para uso!");
-                        return existingConn;
+                        if (mdfExists && ldfExists)
+                        {
+                            Log("ℹ️  Banco já existia com arquivos físicos. Reutilizando e garantindo estrutura/usuário...");
+                            var existingConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
+                            EnsureSchemaAndAdmin(existingConn, Log);
+                            Log("🎉 Banco reutilizado e pronto para uso!");
+                            return existingConn;
+                        }
+                        else
+                        {
+                            Log("⚠️  Banco consta na instância, mas arquivos .mdf/.ldf não existem. Recriando do zero...");
+                            using (var dropCmd = conn.CreateCommand())
+                            {
+                                dropCmd.CommandTimeout = 60;
+                                dropCmd.CommandText = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{dbName}]";
+                                try
+                                {
+                                    dropCmd.ExecuteNonQuery();
+                                    Log("🗑️  Banco antigo removido da instância.");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log($"⚠️  Falha ao remover banco antigo: {ex.Message}. Tentando prosseguir com criação forçada...");
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -280,12 +305,15 @@ public static class LocalDbManager
                 }
             }
 
-            var connString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
-            Log("📊 Garantindo estrutura do banco...");
-            EnsureSchemaAndAdmin(connString, Log);
-
+            // Usar Database={dbName} para garantir schema/admin sem depender de Attach durante criação
+            var dbName = Path.GetFileNameWithoutExtension(mdfPath);
+            var ensureConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
+            Log("📊 Garantindo estrutura do banco (via Database)...");
+            EnsureSchemaAndAdmin(ensureConn, Log);
+            // Retornar AttachDbFileName para compatibilidade de runtime
+            var finalConnString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
             Log("🎉 Banco de dados pronto para uso!");
-            return connString;
+            return finalConnString;
         }
         catch (Exception ex)
         {
