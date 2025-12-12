@@ -1,23 +1,25 @@
-# 📦 Inventory System - Build Release v1.0.0
+# 📦 Inventory System - Build Release v1.1.0
 
 ## ✅ Status do Build
 - **Compilação**: ✅ Sucesso (Release)
 - **Warnings**: ✅ 0
 - **Erros**: ✅ 0
-- **Data**: 2025-12-11
+- **Data**: 2025-12-12
 - **Versão .NET**: 8.0
+
+Atualização: aplicação modificada em 2025-12-12 (v1.1.0).
 
 ## 📥 Versões Disponíveis
 
 ### 🎯 Versão Completa (Recomendada)
-- **Arquivo**: `InventorySystem-v1.0.0-Complete.zip` (70 MB)
+- **Arquivo**: `InventorySystem-v1.1.0-Complete.zip` (70 MB)
 - **Inclui**: .NET Runtime 8.0 embutido
 - **Vantagem**: Funciona mesmo sem .NET instalado
 - **Uso**: Ideal para distribuição / máquinas limpas
 - **Instalação**: Extrair e executar imediatamente
 
 ### 💾 Versão Leve
-- **Arquivo**: `InventorySystem-v1.0.0-Lite.zip` (6.8 MB)
+- **Arquivo**: `InventorySystem-v1.1.0-Lite.zip` (6.8 MB)
 - **Requer**: .NET Runtime 8.0 pré-instalado
 - **Vantagem**: Arquivo pequeno
 - **Uso**: Ideal para máquinas com .NET 8.0 já instalado
@@ -173,6 +175,6 @@ Este projeto está sob licença MIT. Veja LICENSE para detalhes.
 
 ---
 
-**Build Release**: v1.0.0
-**Compilado em**: 11 de Dezembro de 2025
+**Build Release**: v1.1.0
+**Compilado em**: 12 de Dezembro de 2025
 **Status**: ✅ Pronto para produção
