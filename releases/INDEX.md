@@ -1,9 +1,9 @@
-# 🎯 Inventory System v1.0.0
+# 🎯 Inventory System v1.1.0
 
 ## 📦 Download e Instalação
 
 ### Arquivo Principal
-- **InventorySystem-v1.0.0.zip** (6.8 MB)
+- **InventorySystem-v1.1.0.zip** (6.9 MB)
   - Aplicação completa pronta para usar
   - Contém todos os executáveis e dependências
   - Comprimido para fácil download
@@ -12,7 +12,7 @@
 
 #### Opção 1: Instalação Automática (Recomendado)
 ```bash
-1. Baixe InventorySystem-v1.0.0.zip
+1. Baixe InventorySystem-v1.1.0.zip
 2. Extraia em uma pasta
 3. Execute Install.bat como Administrador
 4. Siga as instruções
@@ -26,7 +26,7 @@
 
 #### Opção 2: Uso Direto
 ```bash
-1. Extraia InventorySystem-v1.0.0.zip
+1. Extraia InventorySystem-v1.1.0.zip
 2. Clique duas vezes em InventorySystem.exe
 3. Configure banco de dados (LocalDB padrão)
 ```
@@ -135,6 +135,6 @@ Ao mudar de banco de dados:
 
 ---
 
-**Versão**: 1.0.0  
-**Data**: 11 de Dezembro de 2025  
+**Versão**: 1.1.0  
+**Data**: 12 de Dezembro de 2025  
 **Status**: ✅ Pronto para Produção

@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ╔════════════════════════════════════════════════════════╗
-echo ║      Inventory System v1.0.0 - Instalador             ║
+echo ║      Inventory System v1.1.0 - Instalador             ║
 echo ╚════════════════════════════════════════════════════════╝
 echo.
 
@@ -100,7 +100,7 @@ powershell -Command ^
     "$Shortcut = $WshShell.CreateShortcut('%SHORTCUT%'); " ^
     "$Shortcut.TargetPath = '%INSTALL_DIR%\InventorySystem.exe'; " ^
     "$Shortcut.WorkingDirectory = '%INSTALL_DIR%'; " ^
-    "$Shortcut.Description = 'Inventory System v1.0.0'; " ^
+    "$Shortcut.Description = 'Inventory System v1.1.0'; " ^
     "$Shortcut.Save()"
 
 if %errorlevel% equ 0 (
@@ -122,7 +122,7 @@ powershell -Command ^
     "$Shortcut = $WshShell.CreateShortcut('%START_MENU%\Inventory System\Inventory System.lnk'); " ^
     "$Shortcut.TargetPath = '%INSTALL_DIR%\InventorySystem.exe'; " ^
     "$Shortcut.WorkingDirectory = '%INSTALL_DIR%'; " ^
-    "$Shortcut.Description = 'Inventory System v1.0.0'; " ^
+    "$Shortcut.Description = 'Inventory System v1.1.0'; " ^
     "$Shortcut.Save()"
 
 echo ✅ Entrada criada no Menu Iniciar

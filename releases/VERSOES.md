@@ -4,8 +4,8 @@
 
 | Critério | Completa | Leve |
 |----------|----------|------|
-| **Arquivo** | InventorySystem-v1.0.0-Complete.zip | InventorySystem-v1.0.0-Lite.zip |
-| **Tamanho** | 70 MB | 6.8 MB |
+| **Arquivo** | InventorySystem-v1.1.0-Complete.zip | InventorySystem-v1.1.0-Lite.zip |
+| **Tamanho** | 70 MB | 6.9 MB |
 | **Inclui .NET** | ✅ Sim | ❌ Requer .NET 8.0 |
 | **Pré-requisitos** | Apenas Windows | Windows + .NET 8.0 |
 | **Tempo Extração** | ~2 minutos | ~30 segundos |
@@ -17,7 +17,7 @@
 
 ## 🎯 Quando Usar Cada Uma?
 
-### 📦 Versão Completa - InventorySystem-v1.0.0-Complete.zip
+### 📦 Versão Completa - InventorySystem-v1.1.0-Complete.zip
 **Use se:**
 - ✅ Não tem certeza se .NET 8.0 está instalado
 - ✅ Quer instalar em múltiplos PCs
@@ -31,7 +31,7 @@ Extrair → Executar → Pronto!
 Sem passos extras necessários
 ```
 
-### 💾 Versão Leve - InventorySystem-v1.0.0-Lite.zip
+### 💾 Versão Leve - InventorySystem-v1.1.0-Lite.zip
 **Use se:**
 - ✅ .NET 8.0 já está instalado na máquina
 - ✅ Quer economizar bandwidth
@@ -53,7 +53,7 @@ Se não → Baixe Complete ou instale .NET
 ### Versão Completa (Recomendada)
 
 ```bash
-1. Baixe: InventorySystem-v1.0.0-Complete.zip (70 MB)
+1. Baixe: InventorySystem-v1.1.0-Complete.zip (70 MB)
 2. Extraia a pasta
 3. Abra InventorySystem.exe
 4. Pronto! Configure banco de dados na primeira execução
@@ -83,7 +83,7 @@ Se não → Baixe Complete ou instale .NET
 2. Instalar .NET 8.0 (se necessário):
    https://dotnet.microsoft.com/download/dotnet/8.0
    
-3. Baixe: InventorySystem-v1.0.0-Lite.zip (6.8 MB)
+3. Baixe: InventorySystem-v1.1.0-Lite.zip (6.9 MB)
 
 4. Extraia a pasta
 
@@ -129,7 +129,7 @@ dotnet --version
 ## 📊 Conteúdo do ZIP Completa
 
 ```
-InventorySystem-v1.0.0-Complete.zip (70 MB)
+InventorySystem-v1.1.0-Complete.zip (70 MB)
 ├── InventorySystem.exe (175 MB descomprimido)
 ├── InventarioSistem.Core.dll
 ├── InventarioSistem.Access.dll
@@ -144,7 +144,7 @@ InventorySystem-v1.0.0-Complete.zip (70 MB)
 ## 📊 Conteúdo do ZIP Leve
 
 ```
-InventorySystem-v1.0.0-Lite.zip (6.8 MB)
+InventorySystem-v1.1.0-Lite.zip (6.9 MB)
 ├── InventorySystem.exe
 ├── InventarioSistem.Core.dll
 ├── InventarioSistem.Access.dll
@@ -196,6 +196,6 @@ R: Ambas são idênticas em funcionalidade e suporte.
 
 ---
 
-**Versão**: 1.0.0  
-**Data**: 11 de Dezembro de 2025  
+**Versão**: 1.1.0  
+**Data**: 12 de Dezembro de 2025  
 **Status**: ✅ Pronto para Produção

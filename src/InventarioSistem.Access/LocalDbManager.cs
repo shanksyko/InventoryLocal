@@ -205,7 +205,7 @@ public static class LocalDbManager
             var dbName = Path.GetFileNameWithoutExtension(mdfPath);
 
             // Se já existir o database, apenas reutiliza e garante schema/admin
-            var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;";
+            var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;Connect Timeout=30;";
 
             using (var conn = new SqlConnection(createConnString))
             {
@@ -214,6 +214,7 @@ public static class LocalDbManager
 
                 using (var checkCmd = conn.CreateCommand())
                 {
+                    checkCmd.CommandTimeout = 30;
                     checkCmd.CommandText = "SELECT db_id(@name)";
                     checkCmd.Parameters.AddWithValue("@name", dbName);
                     var exists = checkCmd.ExecuteScalar() != DBNull.Value;
@@ -232,22 +233,38 @@ public static class LocalDbManager
                 // Se arquivo já existe, deletar
                 if (File.Exists(mdfPath))
                 {
-                    File.Delete(mdfPath);
-                    Log("🗑️  Arquivo existente removido");
+                    try
+                    {
+                        File.Delete(mdfPath);
+                        Log("🗑️  Arquivo existente removido");
+                    }
+                    catch (IOException ex)
+                    {
+                        Log($"⚠️  Não foi possível remover arquivo: {ex.Message}");
+                        // Continuar mesmo assim
+                    }
                 }
 
                 // Também remover arquivo .ldf se existir
                 var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
                 if (File.Exists(ldfPath))
                 {
-                    File.Delete(ldfPath);
-                    Log("🗑️  Arquivo de log removido");
+                    try
+                    {
+                        File.Delete(ldfPath);
+                        Log("🗑️  Arquivo de log removido");
+                    }
+                    catch (IOException ex)
+                    {
+                        Log($"⚠️  Não foi possível remover .ldf: {ex.Message}");
+                    }
                 }
 
                 Log("⚙️  Criando banco de dados...");
 
                 using (var cmd = conn.CreateCommand())
                 {
+                    cmd.CommandTimeout = 120; // 2 minutos para criar BD
                     cmd.CommandText = $@"
                         CREATE DATABASE [{dbName}]
                         ON PRIMARY (
@@ -264,6 +281,7 @@ public static class LocalDbManager
             }
 
             var connString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
+            Log("📊 Garantindo estrutura do banco...");
             EnsureSchemaAndAdmin(connString, Log);
 
             Log("🎉 Banco de dados pronto para uso!");
@@ -278,45 +296,64 @@ public static class LocalDbManager
 
     private static void EnsureSchemaAndAdmin(string connectionString, Action<string> Log)
     {
-        // Criar estrutura de tabelas
-        Log("📊 Criando/garantindo estrutura de tabelas...");
-        var factory = new SqlServerConnectionFactory(connectionString);
-        Schema.SqlServerSchemaManager.EnsureRequiredTables(factory);
-        Log("✅ Estrutura ok");
+        try
+        {
+            // Criar estrutura de tabelas
+            Log("📊 Criando/garantindo estrutura de tabelas...");
+            var factory = new SqlServerConnectionFactory(connectionString);
+            Schema.SqlServerSchemaManager.EnsureRequiredTables(factory);
+            Log("✅ Estrutura ok");
+        }
+        catch (Exception ex)
+        {
+            Log($"⚠️  Erro ao garantir schema: {ex.Message}");
+            // Continuar mesmo assim - talvez schema já exista
+        }
 
         // Criar usuário admin
         Log("👤 Garantindo usuário administrador...");
-        using var conn = new SqlConnection(connectionString);
-        conn.Open();
-
-        using var checkCmd = conn.CreateCommand();
-        checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
-        var count = (int?)checkCmd.ExecuteScalar() ?? 0;
-
-        if (count == 0)
+        try
         {
-            using var insertCmd = conn.CreateCommand();
-            insertCmd.CommandText = @"
-                INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
-                VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
+            using var conn = new SqlConnection(connectionString + (connectionString.Contains("Connect Timeout") ? "" : ";Connect Timeout=30;"));
+            conn.Open();
 
-            insertCmd.Parameters.AddWithValue("@username", "admin");
-            insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
-            insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
-            insertCmd.Parameters.AddWithValue("@role", "Admin");
+            using var checkCmd = conn.CreateCommand();
+            checkCmd.CommandTimeout = 30;
+            checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
+            var count = (int?)checkCmd.ExecuteScalar() ?? 0;
 
-            insertCmd.ExecuteNonQuery();
-            Log("✅ Usuário admin criado (Usuário: admin | Senha: L9l337643k#$)");
+            if (count == 0)
+            {
+                using var insertCmd = conn.CreateCommand();
+                insertCmd.CommandTimeout = 30;
+                insertCmd.CommandText = @"
+                    INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
+                    VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
+
+                insertCmd.Parameters.AddWithValue("@username", "admin");
+                insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
+                insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
+                insertCmd.Parameters.AddWithValue("@role", "Admin");
+
+                insertCmd.ExecuteNonQuery();
+                Log("✅ Usuário admin criado (Usuário: admin | Senha: L9l337643k#$)");
+            }
+            else
+            {
+                using var updateCmd = conn.CreateCommand();
+                updateCmd.CommandTimeout = 30;
+                updateCmd.CommandText = @"
+                    UPDATE Users
+                    SET Role = 'Admin', IsActive = 1
+                    WHERE Username = 'admin'";
+                updateCmd.ExecuteNonQuery();
+                Log("ℹ️  Usuário admin já existia — role/ativo garantidos (Admin / Ativo)");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            using var updateCmd = conn.CreateCommand();
-            updateCmd.CommandText = @"
-                UPDATE Users
-                SET Role = 'Admin', IsActive = 1
-                WHERE Username = 'admin'";
-            updateCmd.ExecuteNonQuery();
-            Log("ℹ️  Usuário admin já existia — role/ativo garantidos (Admin / Ativo)");
+            Log($"⚠️  Erro ao garantir admin: {ex.Message}");
+            // Erro ao criar usuário não deve bloquear
         }
     }
 }

@@ -12,18 +12,22 @@ Atualização: aplicação modificada em 2025-12-12 (v1.1.0).
 ## 📥 Versões Disponíveis
 
 ### 🎯 Versão Completa (Recomendada)
-- **Arquivo**: `InventorySystem-v1.1.0-Complete.zip` (70 MB)
+- **Arquivo**: InventorySystem-v1.1.0-Complete.zip (70 MB)
 - **Inclui**: .NET Runtime 8.0 embutido
 - **Vantagem**: Funciona mesmo sem .NET instalado
 - **Uso**: Ideal para distribuição / máquinas limpas
 - **Instalação**: Extrair e executar imediatamente
 
 ### 💾 Versão Leve
-- **Arquivo**: `InventorySystem-v1.1.0-Lite.zip` (6.8 MB)
+- **Arquivo**: InventorySystem-v1.1.0-Lite.zip (6.9 MB)
 - **Requer**: .NET Runtime 8.0 pré-instalado
 - **Vantagem**: Arquivo pequeno
 - **Uso**: Ideal para máquinas com .NET 8.0 já instalado
 - **Instalação**: Extrair, baixar .NET se necessário, executar
+
+### 📍 Artefatos Gerados (locais)
+- [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip)
+- [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip)
 
 ## 📋 Recursos Inclusos
 
@@ -75,8 +79,8 @@ Atualização: aplicação modificada em 2025-12-12 (v1.1.0).
 ### Passo 1: Extrair o ZIP
 
 Escolha uma das versões:
-- **Completa**: InventorySystem-v1.0.0-Complete.zip (70 MB)
-- **Leve**: InventorySystem-v1.0.0-Lite.zip (6.8 MB)
+- **Completa**: InventorySystem-v1.1.0-Complete.zip (70 MB)
+- **Leve**: InventorySystem-v1.1.0-Lite.zip (6.9 MB)
 
 ### Passo 2: Executar
 ```bash
@@ -136,7 +140,7 @@ servidor.com\SQL2019
 ## 📁 Estrutura de Pastas
 
 ```
-InventorySystem-v1.0.0.zip
+InventorySystem-v1.1.0.zip
 ├── InventorySystem.exe          (Aplicação principal)
 ├── InventarioSistem.Core.dll    (Lógica de negócios)
 ├── InventarioSistem.Access.dll  (Acesso a dados)

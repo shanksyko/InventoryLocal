@@ -1,35 +1,33 @@
 # 📊 Build Status - InventoryLocal
 
-**Data**: Dezembro 10, 2025
-**Status**: ✅ SUCESSO
-**Versão**: .NET 8.0
+**Data**: Dezembro 12, 2025
+**Status**: ✅ SUCESSO (Release)
+**Versão**: .NET 8.0 (SDK 10.0.100)
 
 ---
 
 ## 🏗️ Builds Recentes
 
-### Debug Build
-```
-✅ InventarioSistem.Core       → net8.0
-✅ InventarioSistem.Access     → net8.0
-✅ InventarioSistem.WinForms   → net8.0-windows/win-x64
-✅ InventarioSistem.Cli        → net8.0
-
-Erros:      0
-Warnings:   1 (não bloqueante - entrypoint global)
-Tempo:      ~4 segundos
-```
-
 ### Release Build
 ```
 ✅ InventarioSistem.Core       → net8.0
 ✅ InventarioSistem.Access     → net8.0
-✅ InventarioSistem.WinForms   → net8.0-windows/win-x64
+✅ InventarioSistem.WinForms   → net8.0-windows/win-x64 (self-contained)
 ✅ InventarioSistem.Cli        → net8.0
 
 Erros:      0
-Warnings:   1 (não bloqueante - entrypoint global)
-Tempo:      ~3.5 segundos
+Warnings:   2 (CS8604 em Program.cs - migração; CS7022 entrypoint global no CLI)
+Tempo:      ~29 segundos
+```
+
+### Publicações (publish)
+```
+✅ WinForms Release (Completo) → win-x64, self-contained, single file
+✅ WinForms Release (Leve)     → win-x64, framework-dependent, multi-file
+
+Erros:      0
+Warnings:   1 (CS8604 em Program.cs - migração)
+Tempo:      ~15 s (completo) / ~8 s (leve)
 ```
 
 ---
@@ -57,10 +55,10 @@ Tempo:      ~3.5 segundos
 
 | Caminho | Tipo | Status |
 |---------|------|--------|
-| `src/InventarioSistem.Core/bin/Debug/net8.0/` | DLL | ✅ |
-| `src/InventarioSistem.Access/bin/Debug/net8.0/` | DLL | ✅ |
-| `src/InventarioSistem.WinForms/bin/Debug/net8.0-windows/win-x64/` | EXE | ✅ |
-| `src/InventarioSistem.Cli/bin/Debug/net8.0/` | DLL | ✅ |
+| [releases/artifacts/v1.1.0/complete](releases/artifacts/v1.1.0/complete) | EXE (self-contained, single file) | ✅ |
+| [releases/artifacts/v1.1.0/lite](releases/artifacts/v1.1.0/lite) | EXE + DLLs (framework-dependent) | ✅ |
+| [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip) | ZIP (70 MB) | ✅ |
+| [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip) | ZIP (6.9 MB) | ✅ |
 
 ---
 
@@ -76,9 +74,7 @@ Tempo:      ~3.5 segundos
 ## 📋 Último Commit
 
 ```
-chore: Remove remaining .accdb reference from UI button text
-Commit: 19dabeb
-Branch: main
-Status: ✅ Pushed to GitHub
+dotnet test InventoryLocal.sln -c Release → ✅ (sem falhas)
+dotnet publish WinForms (complete/lite)   → ✅ artefatos gerados
 ```
 

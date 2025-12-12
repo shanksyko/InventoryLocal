@@ -1,3 +1,25 @@
+# 📋 Release Notes - v1.1.0
+
+## 🚀 Resumo
+- Build Release concluído em 12/12/2025 com .NET 8.0 (SDK 10.0.100).
+- Artefatos gerados: versão Completa (self-contained, single file) e versão Leve (framework-dependent, multi-file).
+- Tamanhos finais: Completa 70 MB; Leve 6.9 MB.
+- Testes: `dotnet test -c Release` executado com sucesso.
+- Avisos conhecidos: CS8604 em Program.cs (parâmetro de migração pode ser nulo); CS7022 no CLI (entrypoint global, não bloqueia).
+
+## 📦 Artefatos Locais
+- [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Complete.zip)
+- [releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip](releases/artifacts/v1.1.0/InventorySystem-v1.1.0-Lite.zip)
+
+## 🔧 Build
+```
+dotnet build InventoryLocal.sln -c Release
+dotnet publish src/InventarioSistem.WinForms/InventarioSistem.WinForms.csproj -c Release -r win-x64 --self-contained true  -p:PublishSingleFile=true
+dotnet publish src/InventarioSistem.WinForms/InventarioSistem.WinForms.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false
+```
+
+---
+
 # 📋 Release Notes - v1.0.0
 
 ## 🎉 Primeira Release Pública
