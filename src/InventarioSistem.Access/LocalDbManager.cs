@@ -228,6 +228,26 @@ public static class LocalDbManager
                         Log("🎉 Banco reutilizado e pronto para uso!");
                         return existingConn;
                     }
+
+                // Verificação ativa: garantir que os arquivos foram realmente criados
+                Log("🔎 Verificando criação física dos arquivos (.mdf/.ldf)...");
+                var waitStart = DateTime.UtcNow;
+                var maxWait = TimeSpan.FromSeconds(10);
+                var ldfFileCheck = Path.ChangeExtension(mdfPath, ".ldf");
+                while ((!File.Exists(mdfPath) || !File.Exists(ldfFileCheck)) && DateTime.UtcNow - waitStart < maxWait)
+                {
+                    System.Threading.Thread.Sleep(300);
+                }
+
+                if (!File.Exists(mdfPath))
+                {
+                    throw new Exception($"Arquivo MDF não foi criado: {mdfPath}");
+                }
+                if (!File.Exists(ldfFileCheck))
+                {
+                    throw new Exception($"Arquivo LDF não foi criado: {ldfFileCheck}");
+                }
+                Log("✅ Arquivos físicos confirmados (.mdf/.ldf)");
                 }
 
                 // Se arquivo já existe, deletar
