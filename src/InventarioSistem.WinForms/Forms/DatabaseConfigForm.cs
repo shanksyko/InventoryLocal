@@ -353,7 +353,14 @@ public class DatabaseConfigForm : Form
         _panelSqlServer.Visible = false;
         _panelFileMdf.Visible = true;
         _selectedMode = "filemdf";
-        AddLog("📁 Modo Arquivo .mdf selecionado");
+        AddLog("�� Modo Arquivo .mdf selecionado");
+        
+        // Verificar se LocalDB está disponível
+        if (!LocalDbChecker.IsAvailable(out var error))
+        {
+            AddLog($"⚠️  {error}", Color.DarkOrange);
+            AddLog(LocalDbChecker.GetSolutions(), Color.Blue);
+        }
     }
 
     private void ToggleSqlAuthFields()
