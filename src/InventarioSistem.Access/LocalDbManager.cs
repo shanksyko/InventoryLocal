@@ -180,4 +180,126 @@ public static class LocalDbManager
    • SQL Server Management Studio
 ";
     }
+
+    /// <summary>
+    /// Cria um novo arquivo .mdf no caminho especificado com estrutura e usuário admin
+    /// </summary>
+    public static string CreateMdfDatabase(string mdfPath, Action<string>? logAction = null)
+    {
+        void Log(string msg) => logAction?.Invoke(msg);
+
+        try
+        {
+            // Validar caminho
+            var directory = Path.GetDirectoryName(mdfPath);
+            if (string.IsNullOrEmpty(directory))
+                throw new ArgumentException("Caminho inválido para o arquivo .mdf");
+
+            // Criar diretório se não existir
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                Log($"📁 Diretório criado: {directory}");
+            }
+
+            // Se arquivo já existe, deletar
+            if (File.Exists(mdfPath))
+            {
+                File.Delete(mdfPath);
+                Log("🗑️  Arquivo existente removido");
+            }
+
+            // Também remover arquivo .ldf se existir
+            var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+            if (File.Exists(ldfPath))
+            {
+                File.Delete(ldfPath);
+                Log("🗑️  Arquivo de log removido");
+            }
+
+            Log("⚙️  Criando banco de dados...");
+
+            // Connection string para criar o banco
+            var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;";
+
+            using (var conn = new SqlConnection(createConnString))
+            {
+                conn.Open();
+                Log("✅ Conectado ao LocalDB");
+
+                // Criar banco de dados
+                var dbName = Path.GetFileNameWithoutExtension(mdfPath);
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $@"
+                        CREATE DATABASE [{dbName}]
+                        ON PRIMARY (
+                            NAME = {dbName}_Data,
+                            FILENAME = '{mdfPath}'
+                        )
+                        LOG ON (
+                            NAME = {dbName}_Log,
+                            FILENAME = '{ldfPath}'
+                        )";
+                    cmd.ExecuteNonQuery();
+                    Log($"✅ Banco de dados '{dbName}' criado");
+                }
+            }
+
+            // Connection string para o novo banco
+            var connString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
+
+            // Criar estrutura de tabelas
+            Log("📊 Criando estrutura de tabelas...");
+            var factory = new SqlServerConnectionFactory(connString);
+            Schema.SqlServerSchemaManager.EnsureRequiredTables(factory);
+            Log("✅ Estrutura criada com sucesso");
+
+            // Criar usuário admin
+            Log("👤 Criando usuário administrador...");
+            using (var conn = new SqlConnection(connString))
+            {
+                conn.Open();
+
+                // Verificar se já existe usuário admin
+                using (var checkCmd = conn.CreateCommand())
+                {
+                    checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
+                    var count = (int?)checkCmd.ExecuteScalar() ?? 0;
+
+                    if (count == 0)
+                    {
+                        // Inserir usuário admin
+                        using (var insertCmd = conn.CreateCommand())
+                        {
+                            insertCmd.CommandText = @"
+                                INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
+                                VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
+                            
+                            insertCmd.Parameters.AddWithValue("@username", "admin");
+                            insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
+                            insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
+                            insertCmd.Parameters.AddWithValue("@role", "Admin");
+                            
+                            insertCmd.ExecuteNonQuery();
+                            Log("✅ Usuário admin criado (Usuário: admin | Senha: L9l337643k#$)");
+                        }
+                    }
+                    else
+                    {
+                        Log("ℹ️  Usuário admin já existe");
+                    }
+                }
+            }
+
+            Log("🎉 Banco de dados pronto para uso!");
+            return connString;
+        }
+        catch (Exception ex)
+        {
+            Log($"❌ Erro: {ex.Message}");
+            throw new Exception($"Erro ao criar arquivo .mdf: {ex.Message}", ex);
+        }
+    }
 }
+

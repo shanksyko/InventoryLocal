@@ -449,6 +449,27 @@ public static class SqlServerSchemaManager
                 ("LastLogin", "[LastLogin] DATETIME"),
                 ("LastPasswordChange", "[LastPasswordChange] DATETIME")
             });
+
+            // Criar usuário admin se não existir
+            using var checkCmd = conn.CreateCommand();
+            checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
+            var adminExists = ((int?)checkCmd.ExecuteScalar() ?? 0) > 0;
+
+            if (!adminExists)
+            {
+                using var insertCmd = conn.CreateCommand();
+                insertCmd.CommandText = @"
+                    INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
+                    VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
+                
+                insertCmd.Parameters.AddWithValue("@username", "admin");
+                insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
+                insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
+                insertCmd.Parameters.AddWithValue("@role", "Admin");
+                
+                insertCmd.ExecuteNonQuery();
+                InventoryLogger.Info(LoggerSource, "Usuário admin criado com sucesso.");
+            }
         });
 
         if (errors.Count > 0)

@@ -301,17 +301,51 @@ public class DatabaseConfigForm : Form
 
     private void BrowseMdfFile(TextBox txtPath)
     {
-        using var dialog = new OpenFileDialog
-        {
-            Filter = "SQL Database Files (*.mdf)|*.mdf|All Files (*.*)|*.*",
-            Title = "Selecione o arquivo .mdf"
-        };
+        var choice = MessageBox.Show(
+            "Deseja criar um NOVO arquivo .mdf ou selecionar um EXISTENTE?\n\n" +
+            "Sim = Criar novo\n" +
+            "Não = Selecionar existente",
+            "Arquivo .mdf",
+            MessageBoxButtons.YesNoCancel,
+            MessageBoxIcon.Question);
 
-        if (dialog.ShowDialog() == DialogResult.OK)
+        if (choice == DialogResult.Cancel)
+            return;
+
+        if (choice == DialogResult.Yes)
         {
-            txtPath.Text = dialog.FileName;
-            _connectionString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={dialog.FileName};Integrated Security=true;";
-            AddLog($"📁 Arquivo selecionado: {Path.GetFileName(dialog.FileName)}");
+            // Criar novo arquivo
+            using var saveDialog = new SaveFileDialog
+            {
+                Filter = "SQL Database Files (*.mdf)|*.mdf",
+                Title = "Criar novo arquivo de banco de dados",
+                FileName = "InventoryDB.mdf",
+                DefaultExt = "mdf"
+            };
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                var mdfPath = saveDialog.FileName;
+                txtPath.Text = mdfPath;
+                AddLog($"📁 Novo arquivo será criado em: {Path.GetFileName(mdfPath)}");
+                _connectionString = $"CREATE:{mdfPath}"; // Marcador especial
+            }
+        }
+        else
+        {
+            // Selecionar existente
+            using var openDialog = new OpenFileDialog
+            {
+                Filter = "SQL Database Files (*.mdf)|*.mdf|All Files (*.*)|*.*",
+                Title = "Selecione o arquivo .mdf"
+            };
+
+            if (openDialog.ShowDialog() == DialogResult.OK)
+            {
+                txtPath.Text = openDialog.FileName;
+                _connectionString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={openDialog.FileName};Integrated Security=true;TrustServerCertificate=true;";
+                AddLog($"📁 Arquivo existente selecionado: {Path.GetFileName(openDialog.FileName)}");
+            }
         }
     }
 
@@ -345,6 +379,27 @@ public class DatabaseConfigForm : Form
                     _btnContinue.Enabled = true;
                     _progressBar.Visible = false;
                     return;
+                }
+
+                // Se for criar novo arquivo
+                if (_connectionString.StartsWith("CREATE:"))
+                {
+                    var mdfPath = _connectionString.Substring(7); // Remove "CREATE:"
+                    AddLog($"📦 Criando novo banco de dados em {Path.GetFileName(mdfPath)}...");
+                    
+                    try
+                    {
+                        _connectionString = LocalDbManager.CreateMdfDatabase(mdfPath, (msg) => AddLog(msg));
+                        AddLog("✅ Banco de dados criado com sucesso!");
+                        AddLog("👤 Usuário admin criado: admin / L9l337643k#$");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog($"❌ Erro ao criar banco: {ex.Message}", Color.Red);
+                        _btnContinue.Enabled = true;
+                        _progressBar.Visible = false;
+                        return;
+                    }
                 }
             }
 
