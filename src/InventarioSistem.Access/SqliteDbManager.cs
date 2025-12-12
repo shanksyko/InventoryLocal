@@ -27,26 +27,71 @@ public static class SqliteDbManager
     }
 
     /// <summary>
-    /// Cria banco SQLite e schema
+    /// Cria banco SQLite e schema (usa AppData local por padrão)
     /// </summary>
     public static string CreateSqliteDatabase(Action<string>? logAction = null)
+    {
+        return CreateSqliteDatabase(null, logAction);
+    }
+
+    /// <summary>
+    /// Cria banco SQLite e schema em caminho customizado (local ou rede)
+    /// </summary>
+    public static string CreateSqliteDatabase(string? customDbPath, Action<string>? logAction = null)
     {
         void Log(string msg) => logAction?.Invoke(msg);
 
         try
         {
-            // Criar diretório
-            if (!Directory.Exists(SqlitePath))
+            string dbPath;
+            
+            if (!string.IsNullOrWhiteSpace(customDbPath))
             {
-                Directory.CreateDirectory(SqlitePath);
-                Log($"📁 Diretório criado: {SqlitePath}");
+                // Validar e usar caminho customizado
+                dbPath = customDbPath;
+                
+                // Se for diretório, adicionar nome padrão
+                if (Directory.Exists(dbPath) || !dbPath.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbPath = Path.Combine(dbPath, DatabaseFile);
+                }
+                
+                // Criar diretório se não existir
+                var dir = Path.GetDirectoryName(dbPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                    Log($"📁 Diretório criado: {dir}");
+                }
+            }
+            else
+            {
+                // Usar AppData local (padrão)
+                if (!Directory.Exists(SqlitePath))
+                {
+                    Directory.CreateDirectory(SqlitePath);
+                    Log($"📁 Diretório criado: {SqlitePath}");
+                }
+                
+                dbPath = Path.Combine(SqlitePath, DatabaseFile);
             }
 
-            var dbPath = Path.Combine(SqlitePath, DatabaseFile);
             Log($"📄 Banco SQLite: {dbPath}");
 
+            // Validar permissão de escrita
+            try
+            {
+                var testFile = Path.Combine(Path.GetDirectoryName(dbPath) ?? "", ".write_test");
+                File.WriteAllText(testFile, "test");
+                File.Delete(testFile);
+            }
+            catch
+            {
+                throw new UnauthorizedAccessException($"Sem permissão de escrita em: {Path.GetDirectoryName(dbPath)}");
+            }
+
             // Criar/conectar ao banco
-            var connString = GetConnectionString();
+            var connString = $"Data Source={dbPath};";
             using (var conn = new SqliteConnection(connString))
             {
                 conn.Open();

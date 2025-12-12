@@ -32,6 +32,8 @@ public class DatabaseConfigForm : Form
     private Panel _panelFileMdf = null!;
     
     private Panel _panelSqlite = null!;
+    private TextBox _tbSqlitePath = null!;
+    private Button _btnBrowseSqlite = null!;
     private Label _lblStatus = null!;
     private ProgressBar _progressBar = null!;
     private RichTextBox _rtbLog = null!;
@@ -122,7 +124,7 @@ public class DatabaseConfigForm : Form
 
         y += 30;
 
-        _panelSqlite = ResponsiveUIHelper.CreateCard(650, 120);
+        _panelSqlite = ResponsiveUIHelper.CreateCard(650, 210);
         _panelSqlite.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
         _panelSqlite.Visible = false;
         
@@ -131,17 +133,43 @@ public class DatabaseConfigForm : Form
             Text = "💾 SQLite é um banco de dados embarcado em um arquivo único\n\n" +
                    "✓ Sem instalação necessária\n" +
                    "✓ Funciona em qualquer PC\n" +
-                   "✓ Banco local (arquivo .db)\n" +
+                   "✓ Banco local (arquivo .db ou rede)\n" +
                    "✓ Perfeito para começar agora",
             AutoSize = false,
-            Dock = DockStyle.Fill,
+            Dock = DockStyle.Top,
+            Height = 90,
             Padding = new Padding(ResponsiveUIHelper.Spacing.Medium),
             Font = ResponsiveUIHelper.Fonts.Small
         };
         _panelSqlite.Controls.Add(lblSqlite);
+
+        // TextBox para caminho do arquivo
+        _tbSqlitePath = new TextBox
+        {
+            Text = "Será salvo em AppData (padrão) - clique 'Procurar...' para customizar",
+            Multiline = false,
+            ReadOnly = true,
+            Location = new Point(ResponsiveUIHelper.Spacing.Medium, 100),
+            Width = 420,
+            Font = ResponsiveUIHelper.Fonts.Small
+        };
+        _panelSqlite.Controls.Add(_tbSqlitePath);
+
+        // Botão procurar
+        _btnBrowseSqlite = new Button
+        {
+            Text = "🔍 Procurar...",
+            Location = new Point(450, 98),
+            Width = 100,
+            Height = _tbSqlitePath.Height + 4,
+            Font = ResponsiveUIHelper.Fonts.Small
+        };
+        _btnBrowseSqlite.Click += OnBrowseSqliteFile;
+        _panelSqlite.Controls.Add(_btnBrowseSqlite);
+
         mainPanel.Controls.Add(_panelSqlite);
 
-        y += 140;
+        y += 230;
 
         // ===== MODO 3: SQL Server =====
 
@@ -660,8 +688,27 @@ public class DatabaseConfigForm : Form
         }
     }
 
-    private void OnContinue(object? sender, EventArgs e)
-    {
+        private void OnBrowseSqliteFile(object? sender, EventArgs e)
+        {
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "SQLite Database (*.db)|*.db|All Files (*.*)|*.*",
+                Title = "Selecione ou crie um arquivo .db para SQLite",
+                DefaultExt = "db",
+                AddExtension = true
+            };
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                var dbPath = saveDialog.FileName;
+                _tbSqlitePath.Text = dbPath;
+                AddLog($"📄 Banco SQLite selecionado: {Path.GetFileName(dbPath)}");
+                AddLog($"📍 Caminho: {Path.GetDirectoryName(dbPath)}");
+            }
+        }
+
+        private void OnContinue(object? sender, EventArgs e)
+        {
         _progressBar.Visible = true;
         _btnContinue.Enabled = false;
 
@@ -711,7 +758,12 @@ public class DatabaseConfigForm : Form
                     
                     try
                     {
-                        _connectionString = SqliteDbManager.CreateSqliteDatabase((msg) => AddLog(msg));
+                        // Verificar se usuário selecionou caminho customizado
+                        var customPath = _tbSqlitePath.Text.Contains("AppData") || _tbSqlitePath.Text.Contains("padrão") 
+                            ? null 
+                            : _tbSqlitePath.Text;
+
+                        _connectionString = SqliteDbManager.CreateSqliteDatabase(customPath, (msg) => AddLog(msg));
                         AddLog("✅ Banco SQLite criado com sucesso!");
                     }
                     catch (Exception ex)
