@@ -61,7 +61,7 @@ public class SqlServerUserStore
     /// <summary>
     /// Gets a user by username.
     /// </summary>
-    public async Task<(int Id, string Username, string FullName, bool IsActive)?> GetUserAsync(string username, CancellationToken cancellationToken = default)
+    public async Task<(int Id, string Username, string FullName, bool IsActive, string Role)?> GetUserAsync(string username, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(username))
             return null;
@@ -73,7 +73,7 @@ public class SqlServerUserStore
 
             await using var command = connection.CreateCommand();
             command.CommandText = @"
-                SELECT [Id], [Username], [FullName], [IsActive]
+                SELECT [Id], [Username], [FullName], [IsActive], [Role]
                 FROM [Users]
                 WHERE [Username] = @Username";
 
@@ -86,7 +86,8 @@ public class SqlServerUserStore
                     reader.GetInt32(0),
                     reader.GetString(1),
                     reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    reader.GetBoolean(3)
+                    reader.GetBoolean(3),
+                    reader.IsDBNull(4) ? "" : reader.GetString(4)
                 );
             }
             return null;
@@ -111,6 +112,8 @@ public class SqlServerUserStore
             await using var connection = _factory.CreateConnection();
             await connection.OpenAsync(cancellationToken);
 
+            var passwordHash = Core.Entities.User.HashPassword(password);
+
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO [Users]
@@ -119,7 +122,7 @@ public class SqlServerUserStore
                 SELECT SCOPE_IDENTITY();";
 
             command.Parameters.AddWithValue("@Username", username);
-            command.Parameters.AddWithValue("@PasswordHash", password);
+            command.Parameters.AddWithValue("@PasswordHash", passwordHash);
             command.Parameters.AddWithValue("@FullName", fullName ?? "");
             command.Parameters.AddWithValue("@Role", role ?? "User");
             command.Parameters.AddWithValue("@IsActive", isActive);
@@ -151,13 +154,15 @@ public class SqlServerUserStore
             await using var connection = _factory.CreateConnection();
             await connection.OpenAsync(cancellationToken);
 
+            var passwordHash = Core.Entities.User.HashPassword(newPassword);
+
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE [Users]
                 SET [PasswordHash] = @PasswordHash
                 WHERE [Username] = @Username";
 
-            command.Parameters.AddWithValue("@PasswordHash", newPassword);
+            command.Parameters.AddWithValue("@PasswordHash", passwordHash);
             command.Parameters.AddWithValue("@Username", username);
 
             await command.ExecuteNonQueryAsync(cancellationToken);
@@ -207,7 +212,7 @@ public class SqlServerUserStore
     public bool ValidateUser(string username, string password) =>
         ValidateUserAsync(username, password).GetAwaiter().GetResult();
 
-    public (int Id, string Username, string FullName, bool IsActive)? GetUser(string username) =>
+    public (int Id, string Username, string FullName, bool IsActive, string Role)? GetUser(string username) =>
         GetUserAsync(username).GetAwaiter().GetResult();
 
     public int CreateUser(string username, string password, string fullName, bool isActive = true, string role = "User") =>
@@ -317,13 +322,15 @@ public class SqlServerUserStore
             await using var connection = _factory.CreateConnection();
             await connection.OpenAsync(cancellationToken);
 
+            var passwordHash = Core.Entities.User.HashPassword(newPassword);
+
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE [Users]
                 SET [PasswordHash] = @PasswordHash
                 WHERE [Id] = @Id";
 
-            command.Parameters.AddWithValue("@PasswordHash", newPassword);
+            command.Parameters.AddWithValue("@PasswordHash", passwordHash);
             command.Parameters.AddWithValue("@Id", int.Parse(userId));
 
             await command.ExecuteNonQueryAsync(cancellationToken);

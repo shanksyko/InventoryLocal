@@ -280,6 +280,10 @@ public class LoginForm : Form
             // Login bem-sucedido
             ResetLoginAttempts(username);
 
+            var role = user.Value.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true
+                ? UserRole.Admin
+                : UserRole.Visualizador;
+
             LoggedInUser = new User
             {
                 Id = user.Value.Id,
@@ -287,7 +291,7 @@ public class LoginForm : Form
                 FullName = user.Value.FullName,
                 IsActive = user.Value.IsActive,
                 CreatedAt = DateTime.Now,
-                Role = UserRole.Admin,
+                Role = role,
                 Provider = "SqlServer"
             };
             EnteredPassword = password;

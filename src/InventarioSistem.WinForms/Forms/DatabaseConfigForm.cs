@@ -131,13 +131,15 @@ public class DatabaseConfigForm : Form
         };
         pnlSqlControls.Controls.Add(lblSqlServer);
 
-        var txtSqlServer = ResponsiveUIHelper.CreateTextBox("localhost\\SQLEXPRESS", 300);
+        var txtSqlServer = ResponsiveUIHelper.CreateTextBox("localhost\\SQLEXPRESS", 340);
         txtSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium + 25);
+        txtSqlServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         pnlSqlControls.Controls.Add(txtSqlServer);
         pnlSqlControls.Tag = txtSqlServer;
 
         var btnTestSql = ResponsiveUIHelper.CreateButton("🔗 Testar", 100, ResponsiveUIHelper.Colors.PrimaryBlue);
-        btnTestSql.Location = new Point(320, ResponsiveUIHelper.Spacing.Medium + 25);
+        btnTestSql.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnTestSql.Location = new Point(txtSqlServer.Right + ResponsiveUIHelper.Spacing.Small, txtSqlServer.Top);
         btnTestSql.Click += (s, e) => TestSqlConnection(txtSqlServer.Text);
         pnlSqlControls.Controls.Add(btnTestSql);
 
