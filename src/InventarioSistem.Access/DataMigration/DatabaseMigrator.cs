@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.SqlClient;
+using InventarioSistem.Access.Schema;
 
 namespace InventarioSistem.Access.DataMigration;
 
@@ -54,6 +55,20 @@ public class DatabaseMigrator
                 result.Success = false;
                 result.Message = "❌ Erro: Não foi possível conectar ao banco de destino";
                 return result;
+            }
+
+            // **NOVO**: Garantir que o schema existe no banco destino
+            progress?.Report("🏗️  Criando/verificando schema no banco de destino...");
+            try
+            {
+                var factory = new SqlServerConnectionFactory(targetConnectionString);
+                SqlServerSchemaManager.EnsureRequiredTables(factory);
+                progress?.Report("✅ Schema destino pronto");
+            }
+            catch (Exception ex)
+            {
+                progress?.Report($"⚠️  Aviso ao criar schema destino: {ex.Message}");
+                // Continua mesmo se houver aviso - as tabelas podem já existir
             }
 
             // Obter lista de tabelas do banco origem
@@ -114,6 +129,7 @@ public class DatabaseMigrator
             return result;
         }
     }
+
 
     /// <summary>
     /// Testa a conexão com um banco de dados
@@ -203,26 +219,49 @@ public class DatabaseMigrator
                 deleteCmd.CommandText = $"DELETE FROM [{tableName}]";
                 await deleteCmd.ExecuteNonQueryAsync();
 
-                // Inserir novos dados
-                using var insertCmd = targetConn.CreateCommand();
-                foreach (DataRow row in data.Rows)
+                // Ativar IDENTITY_INSERT se a tabela tiver coluna Id
+                bool hasIdentity = data.Columns.Contains("Id");
+                if (hasIdentity)
                 {
-                    var columns = string.Join(", ", data.Columns.Cast<DataColumn>().Select(c => $"[{c.ColumnName}]"));
-                    var values = string.Join(", ", data.Columns.Cast<DataColumn>().Select((c, i) => $"@p{i}"));
-                    
-                    insertCmd.CommandText = $"INSERT INTO [{tableName}] ({columns}) VALUES ({values})";
-                    insertCmd.Parameters.Clear();
+                    using var identityCmd = targetConn.CreateCommand();
+                    identityCmd.CommandText = $"SET IDENTITY_INSERT [{tableName}] ON";
+                    await identityCmd.ExecuteNonQueryAsync();
+                }
 
-                    for (int i = 0; i < data.Columns.Count; i++)
+                try
+                {
+                    // Inserir novos dados
+                    using var insertCmd = targetConn.CreateCommand();
+                    foreach (DataRow row in data.Rows)
                     {
-                        var value = row[i] ?? DBNull.Value;
-                        insertCmd.Parameters.AddWithValue($"@p{i}", value);
-                    }
+                        var columns = string.Join(", ", data.Columns.Cast<DataColumn>().Select(c => $"[{c.ColumnName}]"));
+                        var values = string.Join(", ", data.Columns.Cast<DataColumn>().Select((c, i) => $"@p{i}"));
+                        
+                        insertCmd.CommandText = $"INSERT INTO [{tableName}] ({columns}) VALUES ({values})";
+                        insertCmd.Parameters.Clear();
 
-                    await insertCmd.ExecuteNonQueryAsync();
-                    rowsMigrated++;
+                        for (int i = 0; i < data.Columns.Count; i++)
+                        {
+                            var value = row[i] ?? DBNull.Value;
+                            insertCmd.Parameters.AddWithValue($"@p{i}", value);
+                        }
+
+                        await insertCmd.ExecuteNonQueryAsync();
+                        rowsMigrated++;
+                    }
+                }
+                finally
+                {
+                    // Desativar IDENTITY_INSERT
+                    if (hasIdentity)
+                    {
+                        using var identityCmd = targetConn.CreateCommand();
+                        identityCmd.CommandText = $"SET IDENTITY_INSERT [{tableName}] OFF";
+                        await identityCmd.ExecuteNonQueryAsync();
+                    }
                 }
             }
+
         }
         catch (Exception ex)
         {

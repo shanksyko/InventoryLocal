@@ -202,16 +202,15 @@ public static class LocalDbManager
                 Log($"📁 Diretório criado: {directory}");
             }
 
-            // Connection string para criar o banco
+            var dbName = Path.GetFileNameWithoutExtension(mdfPath);
+
+            // Se já existir o database, apenas reutiliza e garante schema/admin
             var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;";
 
             using (var conn = new SqlConnection(createConnString))
             {
                 conn.Open();
                 Log("✅ Conectado ao LocalDB");
-
-                // Se já existir um database com o mesmo nome, derruba antes de recriar
-                var dbName = Path.GetFileNameWithoutExtension(mdfPath);
 
                 using (var checkCmd = conn.CreateCommand())
                 {
@@ -221,16 +220,16 @@ public static class LocalDbManager
 
                     if (exists)
                     {
-                        Log("⚠️  Banco já existia, removendo para recriar...");
+                        Log("ℹ️  Banco já existia. Reutilizando e garantindo estrutura/usuário...");
 
-                        using var dropCmd = conn.CreateCommand();
-                        dropCmd.CommandText = $"ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{dbName}]";
-                        dropCmd.ExecuteNonQuery();
-                        Log("🗑️  Banco existente removido");
+                        var existingConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
+                        EnsureSchemaAndAdmin(existingConn, Log);
+                        Log("🎉 Banco reutilizado e pronto para uso!");
+                        return existingConn;
                     }
                 }
 
-                // Se arquivo já existe, deletar (após drop)
+                // Se arquivo já existe, deletar
                 if (File.Exists(mdfPath))
                 {
                     File.Delete(mdfPath);
@@ -264,51 +263,8 @@ public static class LocalDbManager
                 }
             }
 
-            // Connection string para o novo banco
             var connString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
-
-            // Criar estrutura de tabelas
-            Log("📊 Criando estrutura de tabelas...");
-            var factory = new SqlServerConnectionFactory(connString);
-            Schema.SqlServerSchemaManager.EnsureRequiredTables(factory);
-            Log("✅ Estrutura criada com sucesso");
-
-            // Criar usuário admin
-            Log("👤 Criando usuário administrador...");
-            using (var conn = new SqlConnection(connString))
-            {
-                conn.Open();
-
-                // Verificar se já existe usuário admin
-                using (var checkCmd = conn.CreateCommand())
-                {
-                    checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
-                    var count = (int?)checkCmd.ExecuteScalar() ?? 0;
-
-                    if (count == 0)
-                    {
-                        // Inserir usuário admin
-                        using (var insertCmd = conn.CreateCommand())
-                        {
-                            insertCmd.CommandText = @"
-                                INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
-                                VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
-                            
-                            insertCmd.Parameters.AddWithValue("@username", "admin");
-                            insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
-                            insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
-                            insertCmd.Parameters.AddWithValue("@role", "Admin");
-                            
-                            insertCmd.ExecuteNonQuery();
-                            Log("✅ Usuário admin criado (Usuário: admin | Senha: L9l337643k#$)");
-                        }
-                    }
-                    else
-                    {
-                        Log("ℹ️  Usuário admin já existe");
-                    }
-                }
-            }
+            EnsureSchemaAndAdmin(connString, Log);
 
             Log("🎉 Banco de dados pronto para uso!");
             return connString;
@@ -317,6 +273,50 @@ public static class LocalDbManager
         {
             Log($"❌ Erro: {ex.Message}");
             throw new Exception($"Erro ao criar arquivo .mdf: {ex.Message}", ex);
+        }
+    }
+
+    private static void EnsureSchemaAndAdmin(string connectionString, Action<string> Log)
+    {
+        // Criar estrutura de tabelas
+        Log("📊 Criando/garantindo estrutura de tabelas...");
+        var factory = new SqlServerConnectionFactory(connectionString);
+        Schema.SqlServerSchemaManager.EnsureRequiredTables(factory);
+        Log("✅ Estrutura ok");
+
+        // Criar usuário admin
+        Log("👤 Garantindo usuário administrador...");
+        using var conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        using var checkCmd = conn.CreateCommand();
+        checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
+        var count = (int?)checkCmd.ExecuteScalar() ?? 0;
+
+        if (count == 0)
+        {
+            using var insertCmd = conn.CreateCommand();
+            insertCmd.CommandText = @"
+                INSERT INTO Users (Username, PasswordHash, FullName, Role, IsActive, CreatedAt, LastPasswordChange)
+                VALUES (@username, @passwordHash, @fullName, @role, 1, GETUTCDATE(), GETUTCDATE())";
+
+            insertCmd.Parameters.AddWithValue("@username", "admin");
+            insertCmd.Parameters.AddWithValue("@passwordHash", Core.Entities.User.HashPassword("L9l337643k#$"));
+            insertCmd.Parameters.AddWithValue("@fullName", "Administrador");
+            insertCmd.Parameters.AddWithValue("@role", "Admin");
+
+            insertCmd.ExecuteNonQuery();
+            Log("✅ Usuário admin criado (Usuário: admin | Senha: L9l337643k#$)");
+        }
+        else
+        {
+            using var updateCmd = conn.CreateCommand();
+            updateCmd.CommandText = @"
+                UPDATE Users
+                SET Role = 'Admin', IsActive = 1
+                WHERE Username = 'admin'";
+            updateCmd.ExecuteNonQuery();
+            Log("ℹ️  Usuário admin já existia — role/ativo garantidos (Admin / Ativo)");
         }
     }
 }

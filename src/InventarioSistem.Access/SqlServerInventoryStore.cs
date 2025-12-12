@@ -154,10 +154,10 @@ public partial class SqlServerInventoryStore : IDisposable
     }
 
     // Sync wrappers
-    public List<Computer> GetAllComputers(int? limit = null) => GetAllComputersAsync(limit).GetAwaiter().GetResult();
-    public void AddComputer(Computer computer) => AddComputerAsync(computer).GetAwaiter().GetResult();
-    public void UpdateComputer(Computer computer) => UpdateComputerAsync(computer).GetAwaiter().GetResult();
-    public void DeleteComputer(int id) => DeleteComputerAsync(id).GetAwaiter().GetResult();
+    public List<Computer> GetAllComputers(int? limit = null) => Task.Run(() => GetAllComputersAsync(limit)).GetAwaiter().GetResult();
+    public void AddComputer(Computer computer) => Task.Run(() => AddComputerAsync(computer)).GetAwaiter().GetResult();
+    public void UpdateComputer(Computer computer) => Task.Run(() => UpdateComputerAsync(computer)).GetAwaiter().GetResult();
+    public void DeleteComputer(int id) => Task.Run(() => DeleteComputerAsync(id)).GetAwaiter().GetResult();
 
     // ===== TABLETS =====
 
@@ -255,10 +255,10 @@ public partial class SqlServerInventoryStore : IDisposable
         InventoryLogger.Info("SqlServerInventoryStore", $"Tablet deletado: Id={id}");
     }
 
-    public List<Tablet> GetAllTablets() => GetAllTabletsAsync().GetAwaiter().GetResult();
-    public void AddTablet(Tablet tablet) => AddTabletAsync(tablet).GetAwaiter().GetResult();
-    public void UpdateTablet(Tablet tablet) => UpdateTabletAsync(tablet).GetAwaiter().GetResult();
-    public void DeleteTablet(int id) => DeleteTabletAsync(id).GetAwaiter().GetResult();
+    public List<Tablet> GetAllTablets() => Task.Run(() => GetAllTabletsAsync()).GetAwaiter().GetResult();
+    public void AddTablet(Tablet tablet) => Task.Run(() => AddTabletAsync(tablet)).GetAwaiter().GetResult();
+    public void UpdateTablet(Tablet tablet) => Task.Run(() => UpdateTabletAsync(tablet)).GetAwaiter().GetResult();
+    public void DeleteTablet(int id) => Task.Run(() => DeleteTabletAsync(id)).GetAwaiter().GetResult();
 
     // ===== COLETORES ANDROID =====
 
@@ -405,10 +405,10 @@ public partial class SqlServerInventoryStore : IDisposable
         InventoryLogger.Info("SqlServerInventoryStore", $"Coletor deletado: Id={id}");
     }
 
-    public List<ColetorAndroid> GetAllColetores() => GetAllColetoresAsync().GetAwaiter().GetResult();
-    public void AddColetor(ColetorAndroid coletor) => AddColetorAsync(coletor).GetAwaiter().GetResult();
-    public void UpdateColetor(ColetorAndroid coletor) => UpdateColetorAsync(coletor).GetAwaiter().GetResult();
-    public void DeleteColetor(int id) => DeleteColetorAsync(id).GetAwaiter().GetResult();
+    public List<ColetorAndroid> GetAllColetores() => Task.Run(() => GetAllColetoresAsync()).GetAwaiter().GetResult();
+    public void AddColetor(ColetorAndroid coletor) => Task.Run(() => AddColetorAsync(coletor)).GetAwaiter().GetResult();
+    public void UpdateColetor(ColetorAndroid coletor) => Task.Run(() => UpdateColetorAsync(coletor)).GetAwaiter().GetResult();
+    public void DeleteColetor(int id) => Task.Run(() => DeleteColetorAsync(id)).GetAwaiter().GetResult();
 
     // ===== UTILITY METHODS =====
     

@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Data.SqlClient;
+using InventarioSistem.Core.Logging;
 
 namespace InventarioSistem.Access.Config;
 
@@ -23,6 +25,7 @@ public class SqlServerConfig
                 UseLocalDb = true
             };
             config.Save();
+            InventoryLogger.Info("SqlServerConfig", "Arquivo de configuração criado com LocalDB padrão");
             return config;
         }
 
@@ -34,15 +37,38 @@ public class SqlServerConfig
             // Se não tem connection string, usar LocalDB
             if (string.IsNullOrEmpty(config.ConnectionString))
             {
+                InventoryLogger.Warn("SqlServerConfig", "Connection string vazia no config — usando LocalDB padrão");
                 config.ConnectionString = LocalDbManager.GetConnectionString();
                 config.UseLocalDb = true;
                 config.Save();
+                return config;
             }
-            
-            return config;
+
+            // Validar formato da connection string
+            try
+            {
+                _ = new SqlConnectionStringBuilder(config.ConnectionString);
+                InventoryLogger.Info("SqlServerConfig", $"Connection string carregada e validada (UseLocalDb={config.UseLocalDb})");
+                return config;
+            }
+            catch (Exception validationEx)
+            {
+                InventoryLogger.Error("SqlServerConfig", 
+                    $"Connection string carregada do config é MALFORMADA: {validationEx.Message}\n" +
+                    $"String: {config.ConnectionString.Substring(0, Math.Min(80, config.ConnectionString.Length))}...",
+                    validationEx);
+                
+                // Restaurar LocalDB como fallback
+                config.ConnectionString = LocalDbManager.GetConnectionString();
+                config.UseLocalDb = true;
+                config.Save();
+                InventoryLogger.Warn("SqlServerConfig", "Config resetado para LocalDB como fallback");
+                return config;
+            }
         }
-        catch
+        catch (Exception loadEx)
         {
+            InventoryLogger.Error("SqlServerConfig", $"Erro ao carregar config: {loadEx.Message}", loadEx);
             return new SqlServerConfig
             {
                 ConnectionString = LocalDbManager.GetConnectionString(),

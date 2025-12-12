@@ -450,7 +450,7 @@ public static class SqlServerSchemaManager
                 ("LastPasswordChange", "[LastPasswordChange] DATETIME")
             });
 
-            // Criar usuário admin se não existir
+            // Criar ou garantir usuário admin como Admin e ativo
             using var checkCmd = conn.CreateCommand();
             checkCmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Username = 'admin'";
             var adminExists = ((int?)checkCmd.ExecuteScalar() ?? 0) > 0;
@@ -469,6 +469,16 @@ public static class SqlServerSchemaManager
                 
                 insertCmd.ExecuteNonQuery();
                 InventoryLogger.Info(LoggerSource, "Usuário admin criado com sucesso.");
+            }
+            else
+            {
+                using var updateCmd = conn.CreateCommand();
+                updateCmd.CommandText = @"
+                    UPDATE Users
+                    SET Role = 'Admin', IsActive = 1
+                    WHERE Username = 'admin'";
+                updateCmd.ExecuteNonQuery();
+                InventoryLogger.Info(LoggerSource, "Usuário admin já existia — role/ativo garantidos (Admin / Ativo).");
             }
         });
 

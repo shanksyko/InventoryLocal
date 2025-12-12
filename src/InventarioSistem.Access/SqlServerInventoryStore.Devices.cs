@@ -131,10 +131,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Celular deletado: Id={id}");
     }
 
-    public List<Celular> GetAllCelulares() => GetAllCelularesAsync().GetAwaiter().GetResult();
-    public void AddCelular(Celular celular) => AddCelularAsync(celular).GetAwaiter().GetResult();
-    public void UpdateCelular(Celular celular) => UpdateCelularAsync(celular).GetAwaiter().GetResult();
-    public void DeleteCelular(int id) => DeleteCelularAsync(id).GetAwaiter().GetResult();
+    public List<Celular> GetAllCelulares() => Task.Run(() => GetAllCelularesAsync()).GetAwaiter().GetResult();
+    public void AddCelular(Celular celular) => Task.Run(() => AddCelularAsync(celular)).GetAwaiter().GetResult();
+    public void UpdateCelular(Celular celular) => Task.Run(() => UpdateCelularAsync(celular)).GetAwaiter().GetResult();
+    public void DeleteCelular(int id) => Task.Run(() => DeleteCelularAsync(id)).GetAwaiter().GetResult();
 
     // ===== IMPRESSORAS =====
 
@@ -229,10 +229,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Impressora deletada: Id={id}");
     }
 
-    public List<Impressora> GetAllImpressoras() => GetAllImpressorasAsync().GetAwaiter().GetResult();
-    public void AddImpressora(Impressora impressora) => AddImpressoraAsync(impressora).GetAwaiter().GetResult();
-    public void UpdateImpressora(Impressora impressora) => UpdateImpressoraAsync(impressora).GetAwaiter().GetResult();
-    public void DeleteImpressora(int id) => DeleteImpressoraAsync(id).GetAwaiter().GetResult();
+    public List<Impressora> GetAllImpressoras() => Task.Run(() => GetAllImpressorasAsync()).GetAwaiter().GetResult();
+    public void AddImpressora(Impressora impressora) => Task.Run(() => AddImpressoraAsync(impressora)).GetAwaiter().GetResult();
+    public void UpdateImpressora(Impressora impressora) => Task.Run(() => UpdateImpressoraAsync(impressora)).GetAwaiter().GetResult();
+    public void DeleteImpressora(int id) => Task.Run(() => DeleteImpressoraAsync(id)).GetAwaiter().GetResult();
 
     // ===== DECTS =====
 
@@ -330,10 +330,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"DECT deletado: Id={id}");
     }
 
-    public List<DectPhone> GetAllDects() => GetAllDectsAsync().GetAwaiter().GetResult();
-    public void AddDect(DectPhone dect) => AddDectAsync(dect).GetAwaiter().GetResult();
-    public void UpdateDect(DectPhone dect) => UpdateDectAsync(dect).GetAwaiter().GetResult();
-    public void DeleteDect(int id) => DeleteDectAsync(id).GetAwaiter().GetResult();
+    public List<DectPhone> GetAllDects() => Task.Run(() => GetAllDectsAsync()).GetAwaiter().GetResult();
+    public void AddDect(DectPhone dect) => Task.Run(() => AddDectAsync(dect)).GetAwaiter().GetResult();
+    public void UpdateDect(DectPhone dect) => Task.Run(() => UpdateDectAsync(dect)).GetAwaiter().GetResult();
+    public void DeleteDect(int id) => Task.Run(() => DeleteDectAsync(id)).GetAwaiter().GetResult();
 
     // ===== TELEFONES CISCO =====
 
@@ -431,10 +431,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Telefone Cisco deletado: Id={id}");
     }
 
-    public List<CiscoPhone> GetAllTelefonesCisco() => GetAllTelefonesCiscoAsync().GetAwaiter().GetResult();
-    public void AddTelefoneCisco(CiscoPhone telefone) => AddTelefoneCiscoAsync(telefone).GetAwaiter().GetResult();
-    public void UpdateTelefoneCisco(CiscoPhone telefone) => UpdateTelefoneCiscoAsync(telefone).GetAwaiter().GetResult();
-    public void DeleteTelefoneCisco(int id) => DeleteTelefoneCiscoAsync(id).GetAwaiter().GetResult();
+    public List<CiscoPhone> GetAllTelefonesCisco() => Task.Run(() => GetAllTelefonesCiscoAsync()).GetAwaiter().GetResult();
+    public void AddTelefoneCisco(CiscoPhone telefone) => Task.Run(() => AddTelefoneCiscoAsync(telefone)).GetAwaiter().GetResult();
+    public void UpdateTelefoneCisco(CiscoPhone telefone) => Task.Run(() => UpdateTelefoneCiscoAsync(telefone)).GetAwaiter().GetResult();
+    public void DeleteTelefoneCisco(int id) => Task.Run(() => DeleteTelefoneCiscoAsync(id)).GetAwaiter().GetResult();
 
     // ===== TELEVISORES =====
 
@@ -522,10 +522,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Televisor deletado: Id={id}");
     }
 
-    public List<Televisor> GetAllTelevisores() => GetAllTelevisoresAsync().GetAwaiter().GetResult();
-    public void AddTelevisor(Televisor tv) => AddTelevisorAsync(tv).GetAwaiter().GetResult();
-    public void UpdateTelevisor(Televisor tv) => UpdateTelevisorAsync(tv).GetAwaiter().GetResult();
-    public void DeleteTelevisor(int id) => DeleteTelevisorAsync(id).GetAwaiter().GetResult();
+    public List<Televisor> GetAllTelevisores() => Task.Run(() => GetAllTelevisoresAsync()).GetAwaiter().GetResult();
+    public void AddTelevisor(Televisor tv) => Task.Run(() => AddTelevisorAsync(tv)).GetAwaiter().GetResult();
+    public void UpdateTelevisor(Televisor tv) => Task.Run(() => UpdateTelevisorAsync(tv)).GetAwaiter().GetResult();
+    public void DeleteTelevisor(int id) => Task.Run(() => DeleteTelevisorAsync(id)).GetAwaiter().GetResult();
 
     // ===== RELOGIOS PONTO =====
 
@@ -626,10 +626,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Relógio Ponto deletado: Id={id}");
     }
 
-    public List<RelogioPonto> GetAllRelogiosPonto() => GetAllRelogiosPontoAsync().GetAwaiter().GetResult();
-    public void AddRelogioPonto(RelogioPonto relogio) => AddRelogiosPontoAsync(relogio).GetAwaiter().GetResult();
-    public void UpdateRelogioPonto(RelogioPonto relogio) => UpdateRelogiosPontoAsync(relogio).GetAwaiter().GetResult();
-    public void DeleteRelogioPonto(int id) => DeleteRelogiosPontoAsync(id).GetAwaiter().GetResult();
+    public List<RelogioPonto> GetAllRelogiosPonto() => Task.Run(() => GetAllRelogiosPontoAsync()).GetAwaiter().GetResult();
+    public void AddRelogioPonto(RelogioPonto relogio) => Task.Run(() => AddRelogiosPontoAsync(relogio)).GetAwaiter().GetResult();
+    public void UpdateRelogioPonto(RelogioPonto relogio) => Task.Run(() => UpdateRelogiosPontoAsync(relogio)).GetAwaiter().GetResult();
+    public void DeleteRelogioPonto(int id) => Task.Run(() => DeleteRelogiosPontoAsync(id)).GetAwaiter().GetResult();
 
     // ===== MONITORES =====
 
@@ -724,10 +724,10 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Monitor deletado: Id={id}");
     }
 
-    public List<InventarioSistem.Core.Devices.Monitor> GetAllMonitores() => GetAllMonitoresAsync().GetAwaiter().GetResult();
-    public void AddMonitor(InventarioSistem.Core.Devices.Monitor monitor) => AddMonitorAsync(monitor).GetAwaiter().GetResult();
-    public void UpdateMonitor(InventarioSistem.Core.Devices.Monitor monitor) => UpdateMonitorAsync(monitor).GetAwaiter().GetResult();
-    public void DeleteMonitor(int id) => DeleteMonitorAsync(id).GetAwaiter().GetResult();
+    public List<InventarioSistem.Core.Devices.Monitor> GetAllMonitores() => Task.Run(() => GetAllMonitoresAsync()).GetAwaiter().GetResult();
+    public void AddMonitor(InventarioSistem.Core.Devices.Monitor monitor) => Task.Run(() => AddMonitorAsync(monitor)).GetAwaiter().GetResult();
+    public void UpdateMonitor(InventarioSistem.Core.Devices.Monitor monitor) => Task.Run(() => UpdateMonitorAsync(monitor)).GetAwaiter().GetResult();
+    public void DeleteMonitor(int id) => Task.Run(() => DeleteMonitorAsync(id)).GetAwaiter().GetResult();
 
     // ===== NOBREAKS =====
 
@@ -825,8 +825,8 @@ public partial class SqlServerInventoryStore
         InventoryLogger.Info("SqlServerInventoryStore", $"Nobreak deletado: Id={id}");
     }
 
-    public List<Nobreak> GetAllNobreaks() => GetAllNobreaksAsync().GetAwaiter().GetResult();
-    public void AddNobreak(Nobreak nobreak) => AddNobreakAsync(nobreak).GetAwaiter().GetResult();
-    public void UpdateNobreak(Nobreak nobreak) => UpdateNobreakAsync(nobreak).GetAwaiter().GetResult();
-    public void DeleteNobreak(int id) => DeleteNobreakAsync(id).GetAwaiter().GetResult();
+    public List<Nobreak> GetAllNobreaks() => Task.Run(() => GetAllNobreaksAsync()).GetAwaiter().GetResult();
+    public void AddNobreak(Nobreak nobreak) => Task.Run(() => AddNobreakAsync(nobreak)).GetAwaiter().GetResult();
+    public void UpdateNobreak(Nobreak nobreak) => Task.Run(() => UpdateNobreakAsync(nobreak)).GetAwaiter().GetResult();
+    public void DeleteNobreak(int id) => Task.Run(() => DeleteNobreakAsync(id)).GetAwaiter().GetResult();
 }

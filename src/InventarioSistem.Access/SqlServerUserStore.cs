@@ -236,9 +236,9 @@ public class SqlServerUserStore
     /// <summary>
     /// Gets all users from the database.
     /// </summary>
-    public async Task<List<(int Id, string Username, string FullName, bool IsActive)>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<List<InventarioSistem.Core.Entities.User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
-        var users = new List<(int Id, string Username, string FullName, bool IsActive)>();
+        var users = new List<InventarioSistem.Core.Entities.User>();
 
         try
         {
@@ -246,17 +246,28 @@ public class SqlServerUserStore
             await connection.OpenAsync(cancellationToken);
 
             await using var command = connection.CreateCommand();
-            command.CommandText = "SELECT [Id], [Username], [FullName], [IsActive] FROM [Users] ORDER BY [Username]";
+            command.CommandText = @"SELECT [Id], [Username], [FullName], [Role], [IsActive], [CreatedAt], [LastLogin]
+                                   FROM [Users]
+                                   ORDER BY [Username]";
 
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
             {
-                users.Add((
-                    reader.GetInt32(0),
-                    reader.GetString(1),
-                    reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    reader.GetBoolean(3)
-                ));
+                var roleString = reader.IsDBNull(3) ? "Visualizador" : reader.GetString(3);
+                var role = roleString.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                    ? InventarioSistem.Core.Entities.UserRole.Admin
+                    : InventarioSistem.Core.Entities.UserRole.Visualizador;
+
+                users.Add(new InventarioSistem.Core.Entities.User
+                {
+                    Id = reader.GetInt32(0),
+                    Username = reader.GetString(1),
+                    FullName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    Role = role,
+                    IsActive = reader.GetBoolean(4),
+                    CreatedAt = reader.IsDBNull(5) ? DateTime.UtcNow : reader.GetDateTime(5),
+                    LastLogin = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                });
             }
         }
         catch (Exception ex)
@@ -278,7 +289,7 @@ public class SqlServerUserStore
     /// <summary>
     /// Updates a user's information.
     /// </summary>
-    public async Task UpdateUserAsync(string userId, string username, string fullName, bool isActive, CancellationToken cancellationToken = default)
+    public async Task UpdateUserAsync(string userId, string username, string fullName, bool isActive, string role, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("User ID is required", nameof(userId));
@@ -291,12 +302,13 @@ public class SqlServerUserStore
             await using var command = connection.CreateCommand();
             command.CommandText = @"
                 UPDATE [Users]
-                SET [Username] = @Username, [FullName] = @FullName, [IsActive] = @IsActive
+                SET [Username] = @Username, [FullName] = @FullName, [IsActive] = @IsActive, [Role] = @Role
                 WHERE [Id] = @Id";
 
             command.Parameters.AddWithValue("@Username", username ?? "");
             command.Parameters.AddWithValue("@FullName", fullName ?? "");
             command.Parameters.AddWithValue("@IsActive", isActive);
+            command.Parameters.AddWithValue("@Role", role ?? "Visualizador");
             command.Parameters.AddWithValue("@Id", int.Parse(userId));
 
             await command.ExecuteNonQueryAsync(cancellationToken);
