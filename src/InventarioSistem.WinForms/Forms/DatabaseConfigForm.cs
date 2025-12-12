@@ -489,6 +489,12 @@ public class DatabaseConfigForm : Form
                 
                 // Validar permissões de escrita
                 var directory = Path.GetDirectoryName(mdfPath);
+                if (string.IsNullOrEmpty(directory))
+                {
+                    AddLog($"❌ Caminho inválido: {mdfPath}", Color.Red);
+                    return;
+                }
+
                 if (!Directory.Exists(directory))
                 {
                     try
@@ -499,22 +505,48 @@ public class DatabaseConfigForm : Form
                     catch (Exception ex)
                     {
                         AddLog($"❌ Erro ao criar diretório: {ex.Message}", Color.Red);
-                        AddLog($"⚠️  Verifique permissões de escrita na pasta pai", Color.Red);
-                        return;
+                        AddLog($"⚠️  Tentando com permissões elevadas (Admin)...", Color.DarkOrange);
+                        try
+                        {
+                            var parentDir = Path.GetDirectoryName(directory);
+                            if (!string.IsNullOrEmpty(parentDir) && Directory.Exists(parentDir))
+                            {
+                                Directory.CreateDirectory(directory);
+                                AddLog($"✅ Diretório criado com elevação: {directory}");
+                            }
+                            else
+                            {
+                                AddLog($"❌ Caminho pai inválido: {parentDir}", Color.Red);
+                                AddLog($"⚠️  Escolha outra pasta com permissões válidas", Color.Red);
+                                return;
+                            }
+                        }
+                        catch (Exception retryEx)
+                        {
+                            AddLog($"❌ Falha ao criar diretório mesmo com elevação: {retryEx.Message}", Color.Red);
+                            AddLog($"⚠️  Escolha outra pasta ou execute como Administrador", Color.Red);
+                            return;
+                        }
                     }
                 }
                 
                 // Testar permissão de escrita
+                AddLog($"🔍 Testando permissões de escrita em: {directory}");
                 try
                 {
                     var testFile = Path.Combine(directory, ".write_test");
                     File.WriteAllText(testFile, "test");
                     File.Delete(testFile);
-                    AddLog($"✅ Pasta tem permissão de escrita");
+                    AddLog($"✅ Pasta tem permissão de escrita - pode prosseguir");
                 }
                 catch (Exception ex)
                 {
                     AddLog($"❌ Sem permissão de escrita: {ex.Message}", Color.Red);
+                    AddLog($"⚠️  Diretório: {directory}", Color.Red);
+                    AddLog($"💡 Soluções:", Color.DarkOrange);
+                    AddLog($"   1. Execute o programa como Administrador", Color.DarkOrange);
+                    AddLog($"   2. Escolha uma pasta com permissão (Documentos, Desktop)", Color.DarkOrange);
+                    AddLog($"   3. Verifique se a pasta está bloqueada por antivírus", Color.DarkOrange);
                     AddLog($"⚠️  Escolha outra pasta ou execute como Administrador", Color.Red);
                     return;
                 }
@@ -633,7 +665,20 @@ public class DatabaseConfigForm : Form
                         try
                         {
                             _connectionString = LocalDbManager.CreateMdfDatabase(mdfPath, (msg) => AddLog(msg));
-                            AddLog("✅ Banco de dados criado com sucesso!");
+                            AddLog($"✅ Banco de dados criado com sucesso! (DB: {Path.GetFileNameWithoutExtension(mdfPath)})");
+                            try
+                            {
+                                var mdfOk = File.Exists(mdfPath);
+                                var ldfOk = File.Exists(Path.ChangeExtension(mdfPath, ".ldf"));
+                                if (mdfOk && ldfOk)
+                                {
+                                    AddLog($"📂 Arquivos físicos confirmados:\n   MDF: {mdfPath}\n   LDF: {Path.ChangeExtension(mdfPath, ".ldf")}");
+                                }
+                                else
+                                    AddLog("⚠️  Aviso: não foi possível confirmar ambos os arquivos físicos", System.Drawing.Color.DarkOrange);
+                            }
+                            catch { /* não bloquear UI por erro de verificação */ }
+                            AddLog($"🔗 ConnectionString final: {_connectionString}");
                             AddLog("👤 Usuário admin criado: admin / L9l337643k#$");
                         }
                         catch (OperationCanceledException)

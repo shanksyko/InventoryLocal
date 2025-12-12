@@ -10,6 +10,16 @@ using InventarioSistem.Core.Logging;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+// Modo utilitário: criar LocalDB .mdf via CLI
+if (args.Length > 0 && string.Equals(args[0], "create-localdb", StringComparison.OrdinalIgnoreCase))
+{
+    var path = LocalDbManager.GetDatabasePath();
+    Console.WriteLine($"Criando LocalDB em: {path}");
+    var conn = LocalDbManager.CreateMdfDatabase(path, msg => Console.WriteLine(msg));
+    Console.WriteLine($"Conexão pronta: {conn}");
+    return;
+}
+
 // Inicializa SQL Server infrastructure
 var config = new SqlServerConfig();
 var factory = new SqlServerConnectionFactory(config.ConnectionString);

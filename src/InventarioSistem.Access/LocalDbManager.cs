@@ -190,6 +190,10 @@ public static class LocalDbManager
 
         try
         {
+            Log($"📄 Caminho MDF: {mdfPath}");
+            var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+            Log($"📄 Caminho LDF: {ldfPath}");
+            
             // Validar caminho
             var directory = Path.GetDirectoryName(mdfPath);
             if (string.IsNullOrEmpty(directory))
@@ -198,8 +202,27 @@ public static class LocalDbManager
             // Criar diretório se não existir
             if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(directory);
-                Log($"📁 Diretório criado: {directory}");
+                try
+                {
+                    Directory.CreateDirectory(directory);
+                    Log($"📁 Diretório criado: {directory}");
+                }
+                catch (Exception ex)
+                {
+                    Log($"⚠️  Erro ao criar diretório na primeira tentativa: {ex.Message}");
+                    Log($"🔄 Tentando novamente com pausa...");
+                    try
+                    {
+                        System.Threading.Thread.Sleep(500);
+                        Directory.CreateDirectory(directory);
+                        Log($"📁 Diretório criado (retry): {directory}");
+                    }
+                    catch (Exception retryEx)
+                    {
+                        Log($"❌ Falha ao criar diretório (ambas tentativas): {retryEx.Message}");
+                        throw;
+                    }
+                }
             }
 
             var dbName = Path.GetFileNameWithoutExtension(mdfPath);
@@ -222,16 +245,16 @@ public static class LocalDbManager
 
                     if (exists)
                     {
-                        var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+                        var ldfPathCheck = Path.ChangeExtension(mdfPath, ".ldf");
                         var mdfExists = File.Exists(mdfPath);
-                        var ldfExists = File.Exists(ldfPath);
+                        var ldfExists = File.Exists(ldfPathCheck);
 
                         if (mdfExists && ldfExists)
                         {
                             Log("ℹ️  Banco já existia com arquivos físicos. Reutilizando e garantindo estrutura/usuário...");
                             var existingConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
                             EnsureSchemaAndAdmin(existingConn, Log);
-                            Log("🎉 Banco reutilizado e pronto para uso!");
+                            Log($"🔎 Database name: {dbName}");
                             return existingConn;
                         }
                         else
@@ -271,7 +294,7 @@ public static class LocalDbManager
                 }
 
                 // Também remover arquivo .ldf se existir
-                var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
+                ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
                 if (File.Exists(ldfPath))
                 {
                     try
@@ -301,17 +324,16 @@ public static class LocalDbManager
                             FILENAME = '{ldfPath}'
                         )";
                     cmd.ExecuteNonQuery();
-                    Log($"✅ Banco de dados '{dbName}' criado");
                 }
             }
 
             // Usar Database={dbName} para garantir schema/admin sem depender de Attach durante criação
-            var dbName = Path.GetFileNameWithoutExtension(mdfPath);
             var ensureConn = $"Data Source=(LocalDB)\\mssqllocaldb;Database={dbName};Integrated Security=true;TrustServerCertificate=true;";
             Log("📊 Garantindo estrutura do banco (via Database)...");
             EnsureSchemaAndAdmin(ensureConn, Log);
             // Retornar AttachDbFileName para compatibilidade de runtime
             var finalConnString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
+            Log($"🔗 Conexão final (AttachDbFileName): {finalConnString}");
             Log("🎉 Banco de dados pronto para uso!");
             return finalConnString;
         }
