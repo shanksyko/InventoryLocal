@@ -1,0 +1,5 @@
+--- Adicionar verificação de LocalDB antes de criar MDF
+
+No método OnContinue(), antes de tentar criar MDF, verificar se LocalDB está instalado.
+
+Se não estiver, mostrar mensagem com soluções.

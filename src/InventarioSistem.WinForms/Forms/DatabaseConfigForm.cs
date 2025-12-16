@@ -12,11 +12,10 @@ namespace InventarioSistem.WinForms.Forms;
 
 /// <summary>
 /// Formulário melhorado para selecionar modo de banco de dados
-/// Permite: LocalDB (padrão), Servidor SQL Server ou Arquivo .mdf
+/// Permite: Servidor SQL Server ou Arquivo .mdf
 /// </summary>
 public class DatabaseConfigForm : Form
 {
-    private RadioButton _rbLocalDb = null!;
     private RadioButton _rbSqlServer = null!;
     private RadioButton _rbFileMdf = null!;
 
@@ -26,7 +25,6 @@ public class DatabaseConfigForm : Form
     private TextBox _txtSqlPassword = null!;
     private CheckBox _chkSqlIntegratedSecurity = null!;
     
-    private Panel _panelLocalDb = null!;
     private Panel _panelSqlServer = null!;
     private Panel _panelFileMdf = null!;
     
@@ -36,14 +34,14 @@ public class DatabaseConfigForm : Form
     private Button _btnContinue = null!;
     private Button _btnCancel = null!;
 
-    private string _selectedMode = "localdb";
+    private string _selectedMode = "sqlserver";
     private string _connectionString = string.Empty;
 
     public DatabaseConfigForm()
     {
         Text = "Configuração do Banco de Dados";
-        Size = new Size(800, 700);
-        MinimumSize = new Size(600, 500);
+        Size = new Size(1280, 720);
+        MinimumSize = new Size(800, 600);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = ResponsiveUIHelper.Colors.LightBackground;
         Font = ResponsiveUIHelper.Fonts.Regular;
@@ -59,7 +57,7 @@ public class DatabaseConfigForm : Form
         // Header
         var headerPanel = ResponsiveUIHelper.CreateHeaderPanel(
             "⚙️ Selecione o Modo de Banco de Dados",
-            "Escolha como deseja armazenar os dados: LocalDB, Servidor SQL ou Arquivo de Rede"
+            "Escolha como deseja armazenar os dados: Servidor SQL ou Arquivo .mdf"
         );
         headerPanel.BackColor = ResponsiveUIHelper.Colors.PrimaryOrange;
         Controls.Add(headerPanel);
@@ -70,50 +68,17 @@ public class DatabaseConfigForm : Form
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = ResponsiveUIHelper.Colors.LightBackground,
-            Padding = new Padding(ResponsiveUIHelper.Spacing.Large)
+            Padding = new Padding(40, 80, 40, 20)
         };
 
-        int y = ResponsiveUIHelper.Spacing.Medium;
+        int y = 100;
 
-        // ===== MODO 1: LocalDB =====
-        _rbLocalDb = new RadioButton
-        {
-            Text = "✅ LocalDB (Recomendado - Sem Instalação)",
-            AutoSize = true,
-            Checked = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, y),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
-        };
-        _rbLocalDb.CheckedChanged += (s, e) => { if (_rbLocalDb.Checked) ShowLocalDbPanel(); };
-        mainPanel.Controls.Add(_rbLocalDb);
-
-        y += 30;
-
-        _panelLocalDb = ResponsiveUIHelper.CreateCard(650, 120);
-        _panelLocalDb.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
-        
-        var lblLocalDb = new Label
-        {
-            Text = "📦 LocalDB é uma versão leve do SQL Server que vem com .NET\n\n" +
-                   "✓ Sem instalação necessária\n" +
-                   "✓ Zero configuração\n" +
-                   "✓ Banco local no computador\n" +
-                   "✓ Perfeito para começar agora",
-            AutoSize = false,
-            Dock = DockStyle.Fill,
-            Padding = new Padding(ResponsiveUIHelper.Spacing.Medium),
-            Font = ResponsiveUIHelper.Fonts.Small
-        };
-        _panelLocalDb.Controls.Add(lblLocalDb);
-        mainPanel.Controls.Add(_panelLocalDb);
-
-        y += 140;
-
-        // ===== MODO 2: SQL Server =====
+        // ===== MODO 1: SQL Server =====
         _rbSqlServer = new RadioButton
         {
             Text = "🖥️  SQL Server (Servidor/Rede)",
             AutoSize = true,
+            Checked = true,
             Location = new Point(ResponsiveUIHelper.Spacing.Medium, y),
             Font = ResponsiveUIHelper.Fonts.LabelBold
         };
@@ -122,90 +87,92 @@ public class DatabaseConfigForm : Form
 
         y += 30;
 
-        _panelSqlServer = ResponsiveUIHelper.CreateCard(650, 220);
+        _panelSqlServer = ResponsiveUIHelper.CreateCard(600, 165);
         _panelSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
-        _panelSqlServer.Visible = false;
+        _panelSqlServer.Visible = true;
 
-        var pnlSqlControls = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+        var pnlSqlControls = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10, 8, 10, 8) };
         
+        // Linha 1: Servidor e Botão Testar
         var lblSqlServer = new Label
         {
-            Text = "Servidor SQL Server:",
+            Text = "Servidor:",
             AutoSize = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
+            Location = new Point(8, 8),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         pnlSqlControls.Controls.Add(lblSqlServer);
 
-        _txtSqlServer = ResponsiveUIHelper.CreateTextBox("GIANPC\\SQLEXPRESS", 320);
-        _txtSqlServer.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium + 22);
-        _txtSqlServer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        _txtSqlServer = ResponsiveUIHelper.CreateTextBox("localhost\\SQLEXPRESS", 360);
+        _txtSqlServer.Location = new Point(8, 28);
         pnlSqlControls.Controls.Add(_txtSqlServer);
 
+        var btnTestSql = ResponsiveUIHelper.CreateButton("🔗 Testar", 100, ResponsiveUIHelper.Colors.PrimaryBlue);
+        btnTestSql.Location = new Point(375, 28);
+        btnTestSql.Click += (s, e) => TestSqlConnection();
+        pnlSqlControls.Controls.Add(btnTestSql);
+
+        // Linha 2: Database e Checkbox lado a lado
         var lblDatabase = new Label
         {
-            Text = "Banco de dados (Initial Catalog):",
+            Text = "Database:",
             AutoSize = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlServer.Bottom + ResponsiveUIHelper.Spacing.Medium),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
+            Location = new Point(8, 60),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         pnlSqlControls.Controls.Add(lblDatabase);
 
-        _txtSqlDatabase = ResponsiveUIHelper.CreateTextBox("InventoryLocal", 220);
-        _txtSqlDatabase.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblDatabase.Bottom + 4);
+        _txtSqlDatabase = ResponsiveUIHelper.CreateTextBox("InventoryLocal", 180);
+        _txtSqlDatabase.Location = new Point(8, 80);
         pnlSqlControls.Controls.Add(_txtSqlDatabase);
 
         _chkSqlIntegratedSecurity = new CheckBox
         {
-            Text = "Usar Segurança Integrada (Windows)",
+            Text = "☑ Segurança Windows",
             AutoSize = true,
             Checked = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlDatabase.Bottom + ResponsiveUIHelper.Spacing.Small)
+            Location = new Point(200, 82),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         _chkSqlIntegratedSecurity.CheckedChanged += (_, _) => ToggleSqlAuthFields();
         pnlSqlControls.Controls.Add(_chkSqlIntegratedSecurity);
 
+        // Linha 3: Usuário e Senha lado a lado
         var lblSqlUser = new Label
         {
-            Text = "Usuário (SQL Authentication):",
+            Text = "Usuário SQL:",
             AutoSize = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _chkSqlIntegratedSecurity.Bottom + ResponsiveUIHelper.Spacing.Small),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
+            Location = new Point(8, 115),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         pnlSqlControls.Controls.Add(lblSqlUser);
 
-        _txtSqlUser = ResponsiveUIHelper.CreateTextBox(string.Empty, 200);
-        _txtSqlUser.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblSqlUser.Bottom + 4);
+        _txtSqlUser = ResponsiveUIHelper.CreateTextBox(string.Empty, 180);
+        _txtSqlUser.Location = new Point(8, 135);
         pnlSqlControls.Controls.Add(_txtSqlUser);
 
         var lblSqlPassword = new Label
         {
             Text = "Senha:",
             AutoSize = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, _txtSqlUser.Bottom + ResponsiveUIHelper.Spacing.Small),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
+            Location = new Point(200, 115),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         pnlSqlControls.Controls.Add(lblSqlPassword);
 
-        _txtSqlPassword = ResponsiveUIHelper.CreateTextBox(string.Empty, 200);
-        _txtSqlPassword.Location = new Point(ResponsiveUIHelper.Spacing.Medium, lblSqlPassword.Bottom + 4);
+        _txtSqlPassword = ResponsiveUIHelper.CreateTextBox(string.Empty, 180);
+        _txtSqlPassword.Location = new Point(200, 135);
         _txtSqlPassword.PasswordChar = '*';
         pnlSqlControls.Controls.Add(_txtSqlPassword);
-
-        var btnTestSql = ResponsiveUIHelper.CreateButton("🔗 Testar", 120, ResponsiveUIHelper.Colors.PrimaryBlue);
-        btnTestSql.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnTestSql.Location = new Point(_txtSqlServer.Right + ResponsiveUIHelper.Spacing.Small, _txtSqlServer.Top);
-        btnTestSql.Click += (s, e) => TestSqlConnection();
-        pnlSqlControls.Controls.Add(btnTestSql);
 
         ToggleSqlAuthFields();
 
         _panelSqlServer.Controls.Add(pnlSqlControls);
         mainPanel.Controls.Add(_panelSqlServer);
 
-        y += 240;
+        y += 180;
 
-        // ===== MODO 3: Arquivo .mdf =====
+        // ===== MODO 2: Arquivo .mdf =====
         _rbFileMdf = new RadioButton
         {
             Text = "📁 Arquivo .mdf (Rede/Local)",
@@ -218,36 +185,49 @@ public class DatabaseConfigForm : Form
 
         y += 30;
 
-        _panelFileMdf = ResponsiveUIHelper.CreateCard(650, 100);
+        _panelFileMdf = ResponsiveUIHelper.CreateCard(600, 80);
         _panelFileMdf.Location = new Point(ResponsiveUIHelper.Spacing.Medium + 20, y);
         _panelFileMdf.Visible = false;
 
-        var pnlFileControls = new Panel { Dock = DockStyle.Fill };
+        var pnlFileControls = new Panel { Dock = DockStyle.Fill, Padding = new Padding(10, 8, 10, 8) };
 
         var lblFilePath = new Label
         {
-            Text = "Caminho do arquivo .mdf:",
+            Text = "Arquivo .mdf:",
             AutoSize = true,
-            Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium),
-            Font = ResponsiveUIHelper.Fonts.LabelBold
+            Location = new Point(8, 8),
+            Font = ResponsiveUIHelper.Fonts.Regular
         };
         pnlFileControls.Controls.Add(lblFilePath);
 
-        var txtFilePath = ResponsiveUIHelper.CreateTextBox("", 400);
-        txtFilePath.Location = new Point(ResponsiveUIHelper.Spacing.Medium, ResponsiveUIHelper.Spacing.Medium + 25);
+        var txtFilePath = ResponsiveUIHelper.CreateTextBox("", 460);
+        txtFilePath.Location = new Point(8, 28);
         txtFilePath.ReadOnly = true;
+        txtFilePath.BackColor = Color.White;
+        txtFilePath.ForeColor = ResponsiveUIHelper.Colors.TextDark;
+        txtFilePath.PlaceholderText = "Clique em Procurar para selecionar ou criar...";
         pnlFileControls.Controls.Add(txtFilePath);
         pnlFileControls.Tag = txtFilePath;
 
-        var btnBrowse = ResponsiveUIHelper.CreateButton("📂 Procurar", 100, ResponsiveUIHelper.Colors.PrimaryBlue);
-        btnBrowse.Location = new Point(520, ResponsiveUIHelper.Spacing.Medium + 25);
+        var btnBrowse = ResponsiveUIHelper.CreateButton("📂 Procurar", 110, ResponsiveUIHelper.Colors.PrimaryBlue);
+        btnBrowse.Location = new Point(475, 28);
         btnBrowse.Click += (s, e) => BrowseMdfFile(txtFilePath);
         pnlFileControls.Controls.Add(btnBrowse);
+        
+        var lblInfo = new Label
+        {
+            Text = "💡 Criar novo ou selecionar existente",
+            AutoSize = true,
+            Location = new Point(8, 54),
+            Font = new Font(ResponsiveUIHelper.Fonts.Regular.FontFamily, 8F, FontStyle.Italic),
+            ForeColor = ResponsiveUIHelper.Colors.TextLight
+        };
+        pnlFileControls.Controls.Add(lblInfo);
 
         _panelFileMdf.Controls.Add(pnlFileControls);
         mainPanel.Controls.Add(_panelFileMdf);
 
-        y += 120;
+        y += 95;
 
         // ===== LOG =====
         var lblLog = ResponsiveUIHelper.CreateLabel("Log:", ResponsiveUIHelper.Fonts.LabelBold);
@@ -259,7 +239,7 @@ public class DatabaseConfigForm : Form
         _rtbLog = new RichTextBox
         {
             Location = new Point(ResponsiveUIHelper.Spacing.Medium, y),
-            Size = new Size(650, 100),
+            Size = new Size(600, 80),
             ReadOnly = true,
             BackColor = Color.White,
             ForeColor = ResponsiveUIHelper.Colors.TextDark
@@ -317,18 +297,8 @@ public class DatabaseConfigForm : Form
         AddLog("Escolha como deseja armazenar os dados.");
     }
 
-    private void ShowLocalDbPanel()
-    {
-        _panelLocalDb.Visible = true;
-        _panelSqlServer.Visible = false;
-        _panelFileMdf.Visible = false;
-        _selectedMode = "localdb";
-        AddLog("📦 Modo LocalDB selecionado");
-    }
-
     private void ShowSqlServerPanel()
     {
-        _panelLocalDb.Visible = false;
         _panelSqlServer.Visible = true;
         _panelFileMdf.Visible = false;
         _selectedMode = "sqlserver";
@@ -337,7 +307,6 @@ public class DatabaseConfigForm : Form
 
     private void ShowFileMdfPanel()
     {
-        _panelLocalDb.Visible = false;
         _panelSqlServer.Visible = false;
         _panelFileMdf.Visible = true;
         _selectedMode = "filemdf";
@@ -462,20 +431,95 @@ public class DatabaseConfigForm : Form
 
         if (choice == DialogResult.Yes)
         {
-            // Criar novo arquivo
+            // Criar novo arquivo - pré-preencher com caminho padrão em AppData
+            var defaultPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "InventoryLocal",
+                "InventoryDB.mdf"
+            );
+            var defaultDir = Path.GetDirectoryName(defaultPath);
+
             using var saveDialog = new SaveFileDialog
             {
                 Filter = "SQL Database Files (*.mdf)|*.mdf",
                 Title = "Criar novo arquivo de banco de dados",
                 FileName = "InventoryDB.mdf",
-                DefaultExt = "mdf"
+                DefaultExt = "mdf",
+                InitialDirectory = defaultDir ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
             };
 
             if (saveDialog.ShowDialog() == DialogResult.OK)
             {
                 var mdfPath = saveDialog.FileName;
+                AddLog($"📍 Caminho selecionado: {mdfPath}");
+                
+                // Validar permissões de escrita
+                var directory = Path.GetDirectoryName(mdfPath);
+                if (string.IsNullOrEmpty(directory))
+                {
+                    AddLog($"❌ Caminho inválido: {mdfPath}", Color.Red);
+                    return;
+                }
+
+                if (!Directory.Exists(directory))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(directory);
+                        AddLog($"✅ Diretório criado: {directory}");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog($"❌ Erro ao criar diretório: {ex.Message}", Color.Red);
+                        AddLog($"⚠️  Tentando com permissões elevadas (Admin)...", Color.DarkOrange);
+                        try
+                        {
+                            var parentDir = Path.GetDirectoryName(directory);
+                            if (!string.IsNullOrEmpty(parentDir) && Directory.Exists(parentDir))
+                            {
+                                Directory.CreateDirectory(directory);
+                                AddLog($"✅ Diretório criado com elevação: {directory}");
+                            }
+                            else
+                            {
+                                AddLog($"❌ Caminho pai inválido: {parentDir}", Color.Red);
+                                AddLog($"⚠️  Escolha outra pasta com permissões válidas", Color.Red);
+                                return;
+                            }
+                        }
+                        catch (Exception retryEx)
+                        {
+                            AddLog($"❌ Falha ao criar diretório mesmo com elevação: {retryEx.Message}", Color.Red);
+                            AddLog($"⚠️  Escolha outra pasta ou execute como Administrador", Color.Red);
+                            return;
+                        }
+                    }
+                }
+                
+                // Testar permissão de escrita
+                AddLog($"🔍 Testando permissões de escrita em: {directory}");
+                try
+                {
+                    var testFile = Path.Combine(directory, ".write_test");
+                    File.WriteAllText(testFile, "test");
+                    File.Delete(testFile);
+                    AddLog($"✅ Pasta tem permissão de escrita - pode prosseguir");
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"❌ Sem permissão de escrita: {ex.Message}", Color.Red);
+                    AddLog($"⚠️  Diretório: {directory}", Color.Red);
+                    AddLog($"💡 Soluções:", Color.DarkOrange);
+                    AddLog($"   1. Execute o programa como Administrador", Color.DarkOrange);
+                    AddLog($"   2. Escolha uma pasta com permissão (Documentos, Desktop)", Color.DarkOrange);
+                    AddLog($"   3. Verifique se a pasta está bloqueada por antivírus", Color.DarkOrange);
+                    AddLog($"⚠️  Escolha outra pasta ou execute como Administrador", Color.Red);
+                    return;
+                }
+                
                 txtPath.Text = mdfPath;
-                AddLog($"📁 Novo arquivo será criado em: {Path.GetFileName(mdfPath)}");
+                AddLog($"📁 Novo arquivo será criado em: {mdfPath}");
+                AddLog($"✅ Caminho validado com sucesso");
                 _connectionString = $"CREATE:{mdfPath}"; // Marcador especial
             }
         }
@@ -490,89 +534,159 @@ public class DatabaseConfigForm : Form
 
             if (openDialog.ShowDialog() == DialogResult.OK)
             {
-                txtPath.Text = openDialog.FileName;
-                _connectionString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={openDialog.FileName};Integrated Security=true;TrustServerCertificate=true;";
-                AddLog($"📁 Arquivo existente selecionado: {Path.GetFileName(openDialog.FileName)}");
+                var mdfPath = openDialog.FileName;
+                
+                // Validar se arquivo existe e é acessível
+                try
+                {
+                    if (!File.Exists(mdfPath))
+                    {
+                        AddLog($"❌ Arquivo não encontrado: {mdfPath}", Color.Red);
+                        return;
+                    }
+                    
+                    // Testar leitura
+                    using var fs = File.OpenRead(mdfPath);
+                    AddLog($"✅ Arquivo é acessível");
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"❌ Erro ao acessar arquivo: {ex.Message}", Color.Red);
+                    AddLog($"⚠️  Verifique se o arquivo está em uso ou sem permissão", Color.Red);
+                    return;
+                }
+                
+                txtPath.Text = mdfPath;
+                _connectionString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={mdfPath};Integrated Security=true;TrustServerCertificate=true;";
+                AddLog($"📁 Arquivo existente selecionado: {Path.GetFileName(mdfPath)}");
+                AddLog($"✅ Caminho validado com sucesso");
             }
         }
     }
 
     private void OnContinue(object? sender, EventArgs e)
     {
-        try
+        _progressBar.Visible = true;
+        _btnContinue.Enabled = false;
+
+        // Executar em thread background para não bloquear a UI
+        // Com timeout de 5 minutos
+        var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMinutes(5));
+        
+        System.Threading.ThreadPool.QueueUserWorkItem(_ =>
         {
-            _progressBar.Visible = true;
-            _btnContinue.Enabled = false;
-
-            if (_selectedMode == "localdb")
+            try
             {
-                _connectionString = LocalDbManager.GetConnectionString();
-                AddLog("✅ Usando LocalDB - Configuração automática");
-            }
-            else if (_selectedMode == "sqlserver")
-            {
-                if (!TryBuildSqlServerConnectionString(out var connString))
+                if (_selectedMode == "sqlserver")
                 {
-                    _btnContinue.Enabled = true;
-                    _progressBar.Visible = false;
-                    return;
-                }
-
-                if (!TryOpenConnection(connString, out var error))
-                {
-                    AddLog($"❌ Erro ao validar SQL Server: {error}", Color.Red);
-                    _btnContinue.Enabled = true;
-                    _progressBar.Visible = false;
-                    return;
-                }
-
-                _connectionString = connString;
-                AddLog("✅ Conexão SQL Server validada com sucesso!");
-            }
-            else if (_selectedMode == "filemdf")
-            {
-                if (string.IsNullOrEmpty(_connectionString))
-                {
-                    AddLog("❌ Selecione um arquivo .mdf primeiro", Color.Red);
-                    _btnContinue.Enabled = true;
-                    _progressBar.Visible = false;
-                    return;
-                }
-
-                // Se for criar novo arquivo
-                if (_connectionString.StartsWith("CREATE:"))
-                {
-                    var mdfPath = _connectionString.Substring(7); // Remove "CREATE:"
-                    AddLog($"📦 Criando novo banco de dados em {Path.GetFileName(mdfPath)}...");
-                    
-                    try
+                    if (!TryBuildSqlServerConnectionString(out var connString))
                     {
-                        _connectionString = LocalDbManager.CreateMdfDatabase(mdfPath, (msg) => AddLog(msg));
-                        AddLog("✅ Banco de dados criado com sucesso!");
-                        AddLog("👤 Usuário admin criado: admin / L9l337643k#$");
-                    }
-                    catch (Exception ex)
-                    {
-                        AddLog($"❌ Erro ao criar banco: {ex.Message}", Color.Red);
-                        _btnContinue.Enabled = true;
-                        _progressBar.Visible = false;
+                        this.Invoke(() =>
+                        {
+                            _btnContinue.Enabled = true;
+                            _progressBar.Visible = false;
+                        });
                         return;
                     }
-                }
-            }
 
-            AddLog("✅ Configuração validada com sucesso!");
-            DialogResult = DialogResult.OK;
-        }
-        catch (Exception ex)
-        {
-            AddLog($"❌ Erro: {ex.Message}", Color.Red);
-            _btnContinue.Enabled = true;
-        }
-        finally
-        {
-            _progressBar.Visible = false;
-        }
+                    if (!TryOpenConnection(connString, out var error))
+                    {
+                        AddLog($"❌ Erro ao validar SQL Server: {error}", Color.Red);
+                        this.Invoke(() =>
+                        {
+                            _btnContinue.Enabled = true;
+                            _progressBar.Visible = false;
+                        });
+                        return;
+                    }
+
+                    _connectionString = connString;
+                    AddLog("✅ Conexão SQL Server validada com sucesso!");
+                }
+                else if (_selectedMode == "filemdf")
+                {
+                    if (string.IsNullOrEmpty(_connectionString))
+                    {
+                        AddLog("❌ Selecione um arquivo .mdf primeiro", Color.Red);
+                        this.Invoke(() =>
+                        {
+                            _btnContinue.Enabled = true;
+                            _progressBar.Visible = false;
+                        });
+                        return;
+                    }
+
+                    // Se for criar novo arquivo
+                    if (_connectionString.StartsWith("CREATE:"))
+                    {
+                        var mdfPath = _connectionString.Substring(7); // Remove "CREATE:"
+                        AddLog($"📦 Criando novo banco de dados em {Path.GetFileName(mdfPath)}...");
+                        AddLog($"⏱️  Isso pode levar alguns segundos...");
+                        
+                        try
+                        {
+                            _connectionString = LocalDbManager.CreateMdfDatabase(mdfPath, (msg) => AddLog(msg));
+                            AddLog($"✅ Banco de dados criado com sucesso! (DB: {Path.GetFileNameWithoutExtension(mdfPath)})");
+                            try
+                            {
+                                var mdfOk = File.Exists(mdfPath);
+                                var ldfOk = File.Exists(Path.ChangeExtension(mdfPath, ".ldf"));
+                                if (mdfOk && ldfOk)
+                                {
+                                    AddLog($"📂 Arquivos físicos confirmados:\n   MDF: {mdfPath}\n   LDF: {Path.ChangeExtension(mdfPath, ".ldf")}");
+                                }
+                                else
+                                    AddLog("⚠️  Aviso: não foi possível confirmar ambos os arquivos físicos", System.Drawing.Color.DarkOrange);
+                            }
+                            catch { /* não bloquear UI por erro de verificação */ }
+                            AddLog($"🔗 ConnectionString final: {_connectionString}");
+                            AddLog("👤 Usuário admin criado: admin / L9l337643k#$");
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            AddLog($"❌ Timeout: Operação demorou muito (>5 min)", Color.Red);
+                            AddLog($"⚠️  Verifique se o caminho é válido e acessível", Color.Red);
+                            this.Invoke(() =>
+                            {
+                                _btnContinue.Enabled = true;
+                                _progressBar.Visible = false;
+                            });
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            AddLog($"❌ Erro ao criar banco: {ex.Message}", Color.Red);
+                            if (!string.IsNullOrEmpty(ex.InnerException?.Message))
+                            {
+                                AddLog($"   Detalhes: {ex.InnerException.Message}", Color.Red);
+                            }
+                            this.Invoke(() =>
+                            {
+                                _btnContinue.Enabled = true;
+                                _progressBar.Visible = false;
+                            });
+                            return;
+                        }
+                    }
+                }
+
+                AddLog("✅ Configuração validada com sucesso!");
+                this.Invoke(() =>
+                {
+                    DialogResult = DialogResult.OK;
+                    _progressBar.Visible = false;
+                });
+            }
+            catch (Exception ex)
+            {
+                AddLog($"❌ Erro: {ex.Message}", Color.Red);
+                this.Invoke(() =>
+                {
+                    _btnContinue.Enabled = true;
+                    _progressBar.Visible = false;
+                });
+            }
+        }, cts.Token);
     }
 
     private void AddLog(string message, Color? color = null)
