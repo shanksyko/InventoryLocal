@@ -1,6 +1,0 @@
-  Determining projects to restore...
-  All projects are up-to-date for restore.
-  InventarioSistem.Core -> /workspaces/InventoryLocal/src/InventarioSistem.Core/bin/Release/net8.0/InventarioSistem.Core.dll
-  InventarioSistem.Access -> /workspaces/InventoryLocal/src/InventarioSistem.Access/bin/Release/net8.0/InventarioSistem.Access.dll
-  InventarioSistem.Cli -> /workspaces/InventoryLocal/src/InventarioSistem.Cli/bin/Release/net8.0/InventarioSistem.Cli.dll
-  InventarioSistem.Cli -> /workspaces/InventoryLocal/releases/build/CLI/

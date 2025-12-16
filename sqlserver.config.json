@@ -1,3 +1,0 @@
-{
-  "ConnectionString": "Data Source=GIANPC\\SQLEXPRESS;Initial Catalog=InventoryLocal;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Command Timeout=0"
-}
