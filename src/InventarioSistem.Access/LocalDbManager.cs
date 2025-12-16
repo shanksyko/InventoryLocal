@@ -213,7 +213,7 @@ public static class LocalDbManager
                     Log($"🔄 Tentando novamente com pausa...");
                     try
                     {
-                        System.Threading.Thread.Sleep(500);
+                        System.Threading.Thread.Sleep(500); // Compatibilidade sincrona
                         Directory.CreateDirectory(directory);
                         Log($"📁 Diretório criado (retry): {directory}");
                     }

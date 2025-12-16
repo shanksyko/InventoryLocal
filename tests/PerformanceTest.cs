@@ -124,29 +124,63 @@ public class PerformanceTest
         }
     }
 
+    /// <summary>
+    /// Inserir em lotes para melhor performance
+    /// </summary>
+    private static async Task InserirEmLotesAsync<T>(
+        IEnumerable<T> items,
+        Func<T, Task> insertAction,
+        int tamanhoLote = 20)
+    {
+        int total = 0;
+        int lote = 0;
+        var stopwatchLote = Stopwatch.StartNew();
+
+        foreach (var item in items)
+        {
+            try
+            {
+                await insertAction(item);
+                total++;
+                lote++;
+
+                if (lote >= tamanhoLote)
+                {
+                    stopwatchLote.Stop();
+                    var taxaMsLote = stopwatchLote.ElapsedMilliseconds / (double)lote;
+                    Console.Write($"\rProgresso: {total} ({Math.Round(taxaMsLote, 2)}ms/item)");
+                    stopwatchLote.Restart();
+                    lote = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n⚠️  Erro ao inserir item {total + 1}: {ex.Message}");
+            }
+        }
+
+        stopwatchLote.Stop();
+        Console.WriteLine($"\n✅ {total} itens inseridos");
+    }
+
     private static async Task InserirComputadores(int quantidade)
     {
         Console.WriteLine($"Inserindo {quantidade} computadores...");
         var sw = Stopwatch.StartNew();
 
-        for (int i = 1; i <= quantidade; i++)
+        var computadores = Enumerable.Range(1, quantidade).Select(i => new ComputerDevice
         {
-            var computer = new ComputerDevice
-            {
-                Host = $"DESKTOP-TEST-{i:D4}",
-                SerialNumber = $"SN-COMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                Proprietario = $"Usuário {i}",
-                Departamento = $"Departamento {(i % 10) + 1}",
-                Matricula = $"MAT{i:D5}"
-            };
+            Host = $"DESKTOP-TEST-{i:D4}",
+            SerialNumber = $"SN-COMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            Proprietario = $"Usuário {i}",
+            Departamento = $"Departamento {(i % 10) + 1}",
+            Matricula = $"MAT{i:D5}"
+        });
 
-            _store!.AddComputer(computer);
-
-            if (i % 10 == 0)
-            {
-                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
-            }
-        }
+        await InserirEmLotesAsync(computadores, async c => 
+        {
+            await Task.Run(() => _store!.AddComputer(c));
+        });
 
         sw.Stop();
         Console.WriteLine();
@@ -159,24 +193,19 @@ public class PerformanceTest
         Console.WriteLine($"Inserindo {quantidade} tablets...");
         var sw = Stopwatch.StartNew();
 
-        for (int i = 1; i <= quantidade; i++)
+        var tablets = Enumerable.Range(1, quantidade).Select(i => new TabletDevice
         {
-            var tablet = new TabletDevice
-            {
-                Host = $"TABLET-TEST-{i:D4}",
-                SerialNumber = $"SN-TAB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                Local = $"Local {(i % 5) + 1}",
-                Responsavel = $"Responsável {i}",
-                Imeis = new List<string> { $"35{i:D13}", $"36{i:D13}" }
-            };
+            Host = $"TABLET-TEST-{i:D4}",
+            SerialNumber = $"SN-TAB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            Local = $"Local {(i % 5) + 1}",
+            Responsavel = $"Responsável {i}",
+            Imeis = new List<string> { $"35{i:D13}", $"36{i:D13}" }
+        });
 
-            _store!.AddTablet(tablet);
-
-            if (i % 10 == 0)
-            {
-                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
-            }
-        }
+        await InserirEmLotesAsync(tablets, async t => 
+        {
+            await Task.Run(() => _store!.AddTablet(t));
+        });
 
         sw.Stop();
         Console.WriteLine();
@@ -189,26 +218,21 @@ public class PerformanceTest
         Console.WriteLine($"Inserindo {quantidade} celulares...");
         var sw = Stopwatch.StartNew();
 
-        for (int i = 1; i <= quantidade; i++)
+        var celulares = Enumerable.Range(1, quantidade).Select(i => new CelularDevice
         {
-            var celular = new CelularDevice
-            {
-                CellName = $"CELL-{i:D4}",
-                Modelo = $"Modelo-{(i % 10) + 1}",
-                Numero = $"(11) 9{i:D8}",
-                Usuario = $"Usuário {i}",
-                Setor = $"Setor {(i % 5) + 1}",
-                Imei1 = $"35{i:D13}",
-                Imei2 = $"36{i:D13}"
-            };
+            CellName = $"CELL-{i:D4}",
+            Modelo = $"Modelo-{(i % 10) + 1}",
+            Numero = $"(11) 9{i:D8}",
+            Usuario = $"Usuário {i}",
+            Setor = $"Setor {(i % 5) + 1}",
+            Imei1 = $"35{i:D13}",
+            Imei2 = $"36{i:D13}"
+        });
 
-            _store!.AddCelular(celular);
-
-            if (i % 10 == 0)
-            {
-                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
-            }
-        }
+        await InserirEmLotesAsync(celulares, async c => 
+        {
+            await Task.Run(() => _store!.AddCelular(c));
+        });
 
         sw.Stop();
         Console.WriteLine();
@@ -221,24 +245,19 @@ public class PerformanceTest
         Console.WriteLine($"Inserindo {quantidade} monitores...");
         var sw = Stopwatch.StartNew();
 
-        for (int i = 1; i <= quantidade; i++)
+        var monitores = Enumerable.Range(1, quantidade).Select(i => new MonitorDevice
         {
-            var monitor = new MonitorDevice
-            {
-                Modelo = $"Monitor-{(i % 5) + 1}",
-                SerialNumber = $"SN-MON-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                Local = $"Sala {(i % 20) + 1}",
-                Responsavel = $"Usuário {i}",
-                ComputadorVinculado = $"DESKTOP-{i:D4}"
-            };
+            Modelo = $"Monitor-{(i % 5) + 1}",
+            SerialNumber = $"SN-MON-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            Local = $"Sala {(i % 20) + 1}",
+            Responsavel = $"Usuário {i}",
+            ComputadorVinculado = $"DESKTOP-{i:D4}"
+        });
 
-            _store!.AddMonitor(monitor);
-
-            if (i % 10 == 0)
-            {
-                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
-            }
-        }
+        await InserirEmLotesAsync(monitores, async m => 
+        {
+            await Task.Run(() => _store!.AddMonitor(m));
+        });
 
         sw.Stop();
         Console.WriteLine();
@@ -251,25 +270,20 @@ public class PerformanceTest
         Console.WriteLine($"Inserindo {quantidade} nobreaks...");
         var sw = Stopwatch.StartNew();
 
-        for (int i = 1; i <= quantidade; i++)
+        var nobreaks = Enumerable.Range(1, quantidade).Select(i => new Nobreak
         {
-            var nobreak = new Nobreak
-            {
-                Hostname = $"NOBREAK-{i:D4}",
-                Local = $"Sala {(i % 20) + 1}",
-                IpAddress = $"192.168.{(i / 254) + 1}.{(i % 254) + 1}",
-                Modelo = $"APC-{(i % 3) + 1}",
-                Status = i % 3 == 0 ? "Online" : "Offline",
-                SerialNumber = $"SN-NOB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
-            };
+            Hostname = $"NOBREAK-{i:D4}",
+            Local = $"Sala {(i % 20) + 1}",
+            IpAddress = $"192.168.{(i / 254) + 1}.{(i % 254) + 1}",
+            Modelo = $"APC-{(i % 3) + 1}",
+            Status = i % 3 == 0 ? "Online" : "Offline",
+            SerialNumber = $"SN-NOB-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+        });
 
-            _store!.AddNobreak(nobreak);
-
-            if (i % 10 == 0)
-            {
-                Console.Write($"\rProgresso: {i}/{quantidade} ({i * 100 / quantidade}%)");
-            }
-        }
+        await InserirEmLotesAsync(nobreaks, async n => 
+        {
+            await Task.Run(() => _store!.AddNobreak(n));
+        });
 
         sw.Stop();
         Console.WriteLine();
@@ -288,92 +302,91 @@ public class PerformanceTest
         await InserirMonitores(quantidadePorTipo);
         await InserirNobreaks(quantidadePorTipo);
 
-        // Adicionar outros tipos
+        // Coletores
         Console.WriteLine($"Inserindo {quantidadePorTipo} coletores...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+        var coletores = Enumerable.Range(1, quantidadePorTipo).Select(i => new ColetorDevice
         {
-            var coletor = new ColetorDevice
-            {
-                Host = $"COLETOR-{i:D4}",
-                SerialNumber = $"SN-COL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
-                IpAddress = $"192.168.{(i / 254) + 50}.{(i % 254) + 1}",
-                Local = $"Local {i}"
-            };
-            _store!.AddColetor(coletor);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
+            Host = $"COLETOR-{i:D4}",
+            SerialNumber = $"SN-COL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
+            IpAddress = $"192.168.{(i / 254) + 50}.{(i % 254) + 1}",
+            Local = $"Local {i}"
+        });
+        await InserirEmLotesAsync(coletores, async c => 
+        {
+            await Task.Run(() => _store!.AddColetor(c));
+        });
 
+        // Impressoras
         Console.WriteLine($"Inserindo {quantidadePorTipo} impressoras...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+        var impressoras = Enumerable.Range(1, quantidadePorTipo).Select(i => new ImpressoraDevice
         {
-            var impressora = new ImpressoraDevice
-            {
-                Nome = $"PRINTER-{i:D4}",
-                TipoModelo = $"HP-{(i % 5) + 1}",
-                SerialNumber = $"SN-IMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
-                LocalAtual = $"Andar {(i % 3) + 1}",
-                LocalAnterior = ""
-            };
-            _store!.AddImpressora(impressora);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
-
-        Console.WriteLine($"\nInserindo {quantidadePorTipo} DECTs...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+            Nome = $"PRINTER-{i:D4}",
+            TipoModelo = $"HP-{(i % 5) + 1}",
+            SerialNumber = $"SN-IMP-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+            LocalAtual = $"Andar {(i % 3) + 1}",
+            LocalAnterior = ""
+        });
+        await InserirEmLotesAsync(impressoras, async imp => 
         {
-            var dect = new DectPhone
-            {
-                Responsavel = $"Usuário {i}",
-                Ipei = $"IPEI-{i:D10}",
-                MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
-                Numero = $"400{i % 100:D2}",
-                Local = $"Sala {i}"
-            };
-            _store!.AddDect(dect);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
+            await Task.Run(() => _store!.AddImpressora(imp));
+        });
 
-        Console.WriteLine($"\nInserindo {quantidadePorTipo} telefones Cisco...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+        // DECTs
+        Console.WriteLine($"Inserindo {quantidadePorTipo} DECTs...");
+        var dects = Enumerable.Range(1, quantidadePorTipo).Select(i => new DectPhone
         {
-            var cisco = new CiscoPhone
-            {
-                Responsavel = $"Usuário {i}",
-                MacAddress = $"00:1B:2C:3D:{i / 256:X2}:{i % 256:X2}",
-                Numero = $"300{i % 100:D2}",
-                Local = $"Sala {i}"
-            };
-            _store!.AddTelefoneCisco(cisco);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
+            Responsavel = $"Usuário {i}",
+            Ipei = $"IPEI-{i:D10}",
+            MacAddress = $"AA:BB:CC:DD:{i / 256:X2}:{i % 256:X2}",
+            Numero = $"400{i % 100:D2}",
+            Local = $"Sala {i}"
+        });
+        await InserirEmLotesAsync(dects, async d => 
+        {
+            await Task.Run(() => _store!.AddDect(d));
+        });
 
+        // Telefones Cisco
+        Console.WriteLine($"Inserindo {quantidadePorTipo} telefones Cisco...");
+        var ciscos = Enumerable.Range(1, quantidadePorTipo).Select(i => new CiscoPhone
+        {
+            Responsavel = $"Usuário {i}",
+            MacAddress = $"00:1B:2C:3D:{i / 256:X2}:{i % 256:X2}",
+            Numero = $"300{i % 100:D2}",
+            Local = $"Sala {i}"
+        });
+        await InserirEmLotesAsync(ciscos, async ci => 
+        {
+            await Task.Run(() => _store!.AddTelefoneCisco(ci));
+        });
+
+        // Televisores
         Console.WriteLine($"Inserindo {quantidadePorTipo} televisores...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+        var tvs = Enumerable.Range(1, quantidadePorTipo).Select(i => new TelevisorDevice
         {
-            var tv = new TelevisorDevice
-            {
-                Local = $"Sala {i}",
-                Modelo = $"Samsung-{(i % 3) + 1}",
-                SerialNumber = $"SN-TV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
-            };
-            _store!.AddTelevisor(tv);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
+            Local = $"Sala {i}",
+            Modelo = $"Samsung-{(i % 3) + 1}",
+            SerialNumber = $"SN-TV-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+        });
+        await InserirEmLotesAsync(tvs, async tv => 
+        {
+            await Task.Run(() => _store!.AddTelevisor(tv));
+        });
 
+        // Relógios de ponto
         Console.WriteLine($"Inserindo {quantidadePorTipo} relógios de ponto...");
-        for (int i = 1; i <= quantidadePorTipo; i++)
+        var relogios = Enumerable.Range(1, quantidadePorTipo).Select(i => new RelogioDevice
         {
-            var relogio = new RelogioDevice
-            {
-                Local = $"Entrada {(i % 20) + 1}",
-                Ip = $"192.168.10.{(i % 254) + 1}",
-                Modelo = $"Henry-{(i % 2) + 1}",
-                SerialNumber = $"SN-REL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
-            };
-            _store!.AddRelogioPonto(relogio);
-            if (i % 50 == 0) Console.Write($"\rProgresso: {i}/{quantidadePorTipo}");
-        }
+            Local = $"Entrada {(i % 20) + 1}",
+            Ip = $"192.168.10.{(i % 254) + 1}",
+            Modelo = $"Henry-{(i % 2) + 1}",
+            SerialNumber = $"SN-REL-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}"
+        });
+        await InserirEmLotesAsync(relogios, async r => 
+        {
+            await Task.Run(() => _store!.AddRelogioPonto(r));
+        });
 
         sw.Stop();
         var total = quantidadePorTipo * 11;
