@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using InventarioSistem.Access;
 using InventarioSistem.Access.Db;
@@ -17,6 +18,16 @@ namespace InventarioSistem.WinForms.Forms;
 /// </summary>
 public class DatabaseConfigForm : Form
 {
+    private sealed class DatabaseChoice
+    {
+        public required string Display { get; init; }
+        public required string DatabaseName { get; init; }
+        public string? ServerOverride { get; init; }
+
+        public override string ToString() => Display;
+    }
+
+    private bool _isUpdatingDbCombo;
     private RadioButton _rbSqlServer = null!;
     private RadioButton _rbFileMdf = null!;
 
@@ -147,6 +158,34 @@ public class DatabaseConfigForm : Form
             AutoCompleteMode = AutoCompleteMode.SuggestAppend,
             AutoCompleteSource = AutoCompleteSource.ListItems,
             Font = ResponsiveUIHelper.Fonts.Regular
+        };
+        _cmbSqlDatabase.SelectedIndexChanged += (_, _) =>
+        {
+            if (_isUpdatingDbCombo)
+                return;
+
+            if (_cmbSqlDatabase.SelectedItem is not DatabaseChoice choice)
+                return;
+
+            try
+            {
+                _isUpdatingDbCombo = true;
+
+                if (!string.IsNullOrWhiteSpace(choice.ServerOverride))
+                {
+                    _txtSqlServer.Text = choice.ServerOverride;
+                    _chkSqlIntegratedSecurity.Checked = true;
+                    ToggleSqlAuthFields();
+                }
+
+                // Importante: o Text precisa ficar só com o nome do DB para montar a connection string.
+                _cmbSqlDatabase.Text = choice.DatabaseName;
+                _cmbSqlDatabase.SelectedItem = null;
+            }
+            finally
+            {
+                _isUpdatingDbCombo = false;
+            }
         };
         _cmbSqlDatabase.Text = "InventoryLocal";
 
@@ -714,44 +753,102 @@ public class DatabaseConfigForm : Form
 
         try
         {
-            using var conn = new SqlConnection(masterConnStr);
-            conn.Open();
+            var choices = new List<DatabaseChoice>();
+            var dedupe = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            using var cmd = conn.CreateCommand();
-            cmd.CommandTimeout = 5;
-            cmd.CommandText = @"
-                SELECT name
-                FROM sys.databases
-                WHERE name NOT IN ('master','tempdb','model','msdb')
-                ORDER BY name";
-
-            var names = new List<string>();
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
+            // 1) DBs do servidor informado
+            using (var conn = new SqlConnection(masterConnStr))
             {
-                var name = reader.GetString(0);
-                if (!string.IsNullOrWhiteSpace(name))
-                    names.Add(name);
+                conn.Open();
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandTimeout = 5;
+                cmd.CommandText = @"
+                    SELECT name
+                    FROM sys.databases
+                    WHERE name NOT IN ('master','tempdb','model','msdb')
+                    ORDER BY name";
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var name = reader.GetString(0);
+                    if (string.IsNullOrWhiteSpace(name))
+                        continue;
+
+                    if (!dedupe.Add($"srv:{name}"))
+                        continue;
+
+                    choices.Add(new DatabaseChoice
+                    {
+                        Display = name,
+                        DatabaseName = name,
+                        ServerOverride = null
+                    });
+                }
+            }
+
+            // 2) DBs locais (LocalDB), se disponível
+            if (LocalDbChecker.IsAvailable(out var _localDbErr))
+            {
+                try
+                {
+                    const string localDbMaster = "Data Source=(LocalDB)\\mssqllocaldb;Initial Catalog=master;Integrated Security=true;TrustServerCertificate=true;Connect Timeout=3;";
+                    using var localConn = new SqlConnection(localDbMaster);
+                    localConn.Open();
+
+                    using var localCmd = localConn.CreateCommand();
+                    localCmd.CommandTimeout = 3;
+                    localCmd.CommandText = @"
+                        SELECT name
+                        FROM sys.databases
+                        WHERE name NOT IN ('master','tempdb','model','msdb')
+                        ORDER BY name";
+
+                    using var localReader = localCmd.ExecuteReader();
+                    while (localReader.Read())
+                    {
+                        var name = localReader.GetString(0);
+                        if (string.IsNullOrWhiteSpace(name))
+                            continue;
+
+                        if (!dedupe.Add($"localdb:{name}"))
+                            continue;
+
+                        choices.Add(new DatabaseChoice
+                        {
+                            Display = $"📦 LocalDB: {name}",
+                            DatabaseName = name,
+                            ServerOverride = "(LocalDB)\\mssqllocaldb"
+                        });
+                    }
+                }
+                catch
+                {
+                    // best-effort: não falhar listagem do servidor por causa do LocalDB
+                }
             }
 
             var current = _cmbSqlDatabase.Text;
+            _isUpdatingDbCombo = true;
             _cmbSqlDatabase.BeginUpdate();
             _cmbSqlDatabase.Items.Clear();
-            foreach (var n in names)
-                _cmbSqlDatabase.Items.Add(n);
+            foreach (var c in choices)
+                _cmbSqlDatabase.Items.Add(c);
             _cmbSqlDatabase.EndUpdate();
+            _isUpdatingDbCombo = false;
 
             if (!string.IsNullOrWhiteSpace(current))
                 _cmbSqlDatabase.Text = current;
 
-            if (names.Count == 0)
+            if (choices.Count == 0)
             {
                 AddLog("⚠️  Nenhum database listado (pode ser permissão limitada).", Color.DarkOrange);
                 AddLog("💡 Digite um nome e clique em 'Criar' para criar um novo DB.", Color.DarkOrange);
             }
             else
             {
-                AddLog($"✅ {names.Count} databases carregados.");
+                AddLog($"✅ {choices.Count} databases carregados (inclui LocalDB quando disponível).", Color.DarkOrange);
             }
         }
         catch (SqlException ex)
@@ -1222,16 +1319,6 @@ public class DatabaseConfigForm : Form
                 }
                 else if (_selectedMode == "filemdf")
                 {
-                    if (!EnsureLocalDbAvailableForMdfMode())
-                    {
-                        this.Invoke(() =>
-                        {
-                            _btnContinue.Enabled = true;
-                            _progressBar.Visible = false;
-                        });
-                        return;
-                    }
-
                     if (string.IsNullOrEmpty(_connectionString))
                     {
                         AddLog("❌ Selecione um arquivo .mdf primeiro", Color.Red);
@@ -1249,6 +1336,43 @@ public class DatabaseConfigForm : Form
                         var mdfPath = _connectionString.Substring(7); // Remove "CREATE:"
                         AddLog($"📦 Criando novo banco de dados em {Path.GetFileName(mdfPath)}...");
                         AddLog($"⏱️  Isso pode levar alguns segundos...");
+
+                        // Se o LocalDB não estiver disponível, usar SQL Express local (se existir)
+                        if (!LocalDbChecker.IsAvailable(out var _localDbErr))
+                        {
+                            var dbNameFromFile = Path.GetFileNameWithoutExtension(mdfPath);
+                            var desiredDbName = SanitizeDatabaseName(dbNameFromFile);
+
+                            AddLog("⚠️  LocalDB não disponível. Tentando criar o database no SQL Server Express local...", Color.DarkOrange);
+
+                            if (TryCreateDatabaseOnLocalSqlExpress(desiredDbName, out var sqlExpressConn, out var fallbackErr))
+                            {
+                                _connectionString = sqlExpressConn;
+                                _selectedMode = "sqlserver";
+                                _useMdfCache = false;
+                                _originalMdfPath = null;
+
+                                this.Invoke(() => { _rbSqlServer.Checked = true; });
+                                AddLog($"✅ Database criado/selecionado no SQL Express local: {desiredDbName}", Color.DarkOrange);
+                                AddLog("ℹ️  Obs: neste modo, o arquivo .mdf não é criado no caminho selecionado; o SQL Express usa a pasta de dados padrão.", Color.DarkOrange);
+                                AddLog("✅ Configuração validada com sucesso!");
+                                this.Invoke(() =>
+                                {
+                                    DialogResult = DialogResult.OK;
+                                    _progressBar.Visible = false;
+                                });
+                                return;
+                            }
+
+                            AddLog($"❌ Não foi possível usar SQL Express local: {fallbackErr}", Color.Red);
+                            AddLog("💡 Instale/ative o LocalDB ou use o modo SQL Server informando a instância correta.", Color.DarkOrange);
+                            this.Invoke(() =>
+                            {
+                                _btnContinue.Enabled = true;
+                                _progressBar.Visible = false;
+                            });
+                            return;
+                        }
                         
                         try
                         {
@@ -1422,7 +1546,7 @@ public class DatabaseConfigForm : Form
 
     private bool EnsureLocalDbAvailableForMdfMode()
     {
-        if (LocalDbChecker.IsAvailable(out _))
+        if (LocalDbChecker.IsAvailable(out var _localDbErr))
             return true;
 
         // Auto-repair: tentar criar/iniciar a instância LocalDB padrão (se o runtime existir)
@@ -1430,7 +1554,7 @@ public class DatabaseConfigForm : Form
         {
             if (LocalDbManager.TryEnsureDefaultLocalDbInstance(msg => AddLog(msg, Color.DarkOrange)))
             {
-                if (LocalDbChecker.IsAvailable(out _))
+                if (LocalDbChecker.IsAvailable(out var _localDbErr2))
                 {
                     AddLog("✅ LocalDB inicializado com sucesso.", Color.DarkOrange);
                     return true;
@@ -1452,6 +1576,121 @@ public class DatabaseConfigForm : Form
             "LocalDB não disponível",
             MessageBoxButtons.OK,
             MessageBoxIcon.Warning);
+
+        return false;
+    }
+
+    private static string SanitizeDatabaseName(string name)
+    {
+        name = (name ?? string.Empty).Trim();
+        if (name.Length == 0)
+            return "InventoryLocal";
+
+        var sb = new StringBuilder(name.Length);
+        foreach (var ch in name)
+        {
+            // SQL Server aceita vários chars, mas manter simples: letras, números e _
+            if (char.IsLetterOrDigit(ch) || ch == '_')
+                sb.Append(ch);
+        }
+
+        var cleaned = sb.ToString();
+        if (string.IsNullOrWhiteSpace(cleaned))
+            cleaned = "InventoryLocal";
+
+        // Evitar nomes longos
+        if (cleaned.Length > 64)
+            cleaned = cleaned.Substring(0, 64);
+
+        return cleaned;
+    }
+
+    private bool TryCreateDatabaseOnLocalSqlExpress(string databaseName, out string connectionString, out string? error)
+    {
+        connectionString = string.Empty;
+        error = null;
+
+        var candidates = new[]
+        {
+            @"localhost\SQLEXPRESS",
+            @".\SQLEXPRESS",
+            @"(local)\SQLEXPRESS",
+            @"localhost",
+            @"."
+        };
+
+        foreach (var server in candidates)
+        {
+            try
+            {
+                var masterBuilder = new SqlConnectionStringBuilder
+                {
+                    DataSource = server,
+                    InitialCatalog = "master",
+                    IntegratedSecurity = true,
+                    TrustServerCertificate = true,
+                    Encrypt = false,
+                    ConnectTimeout = 3
+                };
+
+                using (var conn = new SqlConnection(masterBuilder.ConnectionString))
+                {
+                    conn.Open();
+
+                    using (var check = conn.CreateCommand())
+                    {
+                        check.CommandTimeout = 5;
+                        check.CommandText = "SELECT COUNT(*) FROM sys.databases WHERE name = @name";
+                        check.Parameters.AddWithValue("@name", databaseName);
+                        var exists = ((int?)check.ExecuteScalar() ?? 0) > 0;
+
+                        if (!exists)
+                        {
+                            using var create = conn.CreateCommand();
+                            create.CommandTimeout = 30;
+                            create.CommandText = $"CREATE DATABASE [{databaseName}]";
+                            create.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                var dbBuilder = new SqlConnectionStringBuilder
+                {
+                    DataSource = server,
+                    InitialCatalog = databaseName,
+                    IntegratedSecurity = true,
+                    TrustServerCertificate = true,
+                    Encrypt = false,
+                    ConnectTimeout = 5
+                };
+
+                // Validar conexão no DB
+                using (var dbConn = new SqlConnection(dbBuilder.ConnectionString))
+                {
+                    dbConn.Open();
+                    dbConn.Close();
+                }
+
+                // Atualizar UI (melhor esforço) para refletir onde foi criado
+                this.Invoke(() =>
+                {
+                    _txtSqlServer.Text = server;
+                    _chkSqlIntegratedSecurity.Checked = true;
+                    ToggleSqlAuthFields();
+                    _cmbSqlDatabase.Text = databaseName;
+                });
+
+                connectionString = dbBuilder.ToString();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(error))
+            error = "Não foi possível conectar em uma instância SQL Express local.";
 
         return false;
     }
