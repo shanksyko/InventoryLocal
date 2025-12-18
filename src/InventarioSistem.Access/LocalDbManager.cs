@@ -190,6 +190,18 @@ public static class LocalDbManager
 
         try
         {
+            // Fail-fast: sem LocalDB instalado, não adianta tentar criar/anexar MDF.
+            if (!LocalDbChecker.IsAvailable(out var localDbError))
+            {
+                Log("❌ SQL Server LocalDB não está disponível para criar/anexar arquivo .mdf.");
+                if (!string.IsNullOrWhiteSpace(localDbError))
+                    Log($"ℹ️  {localDbError}");
+
+                throw new InvalidOperationException(
+                    "Não foi possível criar o arquivo .mdf porque o SQL Server LocalDB não está instalado/ativo.\n\n" +
+                    LocalDbChecker.GetSolutions());
+            }
+
             Log($"📄 Caminho MDF: {mdfPath}");
             var ldfPath = Path.ChangeExtension(mdfPath, ".ldf");
             Log($"📄 Caminho LDF: {ldfPath}");
@@ -228,7 +240,7 @@ public static class LocalDbManager
             var dbName = Path.GetFileNameWithoutExtension(mdfPath);
 
             // Se já existir o database, apenas reutiliza e garante schema/admin
-            var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;Connect Timeout=30;";
+            var createConnString = $"Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;Connect Timeout=5;";
 
             using (var conn = new SqlConnection(createConnString))
             {

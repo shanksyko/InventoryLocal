@@ -850,6 +850,9 @@ public class DatabaseConfigForm : Form
 
     private void BrowseMdfFile(TextBox txtPath)
     {
+        if (!EnsureLocalDbAvailableForMdfMode())
+            return;
+
         var choice = MessageBox.Show(
             "Deseja criar um NOVO arquivo .mdf ou selecionar um EXISTENTE?\n\n" +
             "Sim = Criar novo\n" +
@@ -1222,6 +1225,16 @@ public class DatabaseConfigForm : Form
                 }
                 else if (_selectedMode == "filemdf")
                 {
+                    if (!EnsureLocalDbAvailableForMdfMode())
+                    {
+                        this.Invoke(() =>
+                        {
+                            _btnContinue.Enabled = true;
+                            _progressBar.Visible = false;
+                        });
+                        return;
+                    }
+
                     if (string.IsNullOrEmpty(_connectionString))
                     {
                         AddLog("❌ Selecione um arquivo .mdf primeiro", Color.Red);
@@ -1320,6 +1333,16 @@ public class DatabaseConfigForm : Form
                     else
                     {
                         // MDF existente selecionado: validar que o attach realmente funciona agora.
+                        if (!EnsureLocalDbAvailableForMdfMode())
+                        {
+                            this.Invoke(() =>
+                            {
+                                _btnContinue.Enabled = true;
+                                _progressBar.Visible = false;
+                            });
+                            return;
+                        }
+
                         if (!TryOpenConnection(_connectionString, out var error))
                         {
                             AddLog($"❌ Erro ao validar MDF: {error}", Color.Red);
@@ -1398,5 +1421,29 @@ public class DatabaseConfigForm : Form
         {
             return false;
         }
+    }
+
+    private bool EnsureLocalDbAvailableForMdfMode()
+    {
+        if (LocalDbChecker.IsAvailable(out _))
+            return true;
+
+        AddLog("❌ SQL Server LocalDB não encontrado. O modo Arquivo .mdf depende do LocalDB.", Color.Red);
+
+        var choice = MessageBox.Show(
+            "O SQL Server LocalDB não está instalado/ativo.\n\n" +
+            "Sem o LocalDB, não é possível criar/anexar o arquivo .mdf.\n\n" +
+            LocalDbChecker.GetSolutions() +
+            "\nDeseja alternar para o modo SQL Server (Servidor/Rede) agora?",
+            "LocalDB não disponível",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning);
+
+        if (choice == DialogResult.Yes)
+        {
+            _rbSqlServer.Checked = true;
+        }
+
+        return false;
     }
 }
