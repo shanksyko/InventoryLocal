@@ -80,9 +80,9 @@ public class DatabaseConfigForm : Form
 
         var contentLayout = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
-            AutoSize = false,
-            AutoScroll = true,
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
             ColumnCount = 1,
             RowCount = 0,
             Margin = new Padding(0),
@@ -103,13 +103,11 @@ public class DatabaseConfigForm : Form
         contentLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         contentLayout.Controls.Add(_rbSqlServer);
 
-        _panelSqlServer = ResponsiveUIHelper.CreateCard();
+        // Altura fixa para garantir que o card sempre apareça abaixo do RadioButton
+        _panelSqlServer = ResponsiveUIHelper.CreateCard(600, 195);
         _panelSqlServer.Dock = DockStyle.Top;
         _panelSqlServer.Margin = new Padding(20, 0, 0, 14);
         _panelSqlServer.Visible = true;
-        _panelSqlServer.AutoScroll = false;
-        _panelSqlServer.AutoSize = true;
-        _panelSqlServer.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
         var pnlSqlControls = new Panel { Dock = DockStyle.Fill, Padding = new Padding(12, 10, 12, 10) };
 
@@ -246,13 +244,11 @@ public class DatabaseConfigForm : Form
         contentLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         contentLayout.Controls.Add(_rbFileMdf);
 
-        _panelFileMdf = ResponsiveUIHelper.CreateCard();
+        // Altura fixa para garantir consistência visual e evitar colapso
+        _panelFileMdf = ResponsiveUIHelper.CreateCard(600, 80);
         _panelFileMdf.Dock = DockStyle.Top;
         _panelFileMdf.Margin = new Padding(20, 0, 0, 14);
         _panelFileMdf.Visible = false;
-        _panelFileMdf.AutoScroll = false;
-        _panelFileMdf.AutoSize = true;
-        _panelFileMdf.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
         var pnlFileControls = new Panel { Dock = DockStyle.Fill, Padding = new Padding(12, 10, 12, 10) };
 
@@ -313,14 +309,14 @@ public class DatabaseConfigForm : Form
 
         _rtbLog = new RichTextBox
         {
-            Dock = DockStyle.Fill,
-            MinimumSize = new Size(0, 120),
+            Height = 120,
+            Dock = DockStyle.Top,
             ReadOnly = true,
             BackColor = Color.White,
             ForeColor = ResponsiveUIHelper.Colors.TextDark,
             Margin = new Padding(0)
         };
-        contentLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        contentLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         contentLayout.Controls.Add(_rtbLog);
 
         mainPanel.Controls.Add(contentLayout);
