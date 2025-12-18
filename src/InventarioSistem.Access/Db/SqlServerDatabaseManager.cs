@@ -45,7 +45,13 @@ public static class SqlServerDatabaseManager
 
         try
         {
-            using (var connection = new SqlConnection(masterConnectionString))
+            // Garante que a conexão usada para CREATE DATABASE aponta para o master
+            var masterBuilder = new SqlConnectionStringBuilder(masterConnectionString)
+            {
+                InitialCatalog = "master"
+            };
+
+            using (var connection = new SqlConnection(masterBuilder.ConnectionString))
             {
                 connection.Open();
 
@@ -69,7 +75,7 @@ public static class SqlServerDatabaseManager
             }
 
             // Constrói a connection string para o novo banco
-            var newConnectionString = new SqlConnectionStringBuilder(masterConnectionString)
+            var newConnectionString = new SqlConnectionStringBuilder(masterBuilder.ConnectionString)
             {
                 InitialCatalog = databaseName
             }.ConnectionString;

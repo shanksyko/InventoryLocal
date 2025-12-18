@@ -102,6 +102,8 @@ namespace InventarioSistem.WinForms
 
                             var connString = configForm.GetConnectionString();
                             var mode = configForm.GetMode();
+                            var useMdfCache = configForm.GetUseMdfCache();
+                            var originalMdfPath = configForm.GetOriginalMdfPath();
 
                             if (!string.IsNullOrEmpty(connString))
                             {
@@ -122,18 +124,21 @@ namespace InventarioSistem.WinForms
                                     };
 
                                     // Verificar se há dados no banco anterior
+                                    var previousConnString = sqlConfig.ConnectionString;
                                     bool hasExistingData = false;
-                                    if (!isFirstRun && !string.IsNullOrWhiteSpace(sqlConfig.ConnectionString))
+                                    if (!isFirstRun && !string.IsNullOrWhiteSpace(previousConnString))
                                     {
                                         try
                                         {
-                                            hasExistingData = DatabaseConfigForm.HasExistingData(sqlConfig.ConnectionString);
+                                            hasExistingData = DatabaseConfigForm.HasExistingData(previousConnString);
                                         }
                                         catch { }
                                     }
 
                                     // Se há dados, oferecer migração
-                                    if (hasExistingData && sqlConfig.ConnectionString != connString)
+                                    if (hasExistingData
+                                        && !string.IsNullOrWhiteSpace(previousConnString)
+                                        && !string.Equals(previousConnString, connString, StringComparison.Ordinal))
                                     {
                                         var migrateResult = MessageBox.Show(
                                             $"Foram detectados dados no banco anterior.\n\n" +
@@ -147,7 +152,7 @@ namespace InventarioSistem.WinForms
                                         if (migrateResult == DialogResult.Yes)
                                         {
                                             using (var migrationForm = new DatabaseMigrationForm(
-                                                sqlConfig.ConnectionString,
+                                                previousConnString,
                                                 connString))
                                             {
                                                 migrationForm.ShowDialog();
@@ -157,7 +162,9 @@ namespace InventarioSistem.WinForms
 
                                     // Salvar configuração
                                     sqlConfig.ConnectionString = connString;
-                                    sqlConfig.UseLocalDb = (mode == "localdb");
+                                    sqlConfig.UseLocalDb = (mode == "localdb" || mode == "filemdf");
+                                    sqlConfig.UseMdfCache = useMdfCache;
+                                    sqlConfig.OriginalMdfPath = originalMdfPath;
                                     sqlConfig.Save();
                                     configured = true;
 
@@ -183,6 +190,39 @@ namespace InventarioSistem.WinForms
                     }
                 }
                 // Caso já esteja configurado, seguimos em frente sem abrir o configurador.
+
+                // Se estiver configurado para MDF em rede com cache, garantir cache atualizado agora.
+                if (sqlConfig.UseMdfCache && !string.IsNullOrWhiteSpace(sqlConfig.OriginalMdfPath))
+                {
+                    try
+                    {
+                        var cached = MdfCacheManager.EnsureCacheReady(sqlConfig.OriginalMdfPath, msg => InventoryLogger.Info("Program", msg));
+                        sqlConfig.ConnectionString = $"Data Source=(LocalDB)\\mssqllocaldb;AttachDbFileName={cached};Integrated Security=true;TrustServerCertificate=true;";
+                        sqlConfig.UseLocalDb = true;
+                        sqlConfig.Save();
+                    }
+                    catch (Exception ex)
+                    {
+                        InventoryLogger.Error("Program", $"Falha ao preparar cache do MDF: {ex.Message}");
+                    }
+                }
+
+                // Sincronizar cache de volta ao sair (best-effort)
+                Application.ApplicationExit += (_, _) =>
+                {
+                    try
+                    {
+                        if (sqlConfig.UseMdfCache && !string.IsNullOrWhiteSpace(sqlConfig.OriginalMdfPath))
+                        {
+                            var cachedMdf = MdfCacheManager.GetCachedMdfPath(sqlConfig.OriginalMdfPath);
+                            MdfCacheManager.TrySyncBack(sqlConfig.OriginalMdfPath, cachedMdf, msg => InventoryLogger.Info("Program", msg));
+                        }
+                    }
+                    catch
+                    {
+                        // best-effort
+                    }
+                };
 
                 // 🗄️ ETAPA 3: INICIALIZAR FACTORY E USER STORE
                 _sqlServerFactory = new SqlServerConnectionFactory(sqlConfig.ConnectionString);

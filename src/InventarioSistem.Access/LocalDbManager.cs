@@ -288,8 +288,11 @@ public static class LocalDbManager
                     }
                     catch (IOException ex)
                     {
-                        Log($"⚠️  Não foi possível remover arquivo: {ex.Message}");
-                        // Continuar mesmo assim
+                        Log($"❌ Não foi possível remover MDF existente: {ex.Message}");
+                        throw new UnauthorizedAccessException(
+                            $"Sem permissão para remover o arquivo MDF existente: {mdfPath}. " +
+                            "Feche qualquer programa que esteja usando o arquivo e escolha uma pasta com permissão de escrita.",
+                            ex);
                     }
                 }
 
@@ -304,11 +307,18 @@ public static class LocalDbManager
                     }
                     catch (IOException ex)
                     {
-                        Log($"⚠️  Não foi possível remover .ldf: {ex.Message}");
+                        Log($"❌ Não foi possível remover LDF existente: {ex.Message}");
+                        throw new UnauthorizedAccessException(
+                            $"Sem permissão para remover o arquivo LDF existente: {ldfPath}. " +
+                            "Feche qualquer programa que esteja usando o arquivo e escolha uma pasta com permissão de escrita.",
+                            ex);
                     }
                 }
 
                 Log("⚙️  Criando banco de dados...");
+
+                var mdfSqlPath = mdfPath.Replace("'", "''");
+                var ldfSqlPath = ldfPath.Replace("'", "''");
 
                 using (var cmd = conn.CreateCommand())
                 {
@@ -317,11 +327,11 @@ public static class LocalDbManager
                         CREATE DATABASE [{dbName}]
                         ON PRIMARY (
                             NAME = {dbName}_Data,
-                            FILENAME = '{mdfPath}'
+                            FILENAME = '{mdfSqlPath}'
                         )
                         LOG ON (
                             NAME = {dbName}_Log,
-                            FILENAME = '{ldfPath}'
+                            FILENAME = '{ldfSqlPath}'
                         )";
                     cmd.ExecuteNonQuery();
                 }
