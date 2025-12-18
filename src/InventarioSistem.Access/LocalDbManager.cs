@@ -193,6 +193,15 @@ public static class LocalDbManager
             // Fail-fast: sem LocalDB instalado, não adianta tentar criar/anexar MDF.
             if (!LocalDbChecker.IsAvailable(out var localDbError))
             {
+                // Auto-repair: tentar criar/iniciar a instância padrão (se o runtime existir)
+                TryEnsureDefaultLocalDbInstance(Log);
+
+                if (LocalDbChecker.IsAvailable(out localDbError))
+                {
+                    Log("✅ LocalDB inicializado com sucesso.");
+                }
+                else
+                {
                 Log("❌ SQL Server LocalDB não está disponível para criar/anexar arquivo .mdf.");
                 if (!string.IsNullOrWhiteSpace(localDbError))
                     Log($"ℹ️  {localDbError}");
@@ -200,6 +209,7 @@ public static class LocalDbManager
                 throw new InvalidOperationException(
                     "Não foi possível criar o arquivo .mdf porque o SQL Server LocalDB não está instalado/ativo.\n\n" +
                     LocalDbChecker.GetSolutions());
+                }
             }
 
             Log($"📄 Caminho MDF: {mdfPath}");
@@ -363,6 +373,82 @@ public static class LocalDbManager
         {
             Log($"❌ Erro: {ex.Message}");
             throw new Exception($"Erro ao criar arquivo .mdf: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Tenta criar/iniciar a instância padrão do LocalDB (mssqllocaldb).
+    /// Obs: isto não instala o runtime; apenas gerencia instâncias se o LocalDB já estiver presente.
+    /// </summary>
+    public static bool TryEnsureDefaultLocalDbInstance(Action<string>? logAction = null)
+    {
+        void Log(string msg) => logAction?.Invoke(msg);
+
+        try
+        {
+            var sqlLocalDbPath = GetSqlLocalDbPath();
+            if (string.IsNullOrEmpty(sqlLocalDbPath))
+            {
+                Log("ℹ️  sqllocaldb.exe não encontrado (LocalDB provavelmente não instalado)." );
+                return false;
+            }
+
+            // Verificar se a instância existe
+            if (!RunSqlLocalDb(sqlLocalDbPath, "info mssqllocaldb", out _))
+            {
+                Log("🔧 Criando instância LocalDB 'mssqllocaldb'...");
+                RunSqlLocalDb(sqlLocalDbPath, "create mssqllocaldb", out _);
+            }
+
+            // Tentar iniciar
+            Log("▶️  Iniciando LocalDB 'mssqllocaldb'...");
+            RunSqlLocalDb(sqlLocalDbPath, "start mssqllocaldb", out _);
+
+            // Validar conexão rápida
+            using (var conn = new SqlConnection("Data Source=(LocalDB)\\mssqllocaldb;Integrated Security=true;TrustServerCertificate=true;Connect Timeout=5;"))
+            {
+                conn.Open();
+                conn.Close();
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log($"⚠️  Não foi possível iniciar o LocalDB automaticamente: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static bool RunSqlLocalDb(string exePath, string args, out string output)
+    {
+        output = string.Empty;
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = args,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using (var proc = Process.Start(psi))
+            {
+                if (proc == null)
+                    return false;
+
+                proc.WaitForExit(5000);
+                output = (proc.StandardOutput.ReadToEnd() + "\n" + proc.StandardError.ReadToEnd()).Trim();
+                return proc.ExitCode == 0;
+            }
+        }
+        catch
+        {
+            return false;
         }
     }
 

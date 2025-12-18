@@ -850,9 +850,6 @@ public class DatabaseConfigForm : Form
 
     private void BrowseMdfFile(TextBox txtPath)
     {
-        if (!EnsureLocalDbAvailableForMdfMode())
-            return;
-
         var choice = MessageBox.Show(
             "Deseja criar um NOVO arquivo .mdf ou selecionar um EXISTENTE?\n\n" +
             "Sim = Criar novo\n" +
@@ -1428,21 +1425,33 @@ public class DatabaseConfigForm : Form
         if (LocalDbChecker.IsAvailable(out _))
             return true;
 
+        // Auto-repair: tentar criar/iniciar a instância LocalDB padrão (se o runtime existir)
+        try
+        {
+            if (LocalDbManager.TryEnsureDefaultLocalDbInstance(msg => AddLog(msg, Color.DarkOrange)))
+            {
+                if (LocalDbChecker.IsAvailable(out _))
+                {
+                    AddLog("✅ LocalDB inicializado com sucesso.", Color.DarkOrange);
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            // Se falhar, seguimos para a mensagem amigável.
+        }
+
         AddLog("❌ SQL Server LocalDB não encontrado. O modo Arquivo .mdf depende do LocalDB.", Color.Red);
 
-        var choice = MessageBox.Show(
+        MessageBox.Show(
             "O SQL Server LocalDB não está instalado/ativo.\n\n" +
             "Sem o LocalDB, não é possível criar/anexar o arquivo .mdf.\n\n" +
             LocalDbChecker.GetSolutions() +
-            "\nDeseja alternar para o modo SQL Server (Servidor/Rede) agora?",
+            "\n\nDepois de instalar/habilitar o LocalDB, tente novamente.",
             "LocalDB não disponível",
-            MessageBoxButtons.YesNo,
+            MessageBoxButtons.OK,
             MessageBoxIcon.Warning);
-
-        if (choice == DialogResult.Yes)
-        {
-            _rbSqlServer.Checked = true;
-        }
 
         return false;
     }
