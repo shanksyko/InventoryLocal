@@ -71,16 +71,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpNobreaks.Click += (_, _) => MostrarOpcoesAba("Nobreaks", new[]
+            _btnHelpNobreaks.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Nobreaks", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de nobreaks do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo nobreak",
-                "• Editar selecionado - Edita o nobreak selecionado na lista",
-                "• Excluir - Remove o nobreak selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de nobreaks para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos nobreaks",
-                "• Filtro - Filtra nobreaks por Hostname, Local, IP, Modelo, Status ou Serial",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo nobreak",
+                    "• Editar selecionado - Edita o nobreak selecionado na lista",
+                    "• Excluir - Remove o nobreak selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de nobreaks do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de nobreaks para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos nobreaks"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra nobreaks por Hostname, Local, IP, Modelo, Status ou Serial",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Hostname, Local, IP, Modelo, Status, SerialNumber, Cadastrado em"
+                }
             });
 
             var lblFiltro = new Label

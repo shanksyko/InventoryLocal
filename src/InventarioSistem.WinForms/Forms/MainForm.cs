@@ -528,16 +528,34 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpComputadores.Click += (_, _) => MostrarOpcoesAba("Computadores", new[]
+            _btnHelpComputadores.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Computadores", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de computadores do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo computador",
-                "• Editar selecionado - Edita o computador selecionado na lista",
-                "• Excluir - Remove o computador selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de computadores para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos computadores",
-                "• Filtro - Filtra computadores por Host, Serial, Proprietário, Departamento ou Matrícula",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo computador",
+                    "• Editar selecionado - Edita o computador selecionado na lista",
+                    "• Excluir - Remove o computador selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de computadores do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de computadores para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos computadores"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra computadores por Host, Serial, Proprietário, Departamento ou Matrícula",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Exibe até 1000 registros mais recentes para melhor performance",
+                    "• Campos: Host, SerialNumber, Proprietário, Departamento, Matrícula, Cadastrado em"
+                }
             });
 
             var lblInfo = new Label
@@ -711,16 +729,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpTablets.Click += (_, _) => MostrarOpcoesAba("Tablets", new[]
+            _btnHelpTablets.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Tablets", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de tablets do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo tablet",
-                "• Editar selecionado - Edita o tablet selecionado na lista",
-                "• Excluir - Remove o tablet selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de tablets para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos tablets",
-                "• Filtro - Filtra tablets por Host, Serial, Local, Responsável ou IMEI",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo tablet",
+                    "• Editar selecionado - Edita o tablet selecionado na lista",
+                    "• Excluir - Remove o tablet selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de tablets do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de tablets para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos tablets"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra tablets por Host, Serial, Local, Responsável ou IMEI",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Host, SerialNumber, Local, Responsável, IMEIs, Cadastrado em"
+                }
             });
 
             var lblFiltroTablets = new Label
@@ -831,16 +866,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpColetores.Click += (_, _) => MostrarOpcoesAba("Coletores Android", new[]
+            _btnHelpColetores.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Coletores Android", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de coletores do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo coletor",
-                "• Editar selecionado - Edita o coletor selecionado na lista",
-                "• Excluir - Remove o coletor selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de coletores para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos coletores",
-                "• Filtro - Filtra coletores por Host, Serial, MAC, IP ou Local",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo coletor",
+                    "• Editar selecionado - Edita o coletor selecionado na lista",
+                    "• Excluir - Remove o coletor selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de coletores do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de coletores para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos coletores"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra coletores por Host, Serial, MAC, IP ou Local",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Host, SerialNumber, MAC Address, IP, Local, Aplicativos, Sistema Operacional, Cadastrado em"
+                }
             });
 
             var lblFiltroColetores = new Label
@@ -953,16 +1005,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpCelulares.Click += (_, _) => MostrarOpcoesAba("Celulares/Tablets", new[]
+            _btnHelpCelulares.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Celulares/Tablets", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de celulares do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo celular",
-                "• Editar selecionado - Edita o celular selecionado na lista",
-                "• Excluir - Remove o celular selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de celulares para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos celulares",
-                "• Filtro - Filtra celulares por CellName, IMEI, Modelo, Número, Usuário ou Setor",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo celular",
+                    "• Editar selecionado - Edita o celular selecionado na lista",
+                    "• Excluir - Remove o celular selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de celulares do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de celulares para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos celulares"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra celulares por CellName, IMEI, Modelo, Número, Usuário ou Setor",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: CellName, IMEI1, IMEI2, Modelo, Número, Roaming, Usuário, Matrícula, Cargo, Setor, E-mail, Senha, Cadastrado em"
+                }
             });
 
             var lblFiltroCelulares = new Label
@@ -1080,16 +1149,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpImpressoras.Click += (_, _) => MostrarOpcoesAba("Impressoras", new[]
+            _btnHelpImpressoras.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Impressoras", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de impressoras do banco de dados",
-                "• Nova - Abre formulário para cadastrar uma nova impressora",
-                "• Editar selecionado - Edita a impressora selecionada na lista",
-                "• Excluir - Remove a impressora selecionada do banco de dados",
-                "• Exportar XLSX - Exporta a lista de impressoras para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas das impressoras",
-                "• Filtro - Filtra impressoras por Nome, Modelo, Serial, Local ou Responsável",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Nova - Abre formulário para cadastrar uma nova impressora",
+                    "• Editar selecionado - Edita a impressora selecionada na lista",
+                    "• Excluir - Remove a impressora selecionada do banco de dados",
+                    "• Atualizar - Recarrega a lista de impressoras do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de impressoras para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas das impressoras"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra impressoras por Nome, Modelo, Serial, Local ou Responsável",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Nome, Tipo/Modelo, SerialNumber, Local Atual, Local Anterior, Cadastrado em"
+                }
             });
 
             var lblFiltroImpressoras = new Label
@@ -1230,16 +1316,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpDects.Click += (_, _) => MostrarOpcoesAba("DECTs", new[]
+            _btnHelpDects.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("DECTs", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de telefones DECT do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo DECT",
-                "• Editar selecionado - Edita o DECT selecionado na lista",
-                "• Excluir - Remove o DECT selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de DECTs para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos DECTs",
-                "• Filtro - Filtra DECTs por Responsável, IPEI, MAC, Número, Local ou Modelo",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo DECT",
+                    "• Editar selecionado - Edita o DECT selecionado na lista",
+                    "• Excluir - Remove o DECT selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de telefones DECT do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de DECTs para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos DECTs"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra DECTs por Responsável, IPEI, MAC, Número, Local ou Modelo",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Responsável, IPEI, MAC Address, Número, Local, Cadastrado em"
+                }
             });
 
             var lblFiltroDects = new Label
@@ -1349,16 +1452,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpCisco.Click += (_, _) => MostrarOpcoesAba("Telefones Cisco", new[]
+            _btnHelpCisco.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Telefones Cisco", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de telefones Cisco do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo telefone Cisco",
-                "• Editar selecionado - Edita o telefone Cisco selecionado na lista",
-                "• Excluir - Remove o telefone Cisco selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de telefones Cisco para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos telefones Cisco",
-                "• Filtro - Filtra telefones por Responsável, MAC, Número, Local, IP ou Serial",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo telefone Cisco",
+                    "• Editar selecionado - Edita o telefone Cisco selecionado na lista",
+                    "• Excluir - Remove o telefone Cisco selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de telefones Cisco do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de telefones Cisco para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos telefones Cisco"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra telefones por Responsável, MAC, Número, Local, IP ou Serial",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Responsável, MAC Address, Número, Local, Cadastrado em"
+                }
             });
 
             var lblFiltroCisco = new Label
@@ -1467,16 +1587,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpTelevisores.Click += (_, _) => MostrarOpcoesAba("Televisores", new[]
+            _btnHelpTelevisores.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Televisores", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de televisores do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo televisor",
-                "• Editar selecionado - Edita o televisor selecionado na lista",
-                "• Excluir - Remove o televisor selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de televisores para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos televisores",
-                "• Filtro - Filtra televisores por Modelo, Serial ou Local",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo televisor",
+                    "• Editar selecionado - Edita o televisor selecionado na lista",
+                    "• Excluir - Remove o televisor selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de televisores do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de televisores para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos televisores"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra televisores por Modelo, Serial ou Local",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Modelo, SerialNumber, Local, Cadastrado em"
+                }
             });
 
             var lblFiltroTvs = new Label
@@ -1584,16 +1721,33 @@ namespace InventarioSistem.WinForms
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
             };
-            _btnHelpRelogios.Click += (_, _) => MostrarOpcoesAba("Relógios Ponto", new[]
+            _btnHelpRelogios.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Relógios Ponto", new Dictionary<string, string[]>
             {
-                "• Atualizar - Recarrega a lista de relógios de ponto do banco de dados",
-                "• Novo - Abre formulário para cadastrar um novo relógio de ponto",
-                "• Editar selecionado - Edita o relógio de ponto selecionado na lista",
-                "• Excluir - Remove o relógio de ponto selecionado do banco de dados",
-                "• Exportar XLSX - Exporta a lista de relógios de ponto para arquivo Excel",
-                "• Gráfico - Mostra dashboard com estatísticas dos relógios de ponto",
-                "• Filtro - Filtra relógios por Modelo, Serial, Local ou IP",
-                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo relógio de ponto",
+                    "• Editar selecionado - Edita o relógio de ponto selecionado na lista",
+                    "• Excluir - Remove o relógio de ponto selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de relógios de ponto do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de relógios de ponto para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos relógios de ponto"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra relógios por Modelo, Serial, Local ou IP",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Modelo, SerialNumber, Local, IP, Data Bateria, Data Nobreak, Próximas Verificações, Cadastrado em"
+                }
             });
 
             var lblFiltroRelogios = new Label
@@ -1674,6 +1828,38 @@ namespace InventarioSistem.WinForms
 
         private void InitializeAvancadoTab(TabPage page)
         {
+            var btnHelp = new Button
+            {
+                Text = "?",
+                AutoSize = true,
+                Location = new Point(10, 10),
+                BackColor = Color.FromArgb(70, 130, 180),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
+            btnHelp.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Avançado", new Dictionary<string, string[]>
+            {
+                ["Configuração do Banco de Dados"] = new[]
+                {
+                    "• Configurar SQL Server - Define ou altera a conexão com o banco de dados",
+                    "• Resumo do banco - Mostra estatísticas gerais do banco de dados"
+                },
+                ["Administração (Somente Admin)"] = new[]
+                {
+                    "• Backup e enviar para SQL - Realiza backup e migração de dados entre bancos",
+                    "• Gerenciar usuários - Gerencia contas de usuários e permissões do sistema"
+                },
+                ["Conta"] = new[]
+                {
+                    "• Sair da Conta (Logoff) - Encerra a sessão atual e volta para a tela de login"
+                },
+                ["Informações"] = new[]
+                {
+                    "• A configuração do banco é salva automaticamente",
+                    "• O sistema reconecta ao mesmo banco ao reiniciar"
+                }
+            });
+
             var stack = new FlowLayoutPanel
             {
                 FlowDirection = FlowDirection.TopDown,
@@ -1759,11 +1945,42 @@ namespace InventarioSistem.WinForms
 
             stack.SetFlowBreak(lblHint, true);
 
+            page.Controls.Add(btnHelp);
             page.Controls.Add(stack);
         }
 
         private void InitializeLogTab(TabPage page)
         {
+            var btnHelp = new Button
+            {
+                Text = "?",
+                AutoSize = true,
+                Location = new Point(10, 10),
+                BackColor = Color.FromArgb(70, 130, 180),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
+            btnHelp.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Log", new Dictionary<string, string[]>
+            {
+                ["Funcionalidades"] = new[]
+                {
+                    "• Visualização em tempo real - O log atualiza automaticamente conforme eventos ocorrem",
+                    "• Auto-scroll - Mantém sempre a última linha visível ao adicionar novos eventos"
+                },
+                ["Tipos de Eventos Registrados"] = new[]
+                {
+                    "• Ações de usuários - Cadastros, edições e exclusões de dispositivos",
+                    "• Operações de banco - Conexões, migrações e backups",
+                    "• Autenticação - Login e logoff de usuários",
+                    "• Erros e avisos - Falhas de operação e mensagens de alerta"
+                },
+                ["Limitações"] = new[]
+                {
+                    "• Limite de tamanho - Mantém até 100KB de dados para melhor performance",
+                    "• Formato - Mensagens são exibidas em ordem cronológica com timestamp"
+                }
+            });
+
             _txtLog = new TextBox
             {
                 Multiline = true,
@@ -1775,6 +1992,7 @@ namespace InventarioSistem.WinForms
                 Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point)
             };
 
+            page.Controls.Add(btnHelp);
             page.Controls.Add(_txtLog);
         }
 
@@ -3255,6 +3473,27 @@ namespace InventarioSistem.WinForms
             var mensagem = $"Opções disponíveis na aba '{nomeAba}':\n\n" + string.Join("\n", opcoes);
             MessageBox.Show(this,
                 mensagem,
+                $"Ajuda - {nomeAba}",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        private void MostrarOpcoesAbaComSubcategorias(string nomeAba, Dictionary<string, string[]> opcoesPorCategoria)
+        {
+            var mensagem = $"Opções disponíveis na aba '{nomeAba}':\n\n";
+            
+            foreach (var categoria in opcoesPorCategoria)
+            {
+                mensagem += $"▸ {categoria.Key}:\n";
+                foreach (var opcao in categoria.Value)
+                {
+                    mensagem += $"  {opcao}\n";
+                }
+                mensagem += "\n";
+            }
+            
+            MessageBox.Show(this,
+                mensagem.TrimEnd(),
                 $"Ajuda - {nomeAba}",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
