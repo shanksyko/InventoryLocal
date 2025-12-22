@@ -62,6 +62,44 @@ namespace InventarioSistem.WinForms
             };
             _btnDashboardMonitores.Click += (_, _) => MostrarDashboardTotal();
 
+            var _btnHelpMonitores = new Button
+            {
+                Text = "?",
+                AutoSize = true,
+                Location = new Point(570, 10),
+                BackColor = Color.FromArgb(70, 130, 180),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
+            _btnHelpMonitores.Click += (_, _) => MostrarOpcoesAbaComSubcategorias("Monitores", new Dictionary<string, string[]>
+            {
+                ["Ações de Gerenciamento"] = new[]
+                {
+                    "• Novo - Abre formulário para cadastrar um novo monitor",
+                    "• Editar selecionado - Edita o monitor selecionado na lista",
+                    "• Excluir - Remove o monitor selecionado do banco de dados",
+                    "• Atualizar - Recarrega a lista de monitores do banco de dados"
+                },
+                ["Exportação e Relatórios"] = new[]
+                {
+                    "• Exportar XLSX - Exporta a lista de monitores para arquivo Excel",
+                    "• Gráfico - Mostra dashboard com estatísticas dos monitores"
+                },
+                ["Filtros e Pesquisa"] = new[]
+                {
+                    "• Filtro - Filtra monitores por Modelo, Serial, Local, Responsável ou Computador",
+                    "• Limpar filtro - Remove os filtros aplicados"
+                },
+                ["Interações"] = new[]
+                {
+                    "• Duplo clique - Clique duas vezes em um registro para editá-lo rapidamente"
+                },
+                ["Informações Exibidas"] = new[]
+                {
+                    "• Campos: Modelo, SerialNumber, Local, Responsável, Computador, Cadastrado em"
+                }
+            });
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Modelo/Serial/Local/Responsável/Computador):",
@@ -101,6 +139,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnExcluirMonitor);
             page.Controls.Add(_btnExportMonitores);
             page.Controls.Add(_btnDashboardMonitores);
+            page.Controls.Add(_btnHelpMonitores);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtMonitoresFilter);
             page.Controls.Add(btnClear);
