@@ -62,6 +62,27 @@ namespace InventarioSistem.WinForms
             };
             _btnDashboardNobreaks.Click += (_, _) => MostrarDashboardTotal();
 
+            var _btnHelpNobreaks = new Button
+            {
+                Text = "?",
+                AutoSize = true,
+                Location = new Point(570, 10),
+                BackColor = Color.FromArgb(70, 130, 180),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
+            _btnHelpNobreaks.Click += (_, _) => MostrarOpcoesAba("Nobreaks", new[]
+            {
+                "• Atualizar - Recarrega a lista de nobreaks do banco de dados",
+                "• Novo - Abre formulário para cadastrar um novo nobreak",
+                "• Editar selecionado - Edita o nobreak selecionado na lista",
+                "• Excluir - Remove o nobreak selecionado do banco de dados",
+                "• Exportar XLSX - Exporta a lista de nobreaks para arquivo Excel",
+                "• Gráfico - Mostra dashboard com estatísticas dos nobreaks",
+                "• Filtro - Filtra nobreaks por Hostname, Local, IP, Modelo, Status ou Serial",
+                "• Duplo clique - Clique duas vezes em um registro para editá-lo"
+            });
+
             var lblFiltro = new Label
             {
                 Text = "Filtro (Hostname/Local/IP/Modelo/Status/Serial):",
@@ -102,6 +123,7 @@ namespace InventarioSistem.WinForms
             page.Controls.Add(_btnExcluirNobreak);
             page.Controls.Add(_btnExportNobreaks);
             page.Controls.Add(_btnDashboardNobreaks);
+            page.Controls.Add(_btnHelpNobreaks);
             page.Controls.Add(lblFiltro);
             page.Controls.Add(_txtNobreaksFilter);
             page.Controls.Add(btnClear);
